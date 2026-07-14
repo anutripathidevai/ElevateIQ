@@ -1,0 +1,114 @@
+// Prisma schema — unified Problem model across all tracks.
+// Adding a track = add a value to TrackKey + a content/*.json file (see content/README.md).
+
+generator client {
+  provider      = "prisma-client-js"
+  // "native" for local dev; the musl target is what the Alpine container needs.
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TrackKey {
+  DSA
+  SYSTEM_DESIGN
+  LLD
+  BEHAVIORAL
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum ProgressStatus {
+  TODO
+  ATTEMPTED
+  SOLVED
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String?
+  email          String          @unique
+  image          String?
+  createdAt      DateTime        @default(now())
+  submissions    Submission[]
+  progress       Progress[]
+  mockInterviews MockInterview[]
+}
+
+model Problem {
+  id                String       @id @default(cuid())
+  track             TrackKey
+  slug              String       @unique
+  title             String
+  difficulty        Difficulty
+  tags              String[]
+  statementMD       String
+  constraints       String?
+  hints             String[]
+  referenceSolution String?
+  // Optional in-browser judge spec (starter code + test cases) for runnable
+  // problems (DSA). Shape mirrors lib/judge/types.ts JudgeSpec.
+  judgeSpec         Json?
+  // Optional structured LLD solution (approach + steps + Java classes +
+  // design patterns). Shape mirrors lib/lld/types.ts LldSolution.
+  solution          Json?
+  createdAt         DateTime     @default(now())
+  submissions       Submission[]
+  progress          Progress[]
+
+  @@index([track])
+}
+
+model Submission {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  problem    Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId  String
+  language   String?
+  content    String
+  aiFeedback Json
+  score      Int?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([problemId])
+}
+
+model Progress {
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  problem     Problem        @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId   String
+  status      ProgressStatus @default(TODO)
+  lastScore   Int?
+  lastAttempt DateTime?
+  nextReview  DateTime?
+
+  @@id([userId, problemId])
+  @@index([userId])
+}
+
+model MockInterview {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  trackKey   TrackKey
+  // Optional problem this session is scoped to (LLD "discuss"/"mock on this
+  // problem"). Null for generic track-level interviews.
+  problemSlug String?
+  // Session persona: "interview" (default) or "tutor".
+  mode       String   @default("interview")
+  transcript Json     @default("[]")
+  summary    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}

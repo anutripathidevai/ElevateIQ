@@ -1,0 +1,86 @@
+[
+  {
+    "slug": "design-url-shortener",
+    "title": "Design a URL Shortener (TinyURL / bit.ly)",
+    "difficulty": "MEDIUM",
+    "tags": ["hashing", "databases", "caching", "read-heavy"],
+    "statementMD": "Design a service that converts a long URL into a short one and redirects short URLs back to the original.\n\n**Functional requirements**\n- Create a short link for a given long URL (optionally a custom alias).\n- Redirect a short link to the original URL.\n- Optional: expiry, basic click analytics.\n\n**Non-functional**\n- Very read-heavy (redirects >> creates).\n- Low latency redirects, high availability.\n\nEstimate scale first (e.g. 100M new URLs/month, 100:1 read:write), then design.",
+    "constraints": "Short code length target ~7 chars (base62 ≈ 3.5 trillion combos). Redirect p99 < 100ms.",
+    "hints": [
+      "How do you generate a unique short code — hash, counter+base62, or key-generation service?",
+      "How do you avoid collisions and keep codes short?",
+      "Where does caching help most given the read:write ratio?"
+    ],
+    "referenceSolution": "**Key points an interviewer looks for:**\n- **Encoding:** base62 of a unique 64-bit ID. Options: (a) auto-increment/DB sequence + base62, (b) pre-generated key ranges from a Key-Generation Service, (c) hash(longURL) with collision handling. Discuss trade-offs (predictability, collisions).\n- **Storage:** key-value / NoSQL (code -> longURL) is a natural fit; simple schema, huge scale, sharded by code. SQL is fine at moderate scale.\n- **Read path:** cache hot codes (Redis) in front of the DB; CDN/edge for popular links. 302 vs 301 redirect trade-off (analytics vs caching).\n- **Scale math:** show back-of-envelope QPS and storage/5yr.\n- **Extras:** custom aliases (uniqueness check), TTL/expiry, rate limiting, analytics via async event pipeline (Kafka).\n- **Bottlenecks:** unique ID generation and hot-key reads — address with KGS + caching."
+  },
+  {
+    "slug": "design-rate-limiter",
+    "title": "Design a Rate Limiter",
+    "difficulty": "MEDIUM",
+    "tags": ["algorithms", "distributed-systems", "redis", "concurrency"],
+    "statementMD": "Design a rate limiter that restricts how many requests a client (user/IP/API key) can make in a time window, usable as a shared service or middleware across many app servers.\n\n**Functional requirements**\n- Allow or reject a request based on the client's recent request rate.\n- Configurable limits per client/route.\n\n**Non-functional**\n- Low added latency, works across a fleet of servers, resilient.",
+    "constraints": "Must work in a distributed setting with many app instances; near-real-time accuracy.",
+    "hints": [
+      "Compare fixed window, sliding window log, sliding window counter, token bucket, leaky bucket.",
+      "Where do you store counters so all servers agree?",
+      "What happens on the boundary between two fixed windows?"
+    ],
+    "referenceSolution": "**Key points:**\n- **Algorithms:** Token Bucket (allows bursts, common), Leaky Bucket (smooths output), Fixed Window Counter (simple but boundary bursts), Sliding Window Log (accurate, memory heavy), Sliding Window Counter (good balance). Explain trade-offs.\n- **Distributed state:** centralized store like Redis with atomic ops (INCR + EXPIRE, or Lua script) so all app servers share counters; discuss race conditions and atomicity.\n- **Placement:** API gateway / middleware; return HTTP 429 with `Retry-After`.\n- **Performance:** local in-memory cache + async sync to reduce Redis round trips; sharding hot keys.\n- **Failure mode:** fail-open vs fail-closed when Redis is down.\n- **Bottleneck:** the shared counter store — mitigate with sharding and local pre-checks."
+  },
+  {
+    "slug": "design-news-feed",
+    "title": "Design a Social Media News Feed",
+    "difficulty": "HARD",
+    "tags": ["fan-out", "caching", "databases", "ranking"],
+    "statementMD": "Design the news feed for a social network (e.g. Twitter/Instagram home timeline): when a user opens the app they see a ranked list of recent posts from people they follow.\n\n**Functional requirements**\n- Publish a post.\n- Build and return a user's feed (recent + relevant).\n\n**Non-functional**\n- Feed load latency low; handle celebrity accounts with millions of followers.",
+    "constraints": "Feed fetch p99 < 200ms; support users following thousands and celebrities with millions of followers.",
+    "hints": [
+      "Fan-out on write (push) vs fan-out on read (pull) — when does each win?",
+      "How do celebrity accounts break the push model?",
+      "Where does caching and precomputation fit?"
+    ],
+    "referenceSolution": "**Key points:**\n- **Fan-out on write (push):** precompute each follower's feed at post time; fast reads, expensive for high-follower accounts.\n- **Fan-out on read (pull):** assemble feed at request time by querying followees; cheap writes, slower reads.\n- **Hybrid:** push for normal users, pull for celebrities/whales — the expected answer.\n- **Storage:** posts store + per-user feed cache (Redis lists of post IDs); hydrate post content separately.\n- **Ranking:** start chronological, then discuss a ranking/ML layer (engagement features).\n- **Scale:** sharding by user, CDN for media, async workers/queues for fan-out.\n- **Bottlenecks:** fan-out amplification and feed cache size — bounded feed length, TTLs."
+  },
+  {
+    "slug": "design-chat-system",
+    "title": "Design a Real-Time Chat System (WhatsApp / Messenger)",
+    "difficulty": "HARD",
+    "tags": ["websockets", "messaging", "databases", "real-time"],
+    "statementMD": "Design a 1:1 and group messaging system with real-time delivery, online presence, and message history.\n\n**Functional requirements**\n- Send/receive messages in near real-time.\n- Delivery/read receipts, online/last-seen presence.\n- Persist and fetch chat history.\n\n**Non-functional**\n- Low latency delivery, ordered messages, high availability.",
+    "constraints": "Millions of concurrent connections; messages delivered in order per conversation.",
+    "hints": [
+      "How do servers push messages to online clients — polling vs WebSockets?",
+      "How do you route a message to the server holding the recipient's connection?",
+      "How do you deliver messages to offline users?"
+    ],
+    "referenceSolution": "**Key points:**\n- **Transport:** persistent WebSocket connections to stateful gateway servers (fallback long-polling).\n- **Connection routing:** a session/registry service maps user -> connected gateway; use a message queue/pub-sub to route between gateways.\n- **Delivery:** online → push over socket; offline → store in a per-user inbox and deliver on reconnect + push notification.\n- **Storage:** messages in a wide-column store (e.g. Cassandra) partitioned by conversation, sorted by time; ensures ordering and scale.\n- **Extras:** delivery/read receipts as message events, presence via heartbeats + TTL, group fan-out.\n- **Bottlenecks:** connection state and message ordering — sequence numbers per conversation, sticky sessions."
+  },
+  {
+    "slug": "design-notification-service",
+    "title": "Design a Notification Service",
+    "difficulty": "MEDIUM",
+    "tags": ["queues", "fan-out", "third-party-integration", "reliability"],
+    "statementMD": "Design a service that sends notifications across channels — push (APNs/FCM), SMS, and email — triggered by other systems.\n\n**Functional requirements**\n- Accept a notification request and deliver it via the right channel(s).\n- Respect user preferences and avoid duplicate/spam.\n\n**Non-functional**\n- Reliable delivery, retries, high throughput, decoupled from callers.",
+    "constraints": "Millions of notifications/day; must tolerate flaky third-party providers.",
+    "hints": [
+      "Why decouple senders from delivery with a queue?",
+      "How do you handle third-party failures and retries without duplicates?",
+      "Where do user preferences and rate limiting live?"
+    ],
+    "referenceSolution": "**Key points:**\n- **Async pipeline:** producers publish to a message queue (Kafka/SQS); workers pull and dispatch per channel — decouples and buffers spikes.\n- **Channel adapters:** separate senders for push/SMS/email calling third-party providers behind a common interface.\n- **Reliability:** retries with exponential backoff, dead-letter queue, idempotency keys to avoid duplicates.\n- **Preferences & throttling:** preference service (opt-outs, quiet hours), rate limiting, deduplication.\n- **Templating & tracking:** template service, delivery status tracking/analytics.\n- **Bottlenecks:** third-party rate limits and failures — buffering, backoff, circuit breakers."
+  },
+  {
+    "slug": "design-web-crawler",
+    "title": "Design a Web Crawler",
+    "difficulty": "HARD",
+    "tags": ["queues", "distributed-systems", "storage", "graph-traversal"],
+    "statementMD": "Design a scalable web crawler that starts from seed URLs, downloads pages, extracts links, and continues crawling to build a corpus (e.g. for a search index).\n\n**Functional requirements**\n- Fetch pages, extract and enqueue new links, store content.\n- Avoid re-crawling the same URL; respect robots.txt and politeness.\n\n**Non-functional**\n- Massive scale (billions of pages), fault tolerant, polite to hosts.",
+    "constraints": "Crawl billions of URLs; avoid overloading any single host; avoid infinite loops/traps.",
+    "hints": [
+      "This is essentially BFS over the web graph — what holds the frontier?",
+      "How do you dedupe URLs at billions scale?",
+      "How do you stay polite and avoid crawler traps?"
+    ],
+    "referenceSolution": "**Key points:**\n- **Frontier:** distributed URL queue (BFS) with priority + per-host politeness queues (rate per domain).\n- **Dedup:** seen-URL set via hashing + Bloom filter / scalable store to avoid re-crawl.\n- **Fetchers:** pool of workers downloading pages, honoring robots.txt and crawl-delay; DNS caching.\n- **Parsing:** extract links, normalize URLs, enqueue new ones; detect duplicate content (checksums/shingling).\n- **Storage:** raw pages in blob storage + metadata store; content passed to indexing pipeline.\n- **Robustness:** retries, timeouts, trap detection (URL depth/pattern limits), sharding by domain.\n- **Bottlenecks:** DNS, politeness, and dedup at scale — caching and Bloom filters."
+  }
+]

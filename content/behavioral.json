@@ -1,0 +1,114 @@
+[
+  {
+    "slug": "tell-me-about-yourself",
+    "title": "Tell Me About Yourself",
+    "difficulty": "EASY",
+    "tags": ["introduction", "communication"],
+    "statementMD": "Give a concise professional introduction: who you are, what you work on, a highlight or two, and why you're interested in this role.\n\n**What the interviewer assesses**\n- Clarity and structure of communication.\n- Relevance to the role (signal vs. life story).\n- Confidence without arrogance.",
+    "constraints": "Aim for 60–90 seconds. Present → past → future arc.",
+    "hints": [
+      "Use a Present → Past → Future structure: current role, relevant background, why this role now.",
+      "Lead with your strongest, most relevant highlight.",
+      "End by connecting your goals to this specific role/company."
+    ],
+    "referenceSolution": "**A strong answer covers:** a one-line current identity; 2–3 relevant highlights with impact; a smooth transition into why this role fits your trajectory. **Avoid:** reciting your resume chronologically, personal life details, rambling. **Rubric:** structure, relevance, brevity, enthusiasm."
+  },
+  {
+    "slug": "biggest-challenge",
+    "title": "Describe the Most Challenging Project You Worked On",
+    "difficulty": "MEDIUM",
+    "tags": ["problem-solving", "ownership", "star"],
+    "statementMD": "Tell me about the most technically or organizationally challenging project you've delivered. What made it hard, and how did you handle it?\n\n**What the interviewer assesses**\n- Depth of technical problem-solving.\n- Ownership and persistence.\n- Ability to break down complexity.",
+    "constraints": "Use the STAR format. Pick a project where YOU drove the outcome.",
+    "hints": [
+      "Situation/Task: set up why it was hard (scale, ambiguity, deadline, tech).",
+      "Action: focus on YOUR specific decisions and trade-offs, not the team's.",
+      "Result: quantify the outcome and add a lesson learned."
+    ],
+    "referenceSolution": "**Strong answer:** clear stakes, a concrete technical/organizational obstacle, your specific actions and reasoning about trade-offs, a measurable result, and a reflection. **Red flags:** vague 'we' with no personal contribution, no measurable outcome, blaming others. **Rubric:** STAR completeness, technical depth, ownership, impact, reflection."
+  },
+  {
+    "slug": "conflict-with-teammate",
+    "title": "Tell Me About a Conflict With a Coworker",
+    "difficulty": "MEDIUM",
+    "tags": ["teamwork", "conflict-resolution", "communication", "star"],
+    "statementMD": "Describe a time you disagreed or had conflict with a teammate. How did you resolve it?\n\n**What the interviewer assesses**\n- Emotional maturity and empathy.\n- Communication and collaboration under friction.\n- Focus on outcomes over ego.",
+    "constraints": "Use STAR. Choose a genuine disagreement with a constructive resolution.",
+    "hints": [
+      "Frame the disagreement around ideas/approach, not personality.",
+      "Show you sought to understand the other side (data, 1:1 conversation).",
+      "End with a resolution and a preserved working relationship."
+    ],
+    "referenceSolution": "**Strong answer:** a real, professional disagreement; steps to understand the other perspective; using data or a neutral tie-breaker; a resolution and a healthy relationship afterward. **Red flags:** you were 'always right,' unresolved bitterness, escalating instead of communicating. **Rubric:** empathy, communication, resolution, professionalism."
+  },
+  {
+    "slug": "biggest-failure",
+    "title": "Tell Me About a Time You Failed",
+    "difficulty": "MEDIUM",
+    "tags": ["ownership", "growth", "resilience", "star"],
+    "statementMD": "Describe a significant failure or mistake. What happened and what did you learn?\n\n**What the interviewer assesses**\n- Accountability (owning the mistake).\n- Self-awareness and growth.\n- How you prevent recurrence.",
+    "constraints": "Use STAR. Pick a real failure with a genuine lesson — not a humblebrag.",
+    "hints": [
+      "Own your part directly; don't deflect blame.",
+      "Explain the concrete impact honestly.",
+      "Emphasize what you changed so it won't happen again."
+    ],
+    "referenceSolution": "**Strong answer:** a real failure you owned, honest impact, corrective actions, and a durable behavior change (process, testing, communication). **Red flags:** a fake failure ('I work too hard'), blaming others, no lesson. **Rubric:** accountability, honesty, learning, prevention."
+  },
+  {
+    "slug": "influence-without-authority",
+    "title": "Convince a Team to Adopt Your Idea",
+    "difficulty": "MEDIUM",
+    "tags": ["leadership", "influence", "communication", "star"],
+    "statementMD": "Tell me about a time you had to persuade others (without formal authority) to adopt your approach or technical decision.\n\n**What the interviewer assesses**\n- Influence and stakeholder management.\n- Data-driven persuasion.\n- Collaboration over mandate.",
+    "constraints": "Use STAR. Show buy-in earned through evidence and empathy, not title.",
+    "hints": [
+      "Explain the idea and why others were hesitant.",
+      "Show how you used data, a prototype, or a pilot to build confidence.",
+      "Acknowledge others' concerns and how you addressed them."
+    ],
+    "referenceSolution": "**Strong answer:** a clear proposal, understanding of stakeholders' concerns, evidence (benchmarks, prototype, pilot), and buy-in that led to adoption and results. **Red flags:** 'I just told them to,' ignoring objections, no measurable adoption. **Rubric:** influence, evidence, empathy, outcome."
+  },
+  {
+    "slug": "tight-deadline",
+    "title": "Delivering Under a Tight Deadline",
+    "difficulty": "MEDIUM",
+    "tags": ["prioritization", "time-management", "ownership", "star"],
+    "statementMD": "Describe a time you had to deliver something important under a very tight deadline or with limited resources.\n\n**What the interviewer assesses**\n- Prioritization and scoping.\n- Communication of trade-offs.\n- Delivering value under pressure.",
+    "constraints": "Use STAR. Show how you scoped and made trade-offs, not just 'worked harder.'",
+    "hints": [
+      "Explain how you identified what mattered most (MVP / must-haves).",
+      "Show trade-offs you made and communicated to stakeholders.",
+      "Quantify what you delivered and on time."
+    ],
+    "referenceSolution": "**Strong answer:** ruthless prioritization, explicit trade-offs communicated to stakeholders, smart use of resources, and an on-time, valuable delivery. **Red flags:** heroics/burnout as the only strategy, no prioritization, cutting quality silently. **Rubric:** prioritization, communication, trade-offs, delivery."
+  },
+  {
+    "slug": "feedback-received",
+    "title": "A Time You Received Difficult Feedback",
+    "difficulty": "EASY",
+    "tags": ["growth", "self-awareness", "coachability", "star"],
+    "statementMD": "Tell me about a time you received critical or difficult feedback. How did you respond?\n\n**What the interviewer assesses**\n- Coachability and openness.\n- Turning feedback into action.\n- Emotional maturity.",
+    "constraints": "Use STAR. Show a genuine behavior change from the feedback.",
+    "hints": [
+      "State the feedback plainly without being defensive.",
+      "Describe how you reflected and what concrete action you took.",
+      "Share the improved outcome or habit that resulted."
+    ],
+    "referenceSolution": "**Strong answer:** receiving feedback without defensiveness, reflecting honestly, taking concrete action, and demonstrating measurable improvement. **Red flags:** dismissing the feedback, defensiveness, no change. **Rubric:** openness, action, growth."
+  },
+  {
+    "slug": "went-above-and-beyond",
+    "title": "A Time You Went Above and Beyond",
+    "difficulty": "EASY",
+    "tags": ["ownership", "initiative", "impact", "star"],
+    "statementMD": "Describe a time you took initiative or went beyond what was expected of you.\n\n**What the interviewer assesses**\n- Ownership and proactivity.\n- Bias for action.\n- Impact beyond your assigned scope.",
+    "constraints": "Use STAR. Show self-driven initiative, not just assigned work done well.",
+    "hints": [
+      "Highlight that no one asked you to do it — you saw the need.",
+      "Explain the action and why it mattered.",
+      "Quantify the impact on the team, product, or customers."
+    ],
+    "referenceSolution": "**Strong answer:** you spotted an unowned problem, took initiative, and created measurable value beyond your role. **Red flags:** routine work reframed as heroics, no real initiative, no impact. **Rubric:** initiative, ownership, impact."
+  }
+]

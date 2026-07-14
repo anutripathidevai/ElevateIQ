@@ -1,0 +1,1390 @@
+[
+  {
+    "slug": "design-parking-lot",
+    "title": "Design a Parking Lot",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "design-patterns",
+      "strategy",
+      "factory"
+    ],
+    "statementMD": "Design the classes for a multi-level parking lot.\n\n**Requirements**\n- Multiple levels, each with spots of different sizes (motorcycle, compact, large).\n- Park a vehicle in a suitable free spot; free the spot on exit.\n- Track availability; issue a ticket and compute the fee on exit.\n\nFocus on the class model, responsibilities, and how it stays extensible for new vehicle/spot types and pricing rules.",
+    "constraints": "Support multiple levels and vehicle types; O(1)-ish spot assignment; thread-safe assignment is a plus.",
+    "hints": [
+      "Model the noun hierarchy: Vehicle types, ParkingSpot types, Level, ParkingLot, Ticket.",
+      "How do you decide which spot a vehicle can use without giant if/else chains?",
+      "Where would Strategy (pricing) and Factory (vehicle creation) fit?"
+    ],
+    "referenceSolution": "**Core classes:** `ParkingLot` (owns `Level`s), `Level` (owns `ParkingSpot`s), `ParkingSpot` (size, isFree, canFit(vehicle)), `Vehicle` (abstract → Motorcycle/Car/Bus), `Ticket` (spot, entryTime), `ParkingFeeStrategy`.\n\n**Design notes interviewers want:**\n- **Abstraction:** abstract `Vehicle` and `ParkingSpot` with a `canFit`/size relationship; avoid type-checking with `instanceof`.\n- **Strategy pattern** for pricing (hourly/flat/tiered) so fees are pluggable.\n- **Factory** for creating vehicles/spots.\n- **Spot selection:** each level maintains free-spot collections per size for fast assignment.\n- **Concurrency:** synchronize spot assignment (or use atomic reservation) to prevent double-booking.\n- **SOLID:** single responsibility per class; open for new spot/vehicle types without editing existing ones.",
+    "solution": {
+      "approachMD": "Clarify ownership: ParkingLot owns Levels, each Level owns ParkingSpots, and a Vehicle receives a Ticket only after a concrete spot is reserved. Exiting uses the ticket to release the spot and calculate a fee.\n\nCore entities are ParkingLot, Level, ParkingSpot, Vehicle, Ticket, and ParkingFeeStrategy. VehicleSize keeps fit rules explicit for motorcycles, cars, and buses.\n\nKey choices: let each Level select free spots by size, make ParkingLot.park and ParkingLot.unpark synchronized so assignment is atomic, and hide pricing behind a Strategy. Factories keep demo and test object creation consistent.",
+      "steps": [
+        {
+          "title": "Model sizes and fit rules",
+          "detailMD": "Start with VehicleSize and keep compatibility checks inside ParkingSpot. This prevents controllers from knowing whether a motorcycle, car, or bus can use a given spot.",
+          "code": {
+            "filename": "ParkingFitSnippet.java",
+            "language": "java",
+            "content": "enum VehicleSize {\n    MOTORCYCLE,\n    COMPACT,\n    LARGE\n}\n\nclass ParkingSpot {\n    private final VehicleSize size;\n    private Vehicle vehicle;\n\n    boolean canFit(Vehicle candidate) {\n        return vehicle == null && size.ordinal() >= candidate.getSize().ordinal();\n    }\n}"
+          }
+        },
+        {
+          "title": "Let levels own spot selection",
+          "detailMD": "A Level has the list of spots for one floor. It can scan for the first free spot that fits the vehicle and reserve it before returning to the lot.",
+          "code": {
+            "filename": "LevelReserveSnippet.java",
+            "language": "java",
+            "content": "class Level {\n    private final List<ParkingSpot> spots;\n\n    Optional<ParkingSpot> reserve(Vehicle vehicle) {\n        for (ParkingSpot spot : spots) {\n            if (spot.canFit(vehicle)) {\n                spot.park(vehicle);\n                return Optional.of(spot);\n            }\n        }\n        return Optional.empty();\n    }\n}"
+          }
+        },
+        {
+          "title": "Issue tickets at the lot boundary",
+          "detailMD": "ParkingLot tries levels in order and creates a Ticket only after a spot is assigned. Synchronizing park and unpark keeps the check and assignment from racing under concurrent requests."
+        },
+        {
+          "title": "Price exits with a strategy",
+          "detailMD": "The exit path should not encode hourly or daily pricing. ParkingFeeStrategy calculates the amount from the ticket and exit time, so a new pricing plan can be swapped in.",
+          "code": {
+            "filename": "ParkingFeeSnippet.java",
+            "language": "java",
+            "content": "interface ParkingFeeStrategy {\n    long calculateFee(Ticket ticket, Instant exitTime);\n}\n\nclass HourlyFeeStrategy implements ParkingFeeStrategy {\n    public long calculateFee(Ticket ticket, Instant exitTime) {\n        long minutes = Duration.between(ticket.getEntryTime(), exitTime).toMinutes();\n        long hours = Math.max(1, (minutes + 59) / 60);\n        return hours * 500;\n    }\n}"
+          }
+        },
+        {
+          "title": "Release spots on exit",
+          "detailMD": "Unparking validates the ticket, removes it from active tickets, calculates the fee, and frees the associated ParkingSpot for the next vehicle."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Strategy",
+          "why": "ParkingFeeStrategy isolates pricing from assignment and ticketing."
+        },
+        {
+          "name": "Factory",
+          "why": "ParkingFactory centralizes creation of vehicles and spots for predictable setup."
+        }
+      ],
+      "code": [
+        {
+          "filename": "VehicleSize.java",
+          "language": "java",
+          "content": "public enum VehicleSize {\n    MOTORCYCLE,\n    COMPACT,\n    LARGE;\n\n    public boolean canHold(VehicleSize needed) {\n        return ordinal() >= needed.ordinal();\n    }\n}"
+        },
+        {
+          "filename": "Vehicle.java",
+          "language": "java",
+          "content": "public abstract class Vehicle {\n    private final String plate;\n    private final VehicleSize size;\n\n    protected Vehicle(String plate, VehicleSize size) {\n        if (plate == null || plate.trim().isEmpty()) {\n            throw new IllegalArgumentException(\"plate is required\");\n        }\n        this.plate = plate;\n        this.size = size;\n    }\n\n    public String getPlate() {\n        return plate;\n    }\n\n    public VehicleSize getSize() {\n        return size;\n    }\n\n    public boolean fitsIn(VehicleSize spotSize) {\n        return spotSize.canHold(size);\n    }\n}\n\nclass Motorcycle extends Vehicle {\n    Motorcycle(String plate) {\n        super(plate, VehicleSize.MOTORCYCLE);\n    }\n}\n\nclass Car extends Vehicle {\n    Car(String plate) {\n        super(plate, VehicleSize.COMPACT);\n    }\n}\n\nclass Bus extends Vehicle {\n    Bus(String plate) {\n        super(plate, VehicleSize.LARGE);\n    }\n}"
+        },
+        {
+          "filename": "ParkingSpot.java",
+          "language": "java",
+          "content": "public class ParkingSpot {\n    private final String id;\n    private final int levelNumber;\n    private final VehicleSize size;\n    private Vehicle vehicle;\n\n    public ParkingSpot(String id, int levelNumber, VehicleSize size) {\n        this.id = id;\n        this.levelNumber = levelNumber;\n        this.size = size;\n    }\n\n    public boolean isFree() {\n        return vehicle == null;\n    }\n\n    public boolean canFit(Vehicle candidate) {\n        return isFree() && candidate.fitsIn(size);\n    }\n\n    public void park(Vehicle candidate) {\n        if (!canFit(candidate)) {\n            throw new IllegalStateException(\"spot unavailable \" + id);\n        }\n        vehicle = candidate;\n    }\n\n    public Vehicle unpark() {\n        if (vehicle == null) {\n            throw new IllegalStateException(\"spot already empty\");\n        }\n        Vehicle leaving = vehicle;\n        vehicle = null;\n        return leaving;\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public int getLevelNumber() {\n        return levelNumber;\n    }\n\n    public VehicleSize getSize() {\n        return size;\n    }\n}"
+        },
+        {
+          "filename": "Level.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.EnumMap;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Optional;\n\npublic class Level {\n    private final int number;\n    private final List<ParkingSpot> spots;\n\n    public Level(int number, List<ParkingSpot> spots) {\n        this.number = number;\n        this.spots = new ArrayList<>(spots);\n    }\n\n    public Optional<ParkingSpot> reserveSpotFor(Vehicle vehicle) {\n        for (ParkingSpot spot : spots) {\n            if (spot.canFit(vehicle)) {\n                spot.park(vehicle);\n                return Optional.of(spot);\n            }\n        }\n        return Optional.empty();\n    }\n\n    public Map<VehicleSize, Integer> freeSpotsBySize() {\n        Map<VehicleSize, Integer> counts = new EnumMap<>(VehicleSize.class);\n        for (VehicleSize size : VehicleSize.values()) {\n            counts.put(size, 0);\n        }\n        for (ParkingSpot spot : spots) {\n            if (spot.isFree()) {\n                counts.put(spot.getSize(), counts.get(spot.getSize()) + 1);\n            }\n        }\n        return counts;\n    }\n\n    public int getNumber() {\n        return number;\n    }\n}"
+        },
+        {
+          "filename": "Ticket.java",
+          "language": "java",
+          "content": "import java.time.Instant;\nimport java.util.UUID;\n\npublic class Ticket {\n    private final String id;\n    private final ParkingSpot spot;\n    private final Vehicle vehicle;\n    private final Instant entryTime;\n\n    public Ticket(ParkingSpot spot, Vehicle vehicle, Instant entryTime) {\n        this.id = UUID.randomUUID().toString();\n        this.spot = spot;\n        this.vehicle = vehicle;\n        this.entryTime = entryTime;\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public ParkingSpot getSpot() {\n        return spot;\n    }\n\n    public Vehicle getVehicle() {\n        return vehicle;\n    }\n\n    public Instant getEntryTime() {\n        return entryTime;\n    }\n}"
+        },
+        {
+          "filename": "ParkingFeeStrategy.java",
+          "language": "java",
+          "content": "import java.time.Duration;\nimport java.time.Instant;\n\npublic interface ParkingFeeStrategy {\n    long calculateFee(Ticket ticket, Instant exitTime);\n}\n\nclass HourlyFeeStrategy implements ParkingFeeStrategy {\n    private final long centsPerHour;\n\n    HourlyFeeStrategy(long centsPerHour) {\n        this.centsPerHour = centsPerHour;\n    }\n\n    public long calculateFee(Ticket ticket, Instant exitTime) {\n        long minutes = Duration.between(ticket.getEntryTime(), exitTime).toMinutes();\n        long hours = Math.max(1, (minutes + 59) / 60);\n        return hours * centsPerHour;\n    }\n}"
+        },
+        {
+          "filename": "ParkingFactory.java",
+          "language": "java",
+          "content": "public final class ParkingFactory {\n    private ParkingFactory() {\n    }\n\n    public static Vehicle vehicle(String type, String plate) {\n        String normalized = type == null ? \"\" : type.trim().toLowerCase();\n        if (\"motorcycle\".equals(normalized)) {\n            return new Motorcycle(plate);\n        }\n        if (\"car\".equals(normalized)) {\n            return new Car(plate);\n        }\n        if (\"bus\".equals(normalized)) {\n            return new Bus(plate);\n        }\n        throw new IllegalArgumentException(\"unknown vehicle type \" + type);\n    }\n\n    public static ParkingSpot spot(int level, int index, VehicleSize size) {\n        return new ParkingSpot(\"L\" + level + \"-S\" + index, level, size);\n    }\n}"
+        },
+        {
+          "filename": "ParkingLot.java",
+          "language": "java",
+          "content": "import java.time.Instant;\nimport java.util.ArrayList;\nimport java.util.HashMap;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.Optional;\n\npublic class ParkingLot {\n    private final List<Level> levels;\n    private final ParkingFeeStrategy feeStrategy;\n    private final Map<String, Ticket> activeTickets = new HashMap<>();\n\n    public ParkingLot(List<Level> levels, ParkingFeeStrategy feeStrategy) {\n        this.levels = new ArrayList<>(levels);\n        this.feeStrategy = feeStrategy;\n    }\n\n    public synchronized Ticket park(Vehicle vehicle) {\n        for (Level level : levels) {\n            Optional<ParkingSpot> spot = level.reserveSpotFor(vehicle);\n            if (spot.isPresent()) {\n                Ticket ticket = new Ticket(spot.get(), vehicle, Instant.now());\n                activeTickets.put(ticket.getId(), ticket);\n                return ticket;\n            }\n        }\n        throw new IllegalStateException(\"no spot available for \" + vehicle.getSize());\n    }\n\n    public synchronized long unpark(String ticketId) {\n        Ticket ticket = activeTickets.remove(ticketId);\n        if (ticket == null) {\n            throw new IllegalArgumentException(\"unknown ticket \" + ticketId);\n        }\n        long fee = feeStrategy.calculateFee(ticket, Instant.now());\n        ticket.getSpot().unpark();\n        return fee;\n    }\n\n    public synchronized Map<Integer, Map<VehicleSize, Integer>> availability() {\n        Map<Integer, Map<VehicleSize, Integer>> result = new HashMap<>();\n        for (Level level : levels) {\n            result.put(level.getNumber(), level.freeSpotsBySize());\n        }\n        return result;\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-elevator-system",
+    "title": "Design an Elevator System",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "state-machine",
+      "scheduling",
+      "strategy"
+    ],
+    "statementMD": "Design the classes controlling a bank of elevators in a building.\n\n**Requirements**\n- Handle external hall calls (floor + direction) and internal car requests (destination floor).\n- Move cars between floors, open/close doors, serve requests efficiently.\n- Support multiple elevators with a dispatch strategy.\n\nFocus on the object model, elevator state transitions, and the scheduling/dispatch abstraction.",
+    "constraints": "Multiple elevators; requests may arrive while moving; minimize wait time.",
+    "hints": [
+      "What states can a car be in (Idle, MovingUp, MovingDown, DoorsOpen)?",
+      "Separate the request source (hall vs car) from how a car serves them.",
+      "How does the controller choose which elevator answers a hall call?"
+    ],
+    "referenceSolution": "**Core classes:** `Building`, `ElevatorController` (dispatches requests), `Elevator` (car with current floor, direction, request queue, `State`), `Request` (HallRequest/CarRequest), `Direction` enum, `DispatchStrategy`.\n\n**Design notes:**\n- **State machine** for each car (Idle/MovingUp/MovingDown/DoorsOpen) with clear transitions.\n- **Strategy pattern** for dispatch (nearest-car, SCAN/elevator algorithm, load-based) so scheduling is swappable.\n- **Controller** receives hall calls and assigns the best elevator; each elevator manages its own sorted request set (serve in travel direction, then reverse — the SCAN idea).\n- **Extensibility & SOLID:** adding a new dispatch policy shouldn't touch `Elevator`; separate concerns (movement vs dispatch vs doors).\n- Mention concurrency: requests arriving asynchronously, thread-safe queues.",
+    "solution": {
+      "approachMD": "Clarify responsibilities: Building exposes buttons, ElevatorController receives hall and car calls, and each Elevator owns its stop queues and state transitions. The design models a bank of cars rather than a single elevator.\n\nCore entities are Building, ElevatorController, Elevator, Request, HallRequest, CarRequest, Direction, ElevatorState, and DispatchStrategy. Requests are small values; elevators keep their own ordered stops.\n\nEach car follows a SCAN idea: continue serving floors in the current direction, then reverse when no more stops remain that way. Dispatch is a Strategy so nearest-car can later become zoning, load-aware, or priority dispatch.",
+      "steps": [
+        {
+          "title": "Separate hall and car requests",
+          "detailMD": "HallRequest includes direction because a person outside the car chooses up or down. CarRequest only needs the elevator id and destination floor.",
+          "code": {
+            "filename": "ElevatorRequestSnippet.java",
+            "language": "java",
+            "content": "abstract class Request {\n    private final int floor;\n\n    Request(int floor) {\n        this.floor = floor;\n    }\n\n    int getFloor() {\n        return floor;\n    }\n}\n\nclass HallRequest extends Request {\n    private final Direction direction;\n\n    HallRequest(int floor, Direction direction) {\n        super(floor);\n        this.direction = direction;\n    }\n}"
+          }
+        },
+        {
+          "title": "Store stops by travel direction",
+          "detailMD": "Use one ascending set for upward stops and one descending set for downward stops. This keeps the next stop easy to find and naturally supports the SCAN serving rule.",
+          "code": {
+            "filename": "ElevatorStopSetSnippet.java",
+            "language": "java",
+            "content": "class Elevator {\n    private final NavigableSet<Integer> upStops = new TreeSet<>();\n    private final NavigableSet<Integer> downStops = new TreeSet<>(Collections.reverseOrder());\n    private int currentFloor;\n\n    void addStop(int floor) {\n        if (floor > currentFloor) {\n            upStops.add(floor);\n        } else if (floor < currentFloor) {\n            downStops.add(floor);\n        } else {\n            openDoors();\n        }\n    }\n}"
+          }
+        },
+        {
+          "title": "Dispatch through a strategy",
+          "detailMD": "The controller delegates car selection to DispatchStrategy. NearestCarStrategy compares estimated distances and prefers cars already moving toward the hall call.",
+          "code": {
+            "filename": "NearestCarSnippet.java",
+            "language": "java",
+            "content": "class NearestCarStrategy implements DispatchStrategy {\n    public Elevator chooseElevator(List<Elevator> elevators, HallRequest request) {\n        return elevators.stream()\n                .min(Comparator.comparingInt(e -> e.estimatedDistanceTo(request)))\n                .orElseThrow(() -> new IllegalStateException(\"no elevators configured\"));\n    }\n}"
+          }
+        },
+        {
+          "title": "Drive a small state machine",
+          "detailMD": "ElevatorState moves among IDLE, MOVING_UP, MOVING_DOWN, and DOORS_OPEN. A door-open tick is temporary; after it, the elevator chooses the next direction from pending stops."
+        },
+        {
+          "title": "Keep Building as the public facade",
+          "detailMD": "Building validates floors and forwards button presses to ElevatorController. This keeps UI, simulation, and tests away from internal stop-set details."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "State machine",
+          "why": "ElevatorState makes car movement and door behavior explicit."
+        },
+        {
+          "name": "Strategy",
+          "why": "DispatchStrategy separates scheduling policy from controller flow."
+        }
+      ],
+      "code": [
+        {
+          "filename": "Direction.java",
+          "language": "java",
+          "content": "public enum Direction {\n    UP,\n    DOWN,\n    IDLE;\n\n    public Direction opposite() {\n        if (this == UP) {\n            return DOWN;\n        }\n        if (this == DOWN) {\n            return UP;\n        }\n        return IDLE;\n    }\n}"
+        },
+        {
+          "filename": "ElevatorState.java",
+          "language": "java",
+          "content": "public enum ElevatorState {\n    IDLE,\n    MOVING_UP,\n    MOVING_DOWN,\n    DOORS_OPEN;\n\n    public boolean isMoving() {\n        return this == MOVING_UP || this == MOVING_DOWN;\n    }\n}"
+        },
+        {
+          "filename": "Request.java",
+          "language": "java",
+          "content": "public abstract class Request {\n    private final int floor;\n\n    protected Request(int floor) {\n        if (floor < 0) {\n            throw new IllegalArgumentException(\"floor cannot be negative\");\n        }\n        this.floor = floor;\n    }\n\n    public int getFloor() {\n        return floor;\n    }\n}\n\nclass HallRequest extends Request {\n    private final Direction direction;\n\n    HallRequest(int floor, Direction direction) {\n        super(floor);\n        if (direction == Direction.IDLE) {\n            throw new IllegalArgumentException(\"hall call needs up or down\");\n        }\n        this.direction = direction;\n    }\n\n    public Direction getDirection() {\n        return direction;\n    }\n}\n\nclass CarRequest extends Request {\n    private final int elevatorId;\n\n    CarRequest(int elevatorId, int floor) {\n        super(floor);\n        this.elevatorId = elevatorId;\n    }\n\n    public int getElevatorId() {\n        return elevatorId;\n    }\n}"
+        },
+        {
+          "filename": "Elevator.java",
+          "language": "java",
+          "content": "import java.util.Collections;\nimport java.util.NavigableSet;\nimport java.util.TreeSet;\n\npublic class Elevator {\n    private final int id;\n    private final int minFloor;\n    private final int maxFloor;\n    private final NavigableSet<Integer> upStops = new TreeSet<>();\n    private final NavigableSet<Integer> downStops = new TreeSet<>(Collections.reverseOrder());\n    private int currentFloor;\n    private Direction direction = Direction.IDLE;\n    private ElevatorState state = ElevatorState.IDLE;\n\n    public Elevator(int id, int minFloor, int maxFloor, int startFloor) {\n        this.id = id;\n        this.minFloor = minFloor;\n        this.maxFloor = maxFloor;\n        this.currentFloor = startFloor;\n    }\n\n    public synchronized void addStop(int floor) {\n        validateFloor(floor);\n        if (floor > currentFloor) {\n            upStops.add(floor);\n        } else if (floor < currentFloor) {\n            downStops.add(floor);\n        } else {\n            openDoors();\n            return;\n        }\n        chooseDirection();\n    }\n\n    public synchronized void step() {\n        if (state == ElevatorState.DOORS_OPEN || direction == Direction.IDLE) {\n            chooseDirection();\n            return;\n        }\n        currentFloor += direction == Direction.UP ? 1 : -1;\n        state = direction == Direction.UP ? ElevatorState.MOVING_UP : ElevatorState.MOVING_DOWN;\n        if (direction == Direction.UP && upStops.remove(currentFloor)) {\n            openDoors();\n        } else if (direction == Direction.DOWN && downStops.remove(currentFloor)) {\n            openDoors();\n        }\n    }\n\n    private void chooseDirection() {\n        if (direction == Direction.UP && !upStops.isEmpty()) {\n            state = ElevatorState.MOVING_UP;\n        } else if (direction == Direction.DOWN && !downStops.isEmpty()) {\n            state = ElevatorState.MOVING_DOWN;\n        } else if (!upStops.isEmpty()) {\n            direction = Direction.UP;\n            state = ElevatorState.MOVING_UP;\n        } else if (!downStops.isEmpty()) {\n            direction = Direction.DOWN;\n            state = ElevatorState.MOVING_DOWN;\n        } else {\n            direction = Direction.IDLE;\n            state = ElevatorState.IDLE;\n        }\n    }\n\n    private void openDoors() {\n        state = ElevatorState.DOORS_OPEN;\n    }\n\n    private void validateFloor(int floor) {\n        if (floor < minFloor || floor > maxFloor) {\n            throw new IllegalArgumentException(\"floor out of range \" + floor);\n        }\n    }\n\n    public synchronized int estimatedDistanceTo(HallRequest request) {\n        int distance = Math.abs(currentFloor - request.getFloor());\n        if (direction == Direction.IDLE) {\n            return distance;\n        }\n        boolean ahead = direction == Direction.UP ? request.getFloor() >= currentFloor : request.getFloor() <= currentFloor;\n        return direction == request.getDirection() && ahead ? distance : 1000 + distance;\n    }\n\n    public int getId() {\n        return id;\n    }\n}"
+        },
+        {
+          "filename": "DispatchStrategy.java",
+          "language": "java",
+          "content": "import java.util.Comparator;\nimport java.util.List;\n\npublic interface DispatchStrategy {\n    Elevator chooseElevator(List<Elevator> elevators, HallRequest request);\n}\n\nclass NearestCarStrategy implements DispatchStrategy {\n    public Elevator chooseElevator(List<Elevator> elevators, HallRequest request) {\n        return elevators.stream()\n                .min(Comparator.comparingInt(elevator -> elevator.estimatedDistanceTo(request)))\n                .orElseThrow(() -> new IllegalStateException(\"no elevators available\"));\n    }\n}"
+        },
+        {
+          "filename": "ElevatorController.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.List;\n\npublic class ElevatorController {\n    private final List<Elevator> elevators;\n    private final DispatchStrategy dispatchStrategy;\n\n    public ElevatorController(List<Elevator> elevators, DispatchStrategy dispatchStrategy) {\n        this.elevators = new ArrayList<>(elevators);\n        this.dispatchStrategy = dispatchStrategy;\n    }\n\n    public synchronized int submitHallCall(int floor, Direction direction) {\n        HallRequest request = new HallRequest(floor, direction);\n        Elevator elevator = dispatchStrategy.chooseElevator(elevators, request);\n        elevator.addStop(floor);\n        return elevator.getId();\n    }\n\n    public synchronized void submitCarCall(int elevatorId, int floor) {\n        findElevator(elevatorId).addStop(floor);\n    }\n\n    public synchronized void tick() {\n        for (Elevator elevator : elevators) {\n            elevator.step();\n        }\n    }\n\n    private Elevator findElevator(int elevatorId) {\n        for (Elevator elevator : elevators) {\n            if (elevator.getId() == elevatorId) {\n                return elevator;\n            }\n        }\n        throw new IllegalArgumentException(\"unknown elevator \" + elevatorId);\n    }\n}"
+        },
+        {
+          "filename": "Building.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.List;\n\npublic class Building {\n    private final int minFloor;\n    private final int maxFloor;\n    private final ElevatorController controller;\n\n    public Building(int minFloor, int maxFloor, int elevatorCount) {\n        this.minFloor = minFloor;\n        this.maxFloor = maxFloor;\n        this.controller = new ElevatorController(createElevators(elevatorCount), new NearestCarStrategy());\n    }\n\n    public int pressHallButton(int floor, Direction direction) {\n        validateFloor(floor);\n        return controller.submitHallCall(floor, direction);\n    }\n\n    public void selectFloor(int elevatorId, int floor) {\n        validateFloor(floor);\n        controller.submitCarCall(elevatorId, floor);\n    }\n\n    public void runOneTick() {\n        controller.tick();\n    }\n\n    private List<Elevator> createElevators(int count) {\n        List<Elevator> elevators = new ArrayList<>();\n        for (int id = 1; id <= count; id++) {\n            elevators.add(new Elevator(id, minFloor, maxFloor, minFloor));\n        }\n        return elevators;\n    }\n\n    private void validateFloor(int floor) {\n        if (floor < minFloor || floor > maxFloor) {\n            throw new IllegalArgumentException(\"floor out of range \" + floor);\n        }\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-vending-machine",
+    "title": "Design a Vending Machine",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "state-pattern",
+      "state-machine"
+    ],
+    "statementMD": "Design the classes for a vending machine.\n\n**Requirements**\n- Show products and prices; user selects a product.\n- Accept coins/notes, track inserted amount, dispense product and change.\n- Handle out-of-stock, insufficient funds, and cancel/refund.\n\nFocus on modeling the machine's states and transitions cleanly.",
+    "constraints": "Support multiple products with inventory and denominations; return correct change.",
+    "hints": [
+      "The machine behaves differently depending on its current state — which pattern models that?",
+      "Enumerate states: Idle, HasMoney/ProductSelected, Dispensing, OutOfStock.",
+      "Where does the money/change calculation live?"
+    ],
+    "referenceSolution": "**Core classes:** `VendingMachine` (context), `State` interface with concrete `IdleState`, `HasMoneyState`, `DispensingState`, `OutOfStockState`; `Inventory` (product -> count), `Product`, `Coin/Note` enum.\n\n**Design notes:**\n- **State pattern** is the expected answer: each state implements actions (insertMoney, selectProduct, dispense, cancel) and drives transitions; avoids sprawling if/else on a status field.\n- `VendingMachine` delegates user actions to its current `State`.\n- **Inventory** tracks stock; **change** computed from available denominations (greedy or DP).\n- Handle edge cases: insufficient funds, out of stock, cannot make exact change → refund.\n- **SOLID:** adding a new state/behavior is isolated to a new State class.",
+    "solution": {
+      "approachMD": "Clarify the purchase flow: insert coins, select a product, verify stock and funds, compute change, dispense, or refund. The design must also reject invalid actions such as dispensing before a selection.\n\nCore entities are VendingMachine, State, IdleState, HasMoneyState, DispensingState, OutOfStockState, Inventory, Product, and Coin. The machine is the context holding current state, inserted amount, inventory, and change bank.\n\nUse the State pattern because each action has different behavior depending on the phase. The change algorithm is isolated in the context so states can ask whether exact change is possible before releasing a product.",
+      "steps": [
+        {
+          "title": "Define products and inventory",
+          "detailMD": "Product stores id, display name, and price. Inventory maps product ids to both Product objects and counts, so stock checks and restocking are independent of state logic.",
+          "code": {
+            "filename": "InventorySnippet.java",
+            "language": "java",
+            "content": "class Inventory {\n    private final Map<String, Product> products = new HashMap<>();\n    private final Map<String, Integer> counts = new HashMap<>();\n\n    boolean hasStock(Product product) {\n        return counts.getOrDefault(product.getId(), 0) > 0;\n    }\n\n    void decrement(Product product) {\n        if (!hasStock(product)) {\n            throw new IllegalStateException(\"out of stock\");\n        }\n        counts.put(product.getId(), counts.get(product.getId()) - 1);\n    }\n}"
+          }
+        },
+        {
+          "title": "Make states share one interface",
+          "detailMD": "State lists the user actions. Concrete states either handle an action or reject it with a clear error, keeping VendingMachine free of a large conditional block.",
+          "code": {
+            "filename": "VendingStateSnippet.java",
+            "language": "java",
+            "content": "interface State {\n    void insertCoin(VendingMachine machine, Coin coin);\n\n    void selectProduct(VendingMachine machine, String productId);\n\n    void dispense(VendingMachine machine);\n\n    List<Coin> cancel(VendingMachine machine);\n}"
+          }
+        },
+        {
+          "title": "Transition after money arrives",
+          "detailMD": "IdleState accepts the first coin and moves to HasMoneyState. HasMoneyState accepts more coins, validates selection, and only moves to DispensingState when money, stock, and change are all valid.",
+          "code": {
+            "filename": "HasMoneySnippet.java",
+            "language": "java",
+            "content": "class HasMoneyState implements State {\n    public void selectProduct(VendingMachine machine, String productId) {\n        Product product = machine.getInventory().find(productId);\n        if (machine.getInsertedAmount() < product.getPrice()) {\n            throw new IllegalStateException(\"insufficient funds\");\n        }\n        machine.setSelectedProduct(product);\n        machine.moveTo(machine.dispensingState());\n    }\n}"
+          }
+        },
+        {
+          "title": "Compute change before dispensing",
+          "detailMD": "The machine attempts exact change using available denominations before releasing inventory. If exact change cannot be made, it refunds the inserted coins and returns to IdleState."
+        },
+        {
+          "title": "Handle cancellation and stock failures",
+          "detailMD": "Cancel returns the inserted coins and clears the transaction. OutOfStockState lets the customer cancel or choose another in-stock product without losing money."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "State",
+          "why": "Each concrete state owns valid behavior for the current phase of the purchase."
+        },
+        {
+          "name": "Encapsulated change policy",
+          "why": "The context hides denomination math so state classes stay focused on transitions."
+        }
+      ],
+      "code": [
+        {
+          "filename": "Coin.java",
+          "language": "java",
+          "content": "public enum Coin {\n    ONE(1),\n    FIVE(5),\n    TEN(10),\n    TWENTY_FIVE(25);\n\n    private final int value;\n\n    Coin(int value) {\n        this.value = value;\n    }\n\n    public int getValue() {\n        return value;\n    }\n}"
+        },
+        {
+          "filename": "Product.java",
+          "language": "java",
+          "content": "public class Product {\n    private final String id;\n    private final String name;\n    private final int price;\n\n    public Product(String id, String name, int price) {\n        if (id == null || id.trim().isEmpty()) {\n            throw new IllegalArgumentException(\"id is required\");\n        }\n        if (price <= 0) {\n            throw new IllegalArgumentException(\"price must be positive\");\n        }\n        this.id = id;\n        this.name = name;\n        this.price = price;\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public int getPrice() {\n        return price;\n    }\n}"
+        },
+        {
+          "filename": "Inventory.java",
+          "language": "java",
+          "content": "import java.util.HashMap;\nimport java.util.Map;\n\npublic class Inventory {\n    private final Map<String, Product> products = new HashMap<>();\n    private final Map<String, Integer> counts = new HashMap<>();\n\n    public void addProduct(Product product, int count) {\n        if (count < 0) {\n            throw new IllegalArgumentException(\"count cannot be negative\");\n        }\n        products.put(product.getId(), product);\n        counts.put(product.getId(), counts.getOrDefault(product.getId(), 0) + count);\n    }\n\n    public Product find(String productId) {\n        Product product = products.get(productId);\n        if (product == null) {\n            throw new IllegalArgumentException(\"unknown product \" + productId);\n        }\n        return product;\n    }\n\n    public boolean hasStock(Product product) {\n        return counts.getOrDefault(product.getId(), 0) > 0;\n    }\n\n    public void decrement(Product product) {\n        if (!hasStock(product)) {\n            throw new IllegalStateException(\"product is out of stock\");\n        }\n        counts.put(product.getId(), counts.get(product.getId()) - 1);\n    }\n}"
+        },
+        {
+          "filename": "State.java",
+          "language": "java",
+          "content": "import java.util.List;\n\npublic interface State {\n    void insertCoin(VendingMachine machine, Coin coin);\n\n    void selectProduct(VendingMachine machine, String productId);\n\n    void dispense(VendingMachine machine);\n\n    List<Coin> cancel(VendingMachine machine);\n}"
+        },
+        {
+          "filename": "VendingMachine.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.Comparator;\nimport java.util.EnumMap;\nimport java.util.List;\nimport java.util.Map;\n\npublic class VendingMachine {\n    private final Inventory inventory;\n    private final Map<Coin, Integer> changeBank = new EnumMap<>(Coin.class);\n    private final List<Coin> insertedCoins = new ArrayList<>();\n    private final State idleState = new IdleState();\n    private final State hasMoneyState = new HasMoneyState();\n    private final State dispensingState = new DispensingState();\n    private final State outOfStockState = new OutOfStockState();\n    private State currentState = idleState;\n    private int insertedAmount;\n    private Product selectedProduct;\n    private List<Coin> lastChange = new ArrayList<>();\n\n    public VendingMachine(Inventory inventory) {\n        this.inventory = inventory;\n        for (Coin coin : Coin.values()) {\n            changeBank.put(coin, 0);\n        }\n    }\n\n    public void insertCoin(Coin coin) {\n        currentState.insertCoin(this, coin);\n    }\n\n    public void selectProduct(String productId) {\n        currentState.selectProduct(this, productId);\n    }\n\n    public void dispense() {\n        currentState.dispense(this);\n    }\n\n    public List<Coin> cancel() {\n        return currentState.cancel(this);\n    }\n\n    void acceptCoin(Coin coin) {\n        insertedCoins.add(coin);\n        insertedAmount += coin.getValue();\n        changeBank.put(coin, changeBank.get(coin) + 1);\n    }\n\n    boolean prepareChange(int amount) {\n        List<Coin> change = takeChange(amount);\n        if (amount > 0 && change.isEmpty()) {\n            return false;\n        }\n        lastChange = change;\n        return true;\n    }\n\n    private List<Coin> takeChange(int amount) {\n        List<Coin> result = new ArrayList<>();\n        Map<Coin, Integer> trial = new EnumMap<>(changeBank);\n        List<Coin> coins = new ArrayList<>();\n        for (Coin coin : Coin.values()) {\n            coins.add(coin);\n        }\n        coins.sort(Comparator.comparingInt(Coin::getValue).reversed());\n        int remaining = amount;\n        for (Coin coin : coins) {\n            while (remaining >= coin.getValue() && trial.get(coin) > 0) {\n                remaining -= coin.getValue();\n                trial.put(coin, trial.get(coin) - 1);\n                result.add(coin);\n            }\n        }\n        if (remaining != 0) {\n            return new ArrayList<>();\n        }\n        changeBank.clear();\n        changeBank.putAll(trial);\n        return result;\n    }\n\n    List<Coin> refundInsertedCoins() {\n        List<Coin> refund = new ArrayList<>(insertedCoins);\n        for (Coin coin : insertedCoins) {\n            changeBank.put(coin, changeBank.get(coin) - 1);\n        }\n        clearTransaction();\n        moveTo(idleState);\n        return refund;\n    }\n\n    void clearTransaction() {\n        insertedCoins.clear();\n        insertedAmount = 0;\n        selectedProduct = null;\n    }\n\n    public List<Coin> collectChange() {\n        List<Coin> change = new ArrayList<>(lastChange);\n        lastChange.clear();\n        return change;\n    }\n\n    public Inventory getInventory() {\n        return inventory;\n    }\n\n    int getInsertedAmount() {\n        return insertedAmount;\n    }\n\n    Product getSelectedProduct() {\n        return selectedProduct;\n    }\n\n    void setSelectedProduct(Product selectedProduct) {\n        this.selectedProduct = selectedProduct;\n    }\n\n    void moveTo(State state) {\n        currentState = state;\n    }\n\n    State idleState() {\n        return idleState;\n    }\n\n    State hasMoneyState() {\n        return hasMoneyState;\n    }\n\n    State dispensingState() {\n        return dispensingState;\n    }\n\n    State outOfStockState() {\n        return outOfStockState;\n    }\n}"
+        },
+        {
+          "filename": "IdleState.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.List;\n\npublic class IdleState implements State {\n    public void insertCoin(VendingMachine machine, Coin coin) {\n        machine.acceptCoin(coin);\n        machine.moveTo(machine.hasMoneyState());\n    }\n\n    public void selectProduct(VendingMachine machine, String productId) {\n        throw new IllegalStateException(\"insert money before selecting a product\");\n    }\n\n    public void dispense(VendingMachine machine) {\n        throw new IllegalStateException(\"nothing selected for dispensing\");\n    }\n\n    public List<Coin> cancel(VendingMachine machine) {\n        return new ArrayList<>();\n    }\n}"
+        },
+        {
+          "filename": "HasMoneyState.java",
+          "language": "java",
+          "content": "import java.util.List;\n\npublic class HasMoneyState implements State {\n    public void insertCoin(VendingMachine machine, Coin coin) {\n        machine.acceptCoin(coin);\n    }\n\n    public void selectProduct(VendingMachine machine, String productId) {\n        Product product = machine.getInventory().find(productId);\n        if (!machine.getInventory().hasStock(product)) {\n            machine.setSelectedProduct(product);\n            machine.moveTo(machine.outOfStockState());\n            throw new IllegalStateException(\"selected product is out of stock\");\n        }\n        if (machine.getInsertedAmount() < product.getPrice()) {\n            throw new IllegalStateException(\"insufficient funds\");\n        }\n        int changeAmount = machine.getInsertedAmount() - product.getPrice();\n        if (!machine.prepareChange(changeAmount)) {\n            machine.refundInsertedCoins();\n            throw new IllegalStateException(\"cannot make change, refunded payment\");\n        }\n        machine.setSelectedProduct(product);\n        machine.moveTo(machine.dispensingState());\n    }\n\n    public void dispense(VendingMachine machine) {\n        throw new IllegalStateException(\"select a product first\");\n    }\n\n    public List<Coin> cancel(VendingMachine machine) {\n        return machine.refundInsertedCoins();\n    }\n}"
+        },
+        {
+          "filename": "DispensingState.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.List;\n\npublic class DispensingState implements State {\n    public void insertCoin(VendingMachine machine, Coin coin) {\n        throw new IllegalStateException(\"dispensing is in progress\");\n    }\n\n    public void selectProduct(VendingMachine machine, String productId) {\n        throw new IllegalStateException(\"dispensing is in progress\");\n    }\n\n    public void dispense(VendingMachine machine) {\n        Product product = machine.getSelectedProduct();\n        if (product == null) {\n            machine.moveTo(machine.idleState());\n            throw new IllegalStateException(\"no selected product\");\n        }\n        machine.getInventory().decrement(product);\n        machine.clearTransaction();\n        machine.moveTo(machine.idleState());\n    }\n\n    public List<Coin> cancel(VendingMachine machine) {\n        return new ArrayList<>();\n    }\n}"
+        },
+        {
+          "filename": "OutOfStockState.java",
+          "language": "java",
+          "content": "import java.util.List;\n\npublic class OutOfStockState implements State {\n    public void insertCoin(VendingMachine machine, Coin coin) {\n        machine.acceptCoin(coin);\n    }\n\n    public void selectProduct(VendingMachine machine, String productId) {\n        Product product = machine.getInventory().find(productId);\n        if (!machine.getInventory().hasStock(product)) {\n            throw new IllegalStateException(\"selected product is out of stock\");\n        }\n        machine.moveTo(machine.hasMoneyState());\n        machine.selectProduct(productId);\n    }\n\n    public void dispense(VendingMachine machine) {\n        throw new IllegalStateException(\"cannot dispense while out of stock\");\n    }\n\n    public List<Coin> cancel(VendingMachine machine) {\n        return machine.refundInsertedCoins();\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-splitwise",
+    "title": "Design a Expense-Sharing App (Splitwise)",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "strategy",
+      "graph",
+      "balances"
+    ],
+    "statementMD": "Design the classes for an app that lets a group of people split shared expenses and track who owes whom.\n\n**Requirements**\n- Add an expense paid by someone, split among participants (equal, exact amounts, or percentages).\n- Maintain net balances between users.\n- Show simplified 'who owes whom' and settle up.\n\nFocus on the object model and the split abstraction.",
+    "constraints": "Support equal/exact/percentage splits; balances must always net to zero across the group.",
+    "hints": [
+      "How do you support multiple split types without special-casing each in the same method?",
+      "How do you represent balances — pairwise or net per user?",
+      "How would you minimize the number of transactions to settle up?"
+    ],
+    "referenceSolution": "**Core classes:** `User`, `Group`, `Expense` (payer, amount, list of `Split`), `Split` (abstract → EqualSplit/ExactSplit/PercentSplit), `SplitStrategy`, `BalanceSheet` (userA,userB -> amount) or net-balance map, `ExpenseService`.\n\n**Design notes:**\n- **Strategy/polymorphism** for split types: each `Split` validates itself (percentages sum to 100, exacts sum to total) and computes each participant's share.\n- **Balances:** maintain a map of net balances; adding an expense updates payer/participant balances so the group always sums to zero.\n- **Settle-up / simplification:** reduce debts using a greedy min-cash-flow (heaps of max creditor/debtor) — a nice bonus.\n- **SOLID/extensibility:** new split types plug in without touching existing logic; service layer separates business rules from entities.\n- Mention validation and precision (avoid floating-point rounding drift).",
+    "solution": {
+      "approachMD": "Treat each group as the scope for members, expenses, and a balance sheet. Every expense is an immutable fact: one payer funded an amount, and each participant owns a computed share. The balance sheet stores only net positions, so all balances should sum back to zero after each accepted expense.\n\nSplit calculation is polymorphic. Equal, exact, and percent splits validate their own inputs, then the expense validates that all computed shares add up to the original amount.\n\nSettlement is a separate simplification step. It reads the current net map, places creditors and debtors into priority queues, and greedily pairs the largest opposite balances until the group is settled.",
+      "steps": [
+        {
+          "title": "Create the money and participant model",
+          "detailMD": "Use immutable User objects and BigDecimal for money. Keep identity stable by keying users with an id rather than name or email.\n\nThe balance sheet should never store per-expense history as its primary state. Expense history is useful for audit, while the net map is the query-optimized view."
+        },
+        {
+          "title": "Make split computation polymorphic",
+          "detailMD": "Define Split as the abstraction and let EqualSplit, ExactSplit, and PercentSplit decide how they validate and compute a share.\n\nThis keeps ExpenseService closed to new split math. Adding a weighted split later does not require a switch statement in the service.",
+          "code": {
+            "filename": "SplitValidationExample.java",
+            "language": "java",
+            "content": "abstract class SplitValidationExample {\n    private final String userId;\n\n    protected SplitValidationExample(String userId) {\n        this.userId = userId;\n    }\n\n    public String userId() {\n        return userId;\n    }\n\n    abstract java.math.BigDecimal shareOf(java.math.BigDecimal total);\n\n    abstract void validate(java.math.BigDecimal total);\n}\n\nfinal class ExactSplitExample extends SplitValidationExample {\n    private final java.math.BigDecimal amount;\n\n    ExactSplitExample(String userId, java.math.BigDecimal amount) {\n        super(userId);\n        this.amount = amount;\n    }\n\n    java.math.BigDecimal shareOf(java.math.BigDecimal total) {\n        return amount;\n    }\n\n    void validate(java.math.BigDecimal total) {\n        if (amount.signum() < 0 || amount.compareTo(total) > 0) {\n            throw new IllegalArgumentException(\"Invalid exact share for \" + userId());\n        }\n    }\n}"
+          }
+        },
+        {
+          "title": "Accept an expense as one atomic update",
+          "detailMD": "Validate the expense first, then apply it to the balance sheet. Credit the payer by the full amount and debit each participant by the share they consumed.\n\nAfter the update, assert that the total of all net balances is still zero. This catches rounding and validation defects early.",
+          "code": {
+            "filename": "BalanceUpdateExample.java",
+            "language": "java",
+            "content": "final class BalanceUpdateExample {\n    private final java.util.Map<String, java.math.BigDecimal> net = new java.util.HashMap<>();\n\n    void record(String payerId, java.math.BigDecimal amount, java.util.Map<String, java.math.BigDecimal> shares) {\n        add(payerId, amount);\n        for (java.util.Map.Entry<String, java.math.BigDecimal> share : shares.entrySet()) {\n            add(share.getKey(), share.getValue().negate());\n        }\n        if (total().compareTo(java.math.BigDecimal.ZERO) != 0) {\n            throw new IllegalStateException(\"Balance sheet no longer nets to zero\");\n        }\n    }\n\n    private void add(String userId, java.math.BigDecimal delta) {\n        net.put(userId, net.getOrDefault(userId, java.math.BigDecimal.ZERO).add(delta));\n    }\n\n    private java.math.BigDecimal total() {\n        java.math.BigDecimal sum = java.math.BigDecimal.ZERO;\n        for (java.math.BigDecimal value : net.values()) {\n            sum = sum.add(value);\n        }\n        return sum;\n    }\n}"
+          }
+        },
+        {
+          "title": "Separate settlement from expense recording",
+          "detailMD": "Do not mutate historical expenses while settling. A settlement proposal is only a set of payments that would reduce the current net balances to zero.\n\nUse two priority queues: one for the biggest creditors and one for the biggest debtors. Each generated payment clears at least one side, so the loop is short.",
+          "code": {
+            "filename": "SettlementGreedyExample.java",
+            "language": "java",
+            "content": "final class SettlementGreedyExample {\n    java.util.List<String> settle(java.util.Map<String, java.math.BigDecimal> balances) {\n        java.util.PriorityQueue<java.util.Map.Entry<String, java.math.BigDecimal>> creditors =\n            new java.util.PriorityQueue<>((a, b) -> b.getValue().compareTo(a.getValue()));\n        java.util.PriorityQueue<java.util.Map.Entry<String, java.math.BigDecimal>> debtors =\n            new java.util.PriorityQueue<>((a, b) -> a.getValue().compareTo(b.getValue()));\n\n        for (java.util.Map.Entry<String, java.math.BigDecimal> entry : balances.entrySet()) {\n            if (entry.getValue().signum() > 0) creditors.add(entry);\n            if (entry.getValue().signum() < 0) debtors.add(entry);\n        }\n\n        java.util.List<String> payments = new java.util.ArrayList<>();\n        while (!creditors.isEmpty() && !debtors.isEmpty()) {\n            java.util.Map.Entry<String, java.math.BigDecimal> creditor = creditors.poll();\n            java.util.Map.Entry<String, java.math.BigDecimal> debtor = debtors.poll();\n            java.math.BigDecimal amount = creditor.getValue().min(debtor.getValue().abs());\n            payments.add(debtor.getKey() + \" pays \" + creditor.getKey() + \" \" + amount);\n        }\n        return payments;\n    }\n}"
+          }
+        },
+        {
+          "title": "Add operational safeguards",
+          "detailMD": "Reject negative amounts, unknown users, empty split lists, and rounded shares that no longer equal the expense amount.\n\nFor a production system, wrap addExpense in a transaction and store the expense event before publishing notifications. The balance sheet can then be rebuilt from history if needed."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Strategy through polymorphism",
+          "why": "Each split type owns its validation and share calculation without service-level branching."
+        },
+        {
+          "name": "Service layer",
+          "why": "ExpenseService coordinates validation, persistence intent, and balance updates behind one use-case method."
+        },
+        {
+          "name": "Greedy algorithm",
+          "why": "Settlement pairs the largest debtor and creditor to reduce cash transfers quickly."
+        }
+      ],
+      "code": [
+        {
+          "filename": "User.java",
+          "language": "java",
+          "content": "import java.util.Objects;\n\npublic final class User {\n    private final String id;\n    private final String displayName;\n    private final String email;\n\n    public User(String id, String displayName, String email) {\n        if (id == null || id.trim().isEmpty()) {\n            throw new IllegalArgumentException(\"User id is required\");\n        }\n        this.id = id;\n        this.displayName = Objects.requireNonNull(displayName, \"displayName\");\n        this.email = Objects.requireNonNull(email, \"email\");\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public String getDisplayName() {\n        return displayName;\n    }\n\n    public String getEmail() {\n        return email;\n    }\n\n    @Override\n    public boolean equals(Object other) {\n        if (this == other) return true;\n        if (!(other instanceof User)) return false;\n        User that = (User) other;\n        return id.equals(that.id);\n    }\n\n    @Override\n    public int hashCode() {\n        return id.hashCode();\n    }\n\n    @Override\n    public String toString() {\n        return displayName + \" <\" + email + \">\";\n    }\n}"
+        },
+        {
+          "filename": "Group.java",
+          "language": "java",
+          "content": "import java.util.Collections;\nimport java.util.LinkedHashSet;\nimport java.util.Objects;\nimport java.util.Set;\n\npublic final class Group {\n    private final String id;\n    private final String name;\n    private final Set<User> members = new LinkedHashSet<>();\n    private final BalanceSheet balanceSheet = new BalanceSheet();\n\n    public Group(String id, String name) {\n        this.id = Objects.requireNonNull(id, \"id\");\n        this.name = Objects.requireNonNull(name, \"name\");\n    }\n\n    public synchronized void addMember(User user) {\n        members.add(Objects.requireNonNull(user, \"user\"));\n    }\n\n    public synchronized boolean contains(User user) {\n        return members.contains(user);\n    }\n\n    public synchronized Set<User> getMembers() {\n        return Collections.unmodifiableSet(new LinkedHashSet<>(members));\n    }\n\n    public BalanceSheet getBalanceSheet() {\n        return balanceSheet;\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n}"
+        },
+        {
+          "filename": "Split.java",
+          "language": "java",
+          "content": "import java.math.BigDecimal;\nimport java.math.RoundingMode;\nimport java.util.Objects;\n\npublic abstract class Split {\n    private final User user;\n\n    protected Split(User user) {\n        this.user = Objects.requireNonNull(user, \"user\");\n    }\n\n    public User getUser() {\n        return user;\n    }\n\n    public abstract BigDecimal shareOf(BigDecimal totalAmount, int splitCount);\n\n    public abstract void validate(BigDecimal totalAmount);\n\n    protected BigDecimal money(BigDecimal value) {\n        return value.setScale(2, RoundingMode.HALF_UP);\n    }\n}\n\nfinal class EqualSplit extends Split {\n    public EqualSplit(User user) {\n        super(user);\n    }\n\n    public BigDecimal shareOf(BigDecimal totalAmount, int splitCount) {\n        return totalAmount.divide(BigDecimal.valueOf(splitCount), 2, RoundingMode.HALF_UP);\n    }\n\n    public void validate(BigDecimal totalAmount) {\n        if (totalAmount.signum() <= 0) {\n            throw new IllegalArgumentException(\"Expense amount must be positive\");\n        }\n    }\n}\n\nfinal class ExactSplit extends Split {\n    private final BigDecimal amount;\n\n    public ExactSplit(User user, BigDecimal amount) {\n        super(user);\n        this.amount = money(Objects.requireNonNull(amount, \"amount\"));\n    }\n\n    public BigDecimal shareOf(BigDecimal totalAmount, int splitCount) {\n        return amount;\n    }\n\n    public void validate(BigDecimal totalAmount) {\n        if (amount.signum() < 0 || amount.compareTo(totalAmount) > 0) {\n            throw new IllegalArgumentException(\"Invalid exact split for \" + getUser().getId());\n        }\n    }\n}\n\nfinal class PercentSplit extends Split {\n    private final BigDecimal percent;\n\n    public PercentSplit(User user, BigDecimal percent) {\n        super(user);\n        this.percent = Objects.requireNonNull(percent, \"percent\");\n    }\n\n    public BigDecimal shareOf(BigDecimal totalAmount, int splitCount) {\n        return money(totalAmount.multiply(percent).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP));\n    }\n\n    public void validate(BigDecimal totalAmount) {\n        if (percent.signum() < 0 || percent.compareTo(BigDecimal.valueOf(100)) > 0) {\n            throw new IllegalArgumentException(\"Percent must be between 0 and 100\");\n        }\n    }\n}"
+        },
+        {
+          "filename": "Expense.java",
+          "language": "java",
+          "content": "import java.math.BigDecimal;\nimport java.math.RoundingMode;\nimport java.time.Instant;\nimport java.util.ArrayList;\nimport java.util.Collections;\nimport java.util.List;\nimport java.util.Objects;\n\npublic final class Expense {\n    private final String id;\n    private final User payer;\n    private final BigDecimal amount;\n    private final List<Split> splits;\n    private final Instant createdAt;\n\n    public Expense(String id, User payer, BigDecimal amount, List<Split> splits) {\n        this.id = Objects.requireNonNull(id, \"id\");\n        this.payer = Objects.requireNonNull(payer, \"payer\");\n        this.amount = Objects.requireNonNull(amount, \"amount\").setScale(2, RoundingMode.HALF_UP);\n        this.splits = Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(splits, \"splits\")));\n        this.createdAt = Instant.now();\n        validate();\n    }\n\n    private void validate() {\n        if (amount.signum() <= 0 || splits.isEmpty()) {\n            throw new IllegalArgumentException(\"Expense needs a positive amount and at least one split\");\n        }\n        BigDecimal total = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);\n        for (Split split : splits) {\n            split.validate(amount);\n            total = total.add(split.shareOf(amount, splits.size()));\n        }\n        if (total.compareTo(amount) != 0) {\n            throw new IllegalArgumentException(\"Split total \" + total + \" does not match amount \" + amount);\n        }\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public User getPayer() {\n        return payer;\n    }\n\n    public BigDecimal getAmount() {\n        return amount;\n    }\n\n    public List<Split> getSplits() {\n        return splits;\n    }\n\n    public Instant getCreatedAt() {\n        return createdAt;\n    }\n}"
+        },
+        {
+          "filename": "BalanceSheet.java",
+          "language": "java",
+          "content": "import java.math.BigDecimal;\nimport java.math.RoundingMode;\nimport java.util.Collections;\nimport java.util.HashMap;\nimport java.util.Map;\n\npublic final class BalanceSheet {\n    private final Map<User, BigDecimal> netBalances = new HashMap<>();\n\n    public synchronized void apply(Expense expense) {\n        add(expense.getPayer(), expense.getAmount());\n        for (Split split : expense.getSplits()) {\n            BigDecimal share = split.shareOf(expense.getAmount(), expense.getSplits().size());\n            add(split.getUser(), share.negate());\n        }\n        if (total().compareTo(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)) != 0) {\n            throw new IllegalStateException(\"Net balances must sum to zero\");\n        }\n    }\n\n    public synchronized Map<User, BigDecimal> snapshot() {\n        return Collections.unmodifiableMap(new HashMap<>(netBalances));\n    }\n\n    public synchronized BigDecimal balanceOf(User user) {\n        return netBalances.getOrDefault(user, BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));\n    }\n\n    private void add(User user, BigDecimal delta) {\n        BigDecimal current = netBalances.getOrDefault(user, BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));\n        BigDecimal next = current.add(delta).setScale(2, RoundingMode.HALF_UP);\n        if (next.compareTo(BigDecimal.ZERO) == 0) {\n            netBalances.remove(user);\n        } else {\n            netBalances.put(user, next);\n        }\n    }\n\n    private BigDecimal total() {\n        BigDecimal sum = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);\n        for (BigDecimal balance : netBalances.values()) {\n            sum = sum.add(balance);\n        }\n        return sum.setScale(2, RoundingMode.HALF_UP);\n    }\n}"
+        },
+        {
+          "filename": "ExpenseService.java",
+          "language": "java",
+          "content": "import java.math.BigDecimal;\nimport java.util.ArrayList;\nimport java.util.Collections;\nimport java.util.List;\nimport java.util.Objects;\nimport java.util.UUID;\n\npublic final class ExpenseService {\n    private final Group group;\n    private final List<Expense> expenses = new ArrayList<>();\n\n    public ExpenseService(Group group) {\n        this.group = Objects.requireNonNull(group, \"group\");\n    }\n\n    public synchronized Expense addExpense(User payer, BigDecimal amount, List<Split> splits) {\n        ensureMember(payer);\n        for (Split split : splits) {\n            ensureMember(split.getUser());\n        }\n        Expense expense = new Expense(UUID.randomUUID().toString(), payer, amount, splits);\n        group.getBalanceSheet().apply(expense);\n        expenses.add(expense);\n        return expense;\n    }\n\n    public synchronized List<Expense> history() {\n        return Collections.unmodifiableList(new ArrayList<>(expenses));\n    }\n\n    public BigDecimal balanceOf(User user) {\n        return group.getBalanceSheet().balanceOf(user);\n    }\n\n    public List<Payment> settleUp() {\n        SettlementService settlementService = new SettlementService();\n        return settlementService.simplify(group.getBalanceSheet().snapshot());\n    }\n\n    private void ensureMember(User user) {\n        if (!group.contains(user)) {\n            throw new IllegalArgumentException(\"User is not in group \" + group.getId());\n        }\n    }\n}"
+        },
+        {
+          "filename": "SettlementService.java",
+          "language": "java",
+          "content": "import java.math.BigDecimal;\nimport java.math.RoundingMode;\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Map;\nimport java.util.PriorityQueue;\n\npublic final class SettlementService {\n    public List<Payment> simplify(Map<User, BigDecimal> balances) {\n        PriorityQueue<BalanceNode> creditors = new PriorityQueue<>((a, b) -> b.amount.compareTo(a.amount));\n        PriorityQueue<BalanceNode> debtors = new PriorityQueue<>((a, b) -> b.amount.compareTo(a.amount));\n\n        for (Map.Entry<User, BigDecimal> entry : balances.entrySet()) {\n            int sign = entry.getValue().signum();\n            if (sign > 0) creditors.add(new BalanceNode(entry.getKey(), entry.getValue()));\n            if (sign < 0) debtors.add(new BalanceNode(entry.getKey(), entry.getValue().abs()));\n        }\n\n        List<Payment> payments = new ArrayList<>();\n        while (!creditors.isEmpty() && !debtors.isEmpty()) {\n            BalanceNode creditor = creditors.poll();\n            BalanceNode debtor = debtors.poll();\n            BigDecimal amount = creditor.amount.min(debtor.amount).setScale(2, RoundingMode.HALF_UP);\n            payments.add(new Payment(debtor.user, creditor.user, amount));\n\n            BigDecimal remainingCredit = creditor.amount.subtract(amount);\n            BigDecimal remainingDebt = debtor.amount.subtract(amount);\n            if (remainingCredit.signum() > 0) creditors.add(new BalanceNode(creditor.user, remainingCredit));\n            if (remainingDebt.signum() > 0) debtors.add(new BalanceNode(debtor.user, remainingDebt));\n        }\n        return payments;\n    }\n\n    private static final class BalanceNode {\n        private final User user;\n        private final BigDecimal amount;\n\n        private BalanceNode(User user, BigDecimal amount) {\n            this.user = user;\n            this.amount = amount;\n        }\n    }\n}\n\nfinal class Payment {\n    private final User from;\n    private final User to;\n    private final BigDecimal amount;\n\n    Payment(User from, User to, BigDecimal amount) {\n        this.from = from;\n        this.to = to;\n        this.amount = amount;\n    }\n\n    public String describe() {\n        return from.getDisplayName() + \" pays \" + to.getDisplayName() + \" \" + amount;\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-library-management",
+    "title": "Design a Library Management System",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "domain-modeling",
+      "solid"
+    ],
+    "statementMD": "Design the classes for a library that manages books, members, and lending.\n\n**Requirements**\n- Catalog of books with multiple physical copies.\n- Members can search, borrow, and return copies; enforce borrow limits and due dates.\n- Track availability, reservations, and overdue fines.\n\nFocus on a clean domain model and responsibilities.",
+    "constraints": "A book can have many copies; members have borrow limits and fines for late returns.",
+    "hints": [
+      "Separate the abstract 'Book' (title/author/ISBN) from a physical 'BookCopy'.",
+      "Who owns the borrowing rules and fine calculation?",
+      "How do you model reservations and availability?"
+    ],
+    "referenceSolution": "**Core classes:** `Book` (ISBN, title, authors), `BookCopy` (barcode, status), `Member`, `Librarian`, `Catalog` (search by title/author/subject), `Loan` (copy, member, issue/due dates), `Reservation`, `FineService`, `LibraryService`.\n\n**Design notes:**\n- **Book vs BookCopy** separation is the key modeling insight (one title, many copies).\n- **Catalog/search** with indexes by attribute (Strategy for search criteria).\n- **Lending rules** (max books, loan period) and **fine calculation** encapsulated in services, not entities.\n- **State** on a copy: Available/Loaned/Reserved/Lost.\n- **SOLID:** separate search, lending, and fines; extend with new item types (DVDs, journals) via a shared `LibraryItem` abstraction.\n- Mention concurrency: two members trying to borrow the last copy.",
+    "solution": {
+      "approachMD": "Separate bibliographic data from inventory. Book represents the ISBN, title, authors, and subject, while BookCopy represents one physical or digital copy with a barcode and lifecycle status.\n\nBorrowing is a service-level use case because it needs member limits, copy status, loan creation, reservation rules, and fine checks. The critical section is the selected copy, especially when two members attempt to borrow the last available copy.\n\nCatalog search uses criteria strategies, so title, author, and subject searches share indexing and filtering infrastructure without creating one large search method.",
+      "steps": [
+        {
+          "title": "Separate title metadata from copy state",
+          "detailMD": "Keep Book immutable and allow many BookCopy objects to point to it. This avoids duplicating author and subject data for every barcode.\n\nThe copy owns mutable status. Available, Loaned, Reserved, and Lost are state values that drive which service actions are legal."
+        },
+        {
+          "title": "Implement search criteria as strategies",
+          "detailMD": "Catalog accepts a SearchCriteria object and applies it to stored books. New filters such as publication year or language can be added without editing Catalog search branching.",
+          "code": {
+            "filename": "CatalogSearchExample.java",
+            "language": "java",
+            "content": "interface CatalogSearchExample {\n    boolean matches(Book book);\n}\n\nfinal class AuthorSearchExample implements CatalogSearchExample {\n    private final String token;\n\n    AuthorSearchExample(String token) {\n        this.token = token.toLowerCase();\n    }\n\n    public boolean matches(Book book) {\n        for (String author : book.getAuthors()) {\n            if (author.toLowerCase().contains(token)) {\n                return true;\n            }\n        }\n        return false;\n    }\n}"
+          }
+        },
+        {
+          "title": "Borrow inside a copy-level critical section",
+          "detailMD": "After finding an available copy, synchronize on that copy and check status again. The second check prevents two requests from borrowing the same last copy.\n\nCreate the Loan only after the copy status changes to Loaned. This keeps the inventory and circulation records consistent.",
+          "code": {
+            "filename": "BorrowCriticalSectionExample.java",
+            "language": "java",
+            "content": "final class BorrowCriticalSectionExample {\n    Loan borrow(BookCopy copy, Member member, java.time.LocalDate today) {\n        synchronized (copy) {\n            if (copy.getStatus() != CopyStatus.AVAILABLE) {\n                throw new IllegalStateException(\"Copy is no longer available\");\n            }\n            if (!member.canBorrowMore()) {\n                throw new IllegalStateException(\"Member loan limit reached\");\n            }\n            copy.markLoaned();\n            return new Loan(copy, member, today, today.plusDays(14));\n        }\n    }\n}"
+          }
+        },
+        {
+          "title": "Return, fine, and reservation handling",
+          "detailMD": "Return closes the open loan, calculates overdue fines, and changes copy status based on waiting reservations.\n\nIf reservations exist, mark the copy Reserved and notify the next member. If nobody is waiting, mark it Available."
+        },
+        {
+          "title": "Keep policies replaceable",
+          "detailMD": "Loan duration, maximum open loans, and daily fine amount should be constructor inputs or policy objects rather than constants hidden inside methods.\n\nThis keeps the core design ready for student memberships, premium memberships, or no-fine collections.",
+          "code": {
+            "filename": "FinePolicyExample.java",
+            "language": "java",
+            "content": "final class FinePolicyExample {\n    private final java.math.BigDecimal dailyFine;\n\n    FinePolicyExample(java.math.BigDecimal dailyFine) {\n        this.dailyFine = dailyFine;\n    }\n\n    java.math.BigDecimal calculate(Loan loan, java.time.LocalDate returnedOn) {\n        long overdueDays = java.time.temporal.ChronoUnit.DAYS.between(loan.getDueDate(), returnedOn);\n        if (overdueDays <= 0) {\n            return java.math.BigDecimal.ZERO;\n        }\n        return dailyFine.multiply(java.math.BigDecimal.valueOf(overdueDays));\n    }\n}"
+          }
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Strategy",
+          "why": "Search criteria and fine policies can vary independently from Catalog and LibraryService."
+        },
+        {
+          "name": "State",
+          "why": "BookCopy status controls legal transitions such as borrow, reserve, return, and mark lost."
+        },
+        {
+          "name": "Observer",
+          "why": "Reservation notifications can be sent by pluggable listeners when a copy becomes reservable."
+        }
+      ],
+      "code": [
+        {
+          "filename": "Book.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.Collections;\nimport java.util.List;\nimport java.util.Objects;\n\npublic final class Book {\n    private final String isbn;\n    private final String title;\n    private final List<String> authors;\n    private final String subject;\n\n    public Book(String isbn, String title, List<String> authors, String subject) {\n        if (isbn == null || isbn.trim().isEmpty()) {\n            throw new IllegalArgumentException(\"ISBN is required\");\n        }\n        this.isbn = isbn;\n        this.title = Objects.requireNonNull(title, \"title\");\n        this.authors = Collections.unmodifiableList(new ArrayList<>(Objects.requireNonNull(authors, \"authors\")));\n        this.subject = Objects.requireNonNull(subject, \"subject\");\n    }\n\n    public String getIsbn() {\n        return isbn;\n    }\n\n    public String getTitle() {\n        return title;\n    }\n\n    public List<String> getAuthors() {\n        return authors;\n    }\n\n    public String getSubject() {\n        return subject;\n    }\n}"
+        },
+        {
+          "filename": "BookCopy.java",
+          "language": "java",
+          "content": "import java.util.Objects;\n\npublic final class BookCopy {\n    private final String barcode;\n    private final Book book;\n    private CopyStatus status;\n\n    public BookCopy(String barcode, Book book) {\n        this.barcode = Objects.requireNonNull(barcode, \"barcode\");\n        this.book = Objects.requireNonNull(book, \"book\");\n        this.status = CopyStatus.AVAILABLE;\n    }\n\n    public String getBarcode() {\n        return barcode;\n    }\n\n    public Book getBook() {\n        return book;\n    }\n\n    public synchronized CopyStatus getStatus() {\n        return status;\n    }\n\n    public synchronized void markLoaned() {\n        requireStatus(CopyStatus.AVAILABLE);\n        status = CopyStatus.LOANED;\n    }\n\n    public synchronized void markReserved() {\n        if (status != CopyStatus.AVAILABLE && status != CopyStatus.LOANED) {\n            throw new IllegalStateException(\"Cannot reserve copy in status \" + status);\n        }\n        status = CopyStatus.RESERVED;\n    }\n\n    public synchronized void markAvailable() {\n        if (status == CopyStatus.LOST) {\n            throw new IllegalStateException(\"Lost copies cannot become available directly\");\n        }\n        status = CopyStatus.AVAILABLE;\n    }\n\n    public synchronized void markLost() {\n        status = CopyStatus.LOST;\n    }\n\n    private void requireStatus(CopyStatus expected) {\n        if (status != expected) {\n            throw new IllegalStateException(\"Expected \" + expected + \" but was \" + status);\n        }\n    }\n}\n\nenum CopyStatus {\n    AVAILABLE,\n    LOANED,\n    RESERVED,\n    LOST\n}"
+        },
+        {
+          "filename": "Member.java",
+          "language": "java",
+          "content": "import java.util.Collections;\nimport java.util.HashSet;\nimport java.util.Objects;\nimport java.util.Set;\n\npublic final class Member {\n    private final String id;\n    private final String name;\n    private final int maxOpenLoans;\n    private final Set<Loan> openLoans = new HashSet<>();\n\n    public Member(String id, String name, int maxOpenLoans) {\n        this.id = Objects.requireNonNull(id, \"id\");\n        this.name = Objects.requireNonNull(name, \"name\");\n        this.maxOpenLoans = maxOpenLoans;\n    }\n\n    public synchronized boolean canBorrowMore() {\n        return openLoans.size() < maxOpenLoans;\n    }\n\n    public synchronized void addLoan(Loan loan) {\n        if (!canBorrowMore()) {\n            throw new IllegalStateException(\"Loan limit reached for \" + id);\n        }\n        openLoans.add(loan);\n    }\n\n    public synchronized void closeLoan(Loan loan) {\n        openLoans.remove(loan);\n    }\n\n    public synchronized Set<Loan> getOpenLoans() {\n        return Collections.unmodifiableSet(new HashSet<>(openLoans));\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n}"
+        },
+        {
+          "filename": "Catalog.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.Collections;\nimport java.util.List;\nimport java.util.Locale;\nimport java.util.Optional;\n\npublic final class Catalog {\n    private final List<Book> books = new ArrayList<>();\n    private final List<BookCopy> copies = new ArrayList<>();\n\n    public synchronized void addBook(Book book) {\n        books.add(book);\n    }\n\n    public synchronized void addCopy(BookCopy copy) {\n        copies.add(copy);\n    }\n\n    public synchronized List<Book> search(SearchCriteria criteria) {\n        List<Book> result = new ArrayList<>();\n        for (Book book : books) {\n            if (criteria.matches(book)) {\n                result.add(book);\n            }\n        }\n        return Collections.unmodifiableList(result);\n    }\n\n    public synchronized Optional<BookCopy> findAvailableCopy(String isbn) {\n        for (BookCopy copy : copies) {\n            if (copy.getBook().getIsbn().equals(isbn) && copy.getStatus() == CopyStatus.AVAILABLE) {\n                return Optional.of(copy);\n            }\n        }\n        return Optional.empty();\n    }\n}\n\ninterface SearchCriteria {\n    boolean matches(Book book);\n}\n\nfinal class TitleCriteria implements SearchCriteria {\n    private final String token;\n\n    TitleCriteria(String token) {\n        this.token = token.toLowerCase(Locale.ROOT);\n    }\n\n    public boolean matches(Book book) {\n        return book.getTitle().toLowerCase(Locale.ROOT).contains(token);\n    }\n}\n\nfinal class AuthorCriteria implements SearchCriteria {\n    private final String token;\n\n    AuthorCriteria(String token) {\n        this.token = token.toLowerCase(Locale.ROOT);\n    }\n\n    public boolean matches(Book book) {\n        for (String author : book.getAuthors()) {\n            if (author.toLowerCase(Locale.ROOT).contains(token)) {\n                return true;\n            }\n        }\n        return false;\n    }\n}\n\nfinal class SubjectCriteria implements SearchCriteria {\n    private final String token;\n\n    SubjectCriteria(String token) {\n        this.token = token.toLowerCase(Locale.ROOT);\n    }\n\n    public boolean matches(Book book) {\n        return book.getSubject().toLowerCase(Locale.ROOT).contains(token);\n    }\n}"
+        },
+        {
+          "filename": "Loan.java",
+          "language": "java",
+          "content": "import java.time.LocalDate;\nimport java.util.Objects;\n\npublic final class Loan {\n    private final BookCopy copy;\n    private final Member member;\n    private final LocalDate issueDate;\n    private final LocalDate dueDate;\n    private LocalDate returnedDate;\n\n    public Loan(BookCopy copy, Member member, LocalDate issueDate, LocalDate dueDate) {\n        this.copy = Objects.requireNonNull(copy, \"copy\");\n        this.member = Objects.requireNonNull(member, \"member\");\n        this.issueDate = Objects.requireNonNull(issueDate, \"issueDate\");\n        this.dueDate = Objects.requireNonNull(dueDate, \"dueDate\");\n    }\n\n    public boolean isOpen() {\n        return returnedDate == null;\n    }\n\n    public boolean isOverdue(LocalDate today) {\n        return isOpen() && today.isAfter(dueDate);\n    }\n\n    public void close(LocalDate returnedOn) {\n        if (!isOpen()) {\n            throw new IllegalStateException(\"Loan is already closed\");\n        }\n        returnedDate = returnedOn;\n    }\n\n    public BookCopy getCopy() {\n        return copy;\n    }\n\n    public Member getMember() {\n        return member;\n    }\n\n    public LocalDate getIssueDate() {\n        return issueDate;\n    }\n\n    public LocalDate getDueDate() {\n        return dueDate;\n    }\n}"
+        },
+        {
+          "filename": "Reservation.java",
+          "language": "java",
+          "content": "import java.time.Instant;\nimport java.util.Objects;\n\npublic final class Reservation {\n    private final Book book;\n    private final Member member;\n    private final Instant createdAt;\n    private boolean active = true;\n\n    public Reservation(Book book, Member member) {\n        this.book = Objects.requireNonNull(book, \"book\");\n        this.member = Objects.requireNonNull(member, \"member\");\n        this.createdAt = Instant.now();\n    }\n\n    public Book getBook() {\n        return book;\n    }\n\n    public Member getMember() {\n        return member;\n    }\n\n    public Instant getCreatedAt() {\n        return createdAt;\n    }\n\n    public boolean isActive() {\n        return active;\n    }\n\n    public void fulfill() {\n        if (!active) {\n            throw new IllegalStateException(\"Reservation is no longer active\");\n        }\n        active = false;\n    }\n}\n\ninterface ReservationNotifier {\n    void notifyReady(Member member, BookCopy copy);\n}"
+        },
+        {
+          "filename": "FineService.java",
+          "language": "java",
+          "content": "import java.math.BigDecimal;\nimport java.time.LocalDate;\nimport java.time.temporal.ChronoUnit;\nimport java.util.Objects;\n\npublic final class FineService {\n    private final BigDecimal dailyFine;\n\n    public FineService(BigDecimal dailyFine) {\n        if (dailyFine.signum() < 0) {\n            throw new IllegalArgumentException(\"Daily fine cannot be negative\");\n        }\n        this.dailyFine = Objects.requireNonNull(dailyFine, \"dailyFine\");\n    }\n\n    public BigDecimal calculateFine(Loan loan, LocalDate returnedOn) {\n        long overdueDays = ChronoUnit.DAYS.between(loan.getDueDate(), returnedOn);\n        if (overdueDays <= 0) {\n            return BigDecimal.ZERO;\n        }\n        return dailyFine.multiply(BigDecimal.valueOf(overdueDays));\n    }\n}"
+        },
+        {
+          "filename": "LibraryService.java",
+          "language": "java",
+          "content": "import java.math.BigDecimal;\nimport java.time.LocalDate;\nimport java.util.ArrayDeque;\nimport java.util.HashMap;\nimport java.util.Map;\nimport java.util.Objects;\nimport java.util.Optional;\nimport java.util.Queue;\n\npublic final class LibraryService {\n    private final Catalog catalog;\n    private final FineService fineService;\n    private final ReservationNotifier notifier;\n    private final Map<String, Loan> openLoansByBarcode = new HashMap<>();\n    private final Map<String, Queue<Reservation>> reservationsByIsbn = new HashMap<>();\n\n    public LibraryService(Catalog catalog, FineService fineService, ReservationNotifier notifier) {\n        this.catalog = Objects.requireNonNull(catalog, \"catalog\");\n        this.fineService = Objects.requireNonNull(fineService, \"fineService\");\n        this.notifier = Objects.requireNonNull(notifier, \"notifier\");\n    }\n\n    public Loan borrow(String isbn, Member member, LocalDate today) {\n        Optional<BookCopy> candidate = catalog.findAvailableCopy(isbn);\n        BookCopy copy = candidate.orElseThrow(() -> new IllegalStateException(\"No available copy for \" + isbn));\n        synchronized (copy) {\n            if (copy.getStatus() != CopyStatus.AVAILABLE) {\n                throw new IllegalStateException(\"Copy was borrowed by another request\");\n            }\n            if (!member.canBorrowMore()) {\n                throw new IllegalStateException(\"Member cannot borrow more books\");\n            }\n            copy.markLoaned();\n            Loan loan = new Loan(copy, member, today, today.plusDays(14));\n            synchronized (this) {\n                openLoansByBarcode.put(copy.getBarcode(), loan);\n            }\n            member.addLoan(loan);\n            return loan;\n        }\n    }\n\n    public BigDecimal returnCopy(String barcode, LocalDate returnedOn) {\n        Loan loan;\n        synchronized (this) {\n            loan = openLoansByBarcode.remove(barcode);\n        }\n        if (loan == null) {\n            throw new IllegalArgumentException(\"No open loan for barcode \" + barcode);\n        }\n        loan.close(returnedOn);\n        loan.getMember().closeLoan(loan);\n        BigDecimal fine = fineService.calculateFine(loan, returnedOn);\n        releaseOrReserveNext(loan.getCopy());\n        return fine;\n    }\n\n    public synchronized Reservation reserve(Book book, Member member) {\n        Reservation reservation = new Reservation(book, member);\n        reservationsByIsbn.computeIfAbsent(book.getIsbn(), key -> new ArrayDeque<>()).add(reservation);\n        return reservation;\n    }\n\n    private void releaseOrReserveNext(BookCopy copy) {\n        Queue<Reservation> queue;\n        synchronized (this) {\n            queue = reservationsByIsbn.get(copy.getBook().getIsbn());\n        }\n        Reservation next = queue == null ? null : queue.poll();\n        synchronized (copy) {\n            if (next == null) {\n                copy.markAvailable();\n            } else {\n                next.fulfill();\n                copy.markReserved();\n                notifier.notifyReady(next.getMember(), copy);\n            }\n        }\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-tic-tac-toe",
+    "title": "Design a Tic-Tac-Toe Game",
+    "difficulty": "EASY",
+    "tags": [
+      "ood",
+      "game-design",
+      "state-machine"
+    ],
+    "statementMD": "Design the classes for a two-player Tic-Tac-Toe game (extensible toward an N x N board / Connect-Four style).\n\n**Requirements**\n- Two players alternate placing marks on an N x N board.\n- Detect win (row/column/diagonal), draw, and invalid moves.\n- Cleanly manage turns and game state.\n\nFocus on the class model and win-detection design.",
+    "constraints": "Generalize to an N x N board; efficient win check after each move.",
+    "hints": [
+      "Model Board, Cell, Player, Piece/Mark, and a Game controller.",
+      "How can you check for a win in O(N) after a move instead of scanning the whole board?",
+      "How would you extend this to a larger board or more players?"
+    ],
+    "referenceSolution": "**Core classes:** `Game` (controller, turn management), `Board` (grid of `Cell`), `Cell`, `Player`, `Piece`/`Symbol` enum (X/O), `GameState` enum (InProgress/Win/Draw).\n\n**Design notes:**\n- **Turn management** in `Game`; validate moves (in-bounds, cell empty) before applying.\n- **Efficient win check:** keep per-row, per-column, and two diagonal counters; after a move update the relevant counters and check if any hits N — O(1)/O(N) instead of full scan.\n- **State machine** for game status (InProgress → Win/Draw).\n- **Extensibility/SOLID:** parameterize board size and winning length; a `WinningStrategy` abstraction lets you support Tic-Tac-Toe vs Connect-Four; adding players/pieces stays open/closed.\n- Bonus: pluggable player types (human vs simple AI).",
+    "solution": {
+      "approachMD": "Model the game as a small state machine around a board. The board enforces coordinates and empty-cell rules, while Game owns turn order, move count, and transitions from IN_PROGRESS to WIN or DRAW.\n\nWinning logic is behind a strategy interface. A counting strategy updates row, column, and diagonal counters after each move for constant-time checks when the target is the full board size, and can fall back to directional scanning for shorter target lengths.\n\nThis keeps the design extensible for N by N boards, different winning lengths, bots, replay, or alternate rule sets without changing the controller flow.",
+      "steps": [
+        {
+          "title": "Represent board cells explicitly",
+          "detailMD": "Use Mark.EMPTY for unclaimed cells and reject moves outside the board or on occupied cells.\n\nBoard should expose read operations and a place method, but it should not decide whether the game is over."
+        },
+        {
+          "title": "Inject the winning strategy",
+          "detailMD": "Game receives a WinningStrategy, which lets the same controller work for classic three by three play or larger boards.\n\nThe counter-based strategy receives the last move and updates only the affected row, column, and diagonals.",
+          "code": {
+            "filename": "CounterWinExample.java",
+            "language": "java",
+            "content": "final class CounterWinExample {\n    private final int[] rows;\n    private final int[] cols;\n    private int diagonal;\n    private int antiDiagonal;\n\n    CounterWinExample(int size) {\n        rows = new int[size];\n        cols = new int[size];\n    }\n\n    boolean update(int row, int col, Mark mark) {\n        int value = mark == Mark.X ? 1 : -1;\n        rows[row] += value;\n        cols[col] += value;\n        if (row == col) diagonal += value;\n        if (row + col == rows.length - 1) antiDiagonal += value;\n        return Math.abs(rows[row]) == rows.length\n            || Math.abs(cols[col]) == rows.length\n            || Math.abs(diagonal) == rows.length\n            || Math.abs(antiDiagonal) == rows.length;\n    }\n}"
+          }
+        },
+        {
+          "title": "Keep turn management in Game",
+          "detailMD": "Game checks the current state before every move, places the mark, asks the strategy if the move won, then advances to the next player.\n\nThe next player should not rotate after a winning move, which makes result display easier.",
+          "code": {
+            "filename": "MoveFlowExample.java",
+            "language": "java",
+            "content": "final class MoveFlowExample {\n    private int currentPlayerIndex;\n    private GameState state = GameState.IN_PROGRESS;\n\n    void play(Player[] players, Board board, WinningStrategy strategy, int row, int col) {\n        if (state != GameState.IN_PROGRESS) {\n            throw new IllegalStateException(\"Game already finished\");\n        }\n        Player player = players[currentPlayerIndex];\n        board.place(row, col, player.getMark());\n        if (strategy.isWinningMove(board, row, col, player.getMark())) {\n            state = GameState.WIN;\n            return;\n        }\n        currentPlayerIndex = (currentPlayerIndex + 1) % players.length;\n    }\n}"
+          }
+        },
+        {
+          "title": "Detect draw from move count",
+          "detailMD": "Track successful moves and declare DRAW when the count reaches board size multiplied by board size without a win.\n\nThis avoids scanning the whole board after every non-winning move."
+        },
+        {
+          "title": "Make rule changes local",
+          "detailMD": "If a product later adds five in a row, blocked cells, or misere rules, implement a new WinningStrategy.\n\nThe Game class should still process turns the same way: validate state, place mark, evaluate outcome, then rotate if needed.",
+          "code": {
+            "filename": "StrategySwapExample.java",
+            "language": "java",
+            "content": "final class StrategySwapExample {\n    Game newClassicGame(Player x, Player o) {\n        Board board = new Board(3);\n        WinningStrategy strategy = new CountingWinningStrategy(3, 3);\n        return new Game(board, new Player[] { x, o }, strategy);\n    }\n\n    Game newLargeGame(Player x, Player o) {\n        Board board = new Board(10);\n        WinningStrategy strategy = new CountingWinningStrategy(10, 5);\n        return new Game(board, new Player[] { x, o }, strategy);\n    }\n}"
+          }
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Strategy",
+          "why": "WinningStrategy lets board size and winning length vary without rewriting Game."
+        },
+        {
+          "name": "State machine",
+          "why": "GameState prevents moves after a win or draw and makes transitions explicit."
+        },
+        {
+          "name": "Encapsulation",
+          "why": "Board owns cell mutation rules while Game owns turn and result rules."
+        }
+      ],
+      "code": [
+        {
+          "filename": "Mark.java",
+          "language": "java",
+          "content": "public enum Mark {\n    X(1),\n    O(-1),\n    EMPTY(0);\n\n    private final int score;\n\n    Mark(int score) {\n        this.score = score;\n    }\n\n    public int score() {\n        return score;\n    }\n\n    public boolean isPlayerMark() {\n        return this == X || this == O;\n    }\n}"
+        },
+        {
+          "filename": "Cell.java",
+          "language": "java",
+          "content": "public final class Cell {\n    private final int row;\n    private final int col;\n    private Mark mark = Mark.EMPTY;\n\n    public Cell(int row, int col) {\n        this.row = row;\n        this.col = col;\n    }\n\n    public int getRow() {\n        return row;\n    }\n\n    public int getCol() {\n        return col;\n    }\n\n    public Mark getMark() {\n        return mark;\n    }\n\n    public boolean isEmpty() {\n        return mark == Mark.EMPTY;\n    }\n\n    public void place(Mark nextMark) {\n        if (!isEmpty()) {\n            throw new IllegalStateException(\"Cell is already occupied\");\n        }\n        if (nextMark == Mark.EMPTY) {\n            throw new IllegalArgumentException(\"Cannot place EMPTY\");\n        }\n        mark = nextMark;\n    }\n}"
+        },
+        {
+          "filename": "Board.java",
+          "language": "java",
+          "content": "public final class Board {\n    private final int size;\n    private final Cell[][] cells;\n\n    public Board(int size) {\n        if (size < 3) {\n            throw new IllegalArgumentException(\"Board size must be at least 3\");\n        }\n        this.size = size;\n        this.cells = new Cell[size][size];\n        for (int row = 0; row < size; row++) {\n            for (int col = 0; col < size; col++) {\n                cells[row][col] = new Cell(row, col);\n            }\n        }\n    }\n\n    public int size() {\n        return size;\n    }\n\n    public void place(int row, int col, Mark mark) {\n        validate(row, col);\n        cells[row][col].place(mark);\n    }\n\n    public Mark markAt(int row, int col) {\n        validate(row, col);\n        return cells[row][col].getMark();\n    }\n\n    public boolean isInside(int row, int col) {\n        return row >= 0 && row < size && col >= 0 && col < size;\n    }\n\n    private void validate(int row, int col) {\n        if (!isInside(row, col)) {\n            throw new IndexOutOfBoundsException(\"Move outside board: \" + row + \",\" + col);\n        }\n    }\n}"
+        },
+        {
+          "filename": "Player.java",
+          "language": "java",
+          "content": "import java.util.Objects;\n\npublic final class Player {\n    private final String id;\n    private final String name;\n    private final Mark mark;\n\n    public Player(String id, String name, Mark mark) {\n        if (mark == Mark.EMPTY) {\n            throw new IllegalArgumentException(\"Player needs X or O\");\n        }\n        this.id = Objects.requireNonNull(id, \"id\");\n        this.name = Objects.requireNonNull(name, \"name\");\n        this.mark = Objects.requireNonNull(mark, \"mark\");\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public Mark getMark() {\n        return mark;\n    }\n}"
+        },
+        {
+          "filename": "GameState.java",
+          "language": "java",
+          "content": "public enum GameState {\n    IN_PROGRESS,\n    WIN,\n    DRAW\n}"
+        },
+        {
+          "filename": "WinningStrategy.java",
+          "language": "java",
+          "content": "public interface WinningStrategy {\n    boolean isWinningMove(Board board, int row, int col, Mark mark);\n}\n\nfinal class CountingWinningStrategy implements WinningStrategy {\n    private final int size;\n    private final int target;\n    private final int[] rows;\n    private final int[] cols;\n    private int diagonal;\n    private int antiDiagonal;\n\n    public CountingWinningStrategy(int size, int target) {\n        if (target < 3 || target > size) {\n            throw new IllegalArgumentException(\"Target must be between 3 and board size\");\n        }\n        this.size = size;\n        this.target = target;\n        this.rows = new int[size];\n        this.cols = new int[size];\n    }\n\n    public boolean isWinningMove(Board board, int row, int col, Mark mark) {\n        int value = mark.score();\n        rows[row] += value;\n        cols[col] += value;\n        if (row == col) diagonal += value;\n        if (row + col == size - 1) antiDiagonal += value;\n\n        if (target == size) {\n            return Math.abs(rows[row]) == target\n                || Math.abs(cols[col]) == target\n                || Math.abs(diagonal) == target\n                || Math.abs(antiDiagonal) == target;\n        }\n        return hasRun(board, row, col, mark, 1, 0)\n            || hasRun(board, row, col, mark, 0, 1)\n            || hasRun(board, row, col, mark, 1, 1)\n            || hasRun(board, row, col, mark, 1, -1);\n    }\n\n    private boolean hasRun(Board board, int row, int col, Mark mark, int rowStep, int colStep) {\n        int count = 1;\n        count += countDirection(board, row, col, mark, rowStep, colStep);\n        count += countDirection(board, row, col, mark, -rowStep, -colStep);\n        return count >= target;\n    }\n\n    private int countDirection(Board board, int row, int col, Mark mark, int rowStep, int colStep) {\n        int count = 0;\n        int nextRow = row + rowStep;\n        int nextCol = col + colStep;\n        while (board.isInside(nextRow, nextCol) && board.markAt(nextRow, nextCol) == mark) {\n            count++;\n            nextRow += rowStep;\n            nextCol += colStep;\n        }\n        return count;\n    }\n}"
+        },
+        {
+          "filename": "Game.java",
+          "language": "java",
+          "content": "import java.util.Arrays;\nimport java.util.HashSet;\nimport java.util.Objects;\nimport java.util.Set;\n\npublic final class Game {\n    private final Board board;\n    private final Player[] players;\n    private final WinningStrategy winningStrategy;\n    private int currentPlayerIndex;\n    private int moveCount;\n    private GameState state = GameState.IN_PROGRESS;\n    private Player winner;\n\n    public Game(Board board, Player[] players, WinningStrategy winningStrategy) {\n        if (players.length != 2) {\n            throw new IllegalArgumentException(\"Tic tac toe needs two players\");\n        }\n        ensureDistinctMarks(players);\n        this.board = Objects.requireNonNull(board, \"board\");\n        this.players = Arrays.copyOf(players, players.length);\n        this.winningStrategy = Objects.requireNonNull(winningStrategy, \"winningStrategy\");\n    }\n\n    public synchronized GameState play(int row, int col) {\n        if (state != GameState.IN_PROGRESS) {\n            throw new IllegalStateException(\"Game is already complete\");\n        }\n        Player current = players[currentPlayerIndex];\n        board.place(row, col, current.getMark());\n        moveCount++;\n\n        if (winningStrategy.isWinningMove(board, row, col, current.getMark())) {\n            winner = current;\n            state = GameState.WIN;\n        } else if (moveCount == board.size() * board.size()) {\n            state = GameState.DRAW;\n        } else {\n            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;\n        }\n        return state;\n    }\n\n    public Player currentPlayer() {\n        return players[currentPlayerIndex];\n    }\n\n    public GameState getState() {\n        return state;\n    }\n\n    public Player getWinner() {\n        return winner;\n    }\n\n    private void ensureDistinctMarks(Player[] players) {\n        Set<Mark> marks = new HashSet<>();\n        for (Player player : players) {\n            if (!marks.add(player.getMark())) {\n                throw new IllegalArgumentException(\"Players must use different marks\");\n            }\n        }\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-logging-framework",
+    "title": "Design a Logging Framework",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "chain-of-responsibility",
+      "strategy",
+      "singleton"
+    ],
+    "statementMD": "Build a configurable logging framework that routes messages by severity and writes formatted output to one or more destinations.\n\n**Requirements**\n- Support log levels ordered as DEBUG < INFO < WARN < ERROR.\n- Provide a Logger with a configurable minimum level.\n- Allow multiple Appenders such as Console and File to be attached.\n- Use a pluggable Formatter for message layout.\n- Route each message through a chain of level-based handlers that accepts the matching level.\n- Provide a thread-safe singleton LogManager for obtaining named loggers.\n\nFocus on separating routing, formatting, output, and logger lookup so each concern can evolve independently.",
+    "constraints": "Assume an in-process library with many application threads, modest log volume, and no need for external log shipping.",
+    "hints": [
+      "Model the log event first.",
+      "Separate filtering from output.",
+      "Keep singleton state thread safe."
+    ],
+    "referenceSolution": "**Core classes:** LogLevel orders severities; LogMessage carries level, logger name, timestamp, and text; Formatter and Appender abstractions isolate layout and destinations; LogHandler chains level routing; Logger and LogManager expose the API. **Design notes:** Keep LogManager as a static-holder singleton with a concurrent map of named loggers. Compose each Logger with a minimum level, formatter, appender list, and handler chain. Let each handler either publish the message or pass it onward so adding a new level or destination does not disturb client code.",
+    "solution": {
+      "approachMD": "Start by treating every call as an immutable LogMessage. The Logger should only decide whether the level passes its configured minimum and then delegate routing.\n\nUse Chain of Responsibility for level routing: each handler accepts one severity and forwards the rest. Use Strategy for both formatting and appending because layouts and destinations change more often than the logger API.\n\nMake LogManager the only global object. It owns named Logger instances in a concurrent map, while each Logger owns thread-safe appender configuration.",
+      "steps": [
+        {
+          "title": "Define severity and message data",
+          "detailMD": "Give every level an ordering value and keep the log event immutable. This makes minimum-level filtering cheap and keeps appenders from mutating shared data.",
+          "code": {
+            "filename": "LogLevel.java",
+            "language": "java",
+            "content": "public enum LogLevel {\n    DEBUG(10),\n    INFO(20),\n    WARN(30),\n    ERROR(40);\n\n    private final int severity;\n\n    LogLevel(int severity) {\n        this.severity = severity;\n    }\n\n    public boolean isAtLeast(LogLevel minimum) {\n        return severity >= minimum.severity;\n    }\n}"
+          }
+        },
+        {
+          "title": "Make layout and output pluggable",
+          "detailMD": "Formatter and Appender are strategies. A Logger can reuse the same routing pipeline while changing how text is rendered or where it is written.",
+          "code": {
+            "filename": "Appender.java",
+            "language": "java",
+            "content": "public interface Appender {\n    void append(String formattedMessage);\n}"
+          }
+        },
+        {
+          "title": "Route by level through handlers",
+          "detailMD": "The handler chain keeps the level dispatch logic out of Logger. Each handler checks whether it owns the message level and otherwise forwards to the next handler.",
+          "code": {
+            "filename": "LogHandler.java",
+            "language": "java",
+            "content": "public abstract class LogHandler {\n    private LogHandler next;\n\n    public LogHandler linkWith(LogHandler next) {\n        this.next = next;\n        return next;\n    }\n\n    public final void handle(LogMessage message, Logger logger) {\n        if (canHandle(message.getLevel())) {\n            logger.publish(message);\n            return;\n        }\n        if (next != null) {\n            next.handle(message, logger);\n        }\n    }\n\n    protected abstract boolean canHandle(LogLevel level);\n}"
+          }
+        },
+        {
+          "title": "Compose the Logger",
+          "detailMD": "Logger combines minimum-level filtering, handler routing, formatting, and appenders. A copy-on-write appender list allows safe reads while configuration changes are rare."
+        },
+        {
+          "title": "Centralize lookup in LogManager",
+          "detailMD": "Use the initialization-on-demand holder idiom for a lazy thread-safe singleton and a ConcurrentHashMap for named logger reuse."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Chain of Responsibility",
+          "why": "Level handlers form a pipeline where each handler either accepts a message or passes it onward."
+        },
+        {
+          "name": "Strategy",
+          "why": "Formatter and Appender implementations can be swapped without changing Logger."
+        },
+        {
+          "name": "Singleton",
+          "why": "LogManager provides one shared registry of named loggers across the process."
+        }
+      ],
+      "code": [
+        {
+          "filename": "LogLevel.java",
+          "language": "java",
+          "content": "public enum LogLevel {\n    DEBUG(10),\n    INFO(20),\n    WARN(30),\n    ERROR(40);\n\n    private final int severity;\n\n    LogLevel(int severity) {\n        this.severity = severity;\n    }\n\n    public boolean isAtLeast(LogLevel minimum) {\n        return severity >= minimum.severity;\n    }\n}"
+        },
+        {
+          "filename": "LogMessage.java",
+          "language": "java",
+          "content": "import java.time.Instant;\n\npublic final class LogMessage {\n    private final String loggerName;\n    private final LogLevel level;\n    private final String text;\n    private final Instant createdAt;\n\n    private LogMessage(String loggerName, LogLevel level, String text, Instant createdAt) {\n        this.loggerName = loggerName;\n        this.level = level;\n        this.text = text;\n        this.createdAt = createdAt;\n    }\n\n    public static LogMessage create(String loggerName, LogLevel level, String text) {\n        return new LogMessage(loggerName, level, text, Instant.now());\n    }\n\n    public String getLoggerName() {\n        return loggerName;\n    }\n\n    public LogLevel getLevel() {\n        return level;\n    }\n\n    public String getText() {\n        return text;\n    }\n\n    public Instant getCreatedAt() {\n        return createdAt;\n    }\n}"
+        },
+        {
+          "filename": "Formatter.java",
+          "language": "java",
+          "content": "public interface Formatter {\n    String format(LogMessage message);\n}"
+        },
+        {
+          "filename": "SimpleFormatter.java",
+          "language": "java",
+          "content": "import java.time.ZoneId;\nimport java.time.format.DateTimeFormatter;\n\npublic final class SimpleFormatter implements Formatter {\n    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME\n        .withZone(ZoneId.systemDefault());\n\n    @Override\n    public String format(LogMessage message) {\n        return formatter.format(message.getCreatedAt())\n            + \" \" + message.getLevel().name()\n            + \" [\" + message.getLoggerName() + \"] \"\n            + message.getText();\n    }\n}"
+        },
+        {
+          "filename": "Appender.java",
+          "language": "java",
+          "content": "public interface Appender {\n    void append(String formattedMessage);\n}"
+        },
+        {
+          "filename": "ConsoleAppender.java",
+          "language": "java",
+          "content": "public final class ConsoleAppender implements Appender {\n    @Override\n    public void append(String formattedMessage) {\n        System.out.println(formattedMessage);\n    }\n}"
+        },
+        {
+          "filename": "FileAppender.java",
+          "language": "java",
+          "content": "import java.io.IOException;\nimport java.nio.charset.StandardCharsets;\nimport java.nio.file.Files;\nimport java.nio.file.Path;\nimport java.nio.file.StandardOpenOption;\n\npublic final class FileAppender implements Appender {\n    private final Path path;\n\n    public FileAppender(Path path) {\n        this.path = path;\n    }\n\n    @Override\n    public synchronized void append(String formattedMessage) {\n        try {\n            Files.write(\n                path,\n                (formattedMessage + System.lineSeparator()).getBytes(StandardCharsets.UTF_8),\n                StandardOpenOption.CREATE,\n                StandardOpenOption.APPEND\n            );\n        } catch (IOException error) {\n            throw new IllegalStateException(\"Could not write log file\", error);\n        }\n    }\n}"
+        },
+        {
+          "filename": "LogHandler.java",
+          "language": "java",
+          "content": "public abstract class LogHandler {\n    private LogHandler next;\n\n    public LogHandler linkWith(LogHandler next) {\n        this.next = next;\n        return next;\n    }\n\n    public final void handle(LogMessage message, Logger logger) {\n        if (canHandle(message.getLevel())) {\n            logger.publish(message);\n            return;\n        }\n        if (next != null) {\n            next.handle(message, logger);\n        }\n    }\n\n    protected abstract boolean canHandle(LogLevel level);\n}"
+        },
+        {
+          "filename": "LevelLogHandler.java",
+          "language": "java",
+          "content": "public final class LevelLogHandler extends LogHandler {\n    private final LogLevel handledLevel;\n\n    public LevelLogHandler(LogLevel handledLevel) {\n        this.handledLevel = handledLevel;\n    }\n\n    public static LogHandler defaultChain() {\n        LogHandler debug = new LevelLogHandler(LogLevel.DEBUG);\n        debug.linkWith(new LevelLogHandler(LogLevel.INFO))\n            .linkWith(new LevelLogHandler(LogLevel.WARN))\n            .linkWith(new LevelLogHandler(LogLevel.ERROR));\n        return debug;\n    }\n\n    @Override\n    protected boolean canHandle(LogLevel level) {\n        return handledLevel == level;\n    }\n}"
+        },
+        {
+          "filename": "Logger.java",
+          "language": "java",
+          "content": "import java.util.List;\nimport java.util.concurrent.CopyOnWriteArrayList;\n\npublic final class Logger {\n    private final String name;\n    private final List<Appender> appenders = new CopyOnWriteArrayList<>();\n    private final LogHandler handlerChain;\n    private volatile LogLevel minimumLevel = LogLevel.INFO;\n    private volatile Formatter formatter = new SimpleFormatter();\n\n    Logger(String name) {\n        this.name = name;\n        this.handlerChain = LevelLogHandler.defaultChain();\n        appenders.add(new ConsoleAppender());\n    }\n\n    public void setMinimumLevel(LogLevel minimumLevel) {\n        this.minimumLevel = minimumLevel;\n    }\n\n    public void setFormatter(Formatter formatter) {\n        this.formatter = formatter;\n    }\n\n    public void addAppender(Appender appender) {\n        appenders.add(appender);\n    }\n\n    public void log(LogLevel level, String text) {\n        if (!level.isAtLeast(minimumLevel)) {\n            return;\n        }\n        handlerChain.handle(LogMessage.create(name, level, text), this);\n    }\n\n    void publish(LogMessage message) {\n        String rendered = formatter.format(message);\n        for (Appender appender : appenders) {\n            appender.append(rendered);\n        }\n    }\n\n    public void debug(String text) {\n        log(LogLevel.DEBUG, text);\n    }\n\n    public void info(String text) {\n        log(LogLevel.INFO, text);\n    }\n\n    public void warn(String text) {\n        log(LogLevel.WARN, text);\n    }\n\n    public void error(String text) {\n        log(LogLevel.ERROR, text);\n    }\n}"
+        },
+        {
+          "filename": "LogManager.java",
+          "language": "java",
+          "content": "import java.util.concurrent.ConcurrentHashMap;\nimport java.util.concurrent.ConcurrentMap;\n\npublic final class LogManager {\n    private final ConcurrentMap<String, Logger> loggers = new ConcurrentHashMap<>();\n\n    private LogManager() {\n    }\n\n    private static final class Holder {\n        private static final LogManager INSTANCE = new LogManager();\n    }\n\n    public static LogManager getInstance() {\n        return Holder.INSTANCE;\n    }\n\n    public Logger getLogger(String name) {\n        return loggers.computeIfAbsent(name, Logger::new);\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-rate-limiter",
+    "title": "Design a Rate Limiter",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "strategy",
+      "concurrency",
+      "token-bucket"
+    ],
+    "statementMD": "Design a reusable rate limiter that decides whether each client request should be allowed or rejected.\n\n**Requirements**\n- Decide allow or deny for a request identified by a client key.\n- Support Token Bucket and Sliding Window Log algorithms through a Strategy interface.\n- Keep request decisions thread safe.\n- Support configurable capacity, refill rate, request window, and max requests.\n- Maintain independent state per client.\n- Provide a factory for choosing the algorithm.\n\nFocus on isolating the rate-limiting algorithm from client code while protecting per-client mutable state.",
+    "constraints": "Assume all decisions are made in memory on one service instance and client state may be created lazily.",
+    "hints": [
+      "Store state per client key.",
+      "Lock the smallest state object.",
+      "Hide algorithm selection in a factory."
+    ],
+    "referenceSolution": "**Core classes:** RateLimiter defines allowRequest; TokenBucketRateLimiter and SlidingWindowRateLimiter implement separate algorithms; TokenBucket holds per-client token state; RateLimitConfig stores tuning knobs; RateLimiterFactory selects the strategy. **Design notes:** Use ConcurrentHashMap for lazy client state and synchronize on each client bucket or request deque instead of locking the whole limiter. Token Bucket handles bursts up to capacity while refilling over time. Sliding Window Log keeps exact recent timestamps and is simple but can use more memory under heavy traffic.",
+    "solution": {
+      "approachMD": "Keep the public API tiny: a caller only asks whether a client request is allowed. Everything else is algorithm configuration and per-client state.\n\nUse Strategy for the algorithm because Token Bucket and Sliding Window Log make different tradeoffs. Both implementations can share the same RateLimiter interface and be created by a factory.\n\nFor concurrency, use a concurrent map to find client state and then synchronize only that state. This allows different clients to be evaluated in parallel.",
+      "steps": [
+        {
+          "title": "Define the stable interface",
+          "detailMD": "The service layer should not care which rate-limiting algorithm is active. A single boolean method keeps integration simple.",
+          "code": {
+            "filename": "RateLimiter.java",
+            "language": "java",
+            "content": "public interface RateLimiter {\n    boolean allowRequest(String clientId);\n}"
+          }
+        },
+        {
+          "title": "Capture configuration once",
+          "detailMD": "Store capacities, refill rate, window size, and request limit in a small immutable object so every strategy receives validated inputs."
+        },
+        {
+          "title": "Implement Token Bucket",
+          "detailMD": "Each client owns a bucket. Refill is computed from elapsed time, then a request consumes one token only if a token is available.",
+          "code": {
+            "filename": "TokenBucket.java",
+            "language": "java",
+            "content": "public final class TokenBucket {\n    private final int capacity;\n    private final double refillPerSecond;\n    private double tokens;\n    private long lastRefillNanos;\n\n    public TokenBucket(int capacity, double refillPerSecond) {\n        this.capacity = capacity;\n        this.refillPerSecond = refillPerSecond;\n        this.tokens = capacity;\n        this.lastRefillNanos = System.nanoTime();\n    }\n\n    public synchronized boolean tryConsume() {\n        refill();\n        if (tokens < 1.0) {\n            return false;\n        }\n        tokens -= 1.0;\n        return true;\n    }\n\n    private void refill() {\n        long now = System.nanoTime();\n        double seconds = (now - lastRefillNanos) / 1_000_000_000.0;\n        tokens = Math.min(capacity, tokens + seconds * refillPerSecond);\n        lastRefillNanos = now;\n    }\n}"
+          }
+        },
+        {
+          "title": "Implement Sliding Window Log",
+          "detailMD": "For exact windows, keep recent timestamps per client. Remove expired entries before testing the limit and appending the current timestamp.",
+          "code": {
+            "filename": "SlidingWindowRateLimiter.java",
+            "language": "java",
+            "content": "import java.util.ArrayDeque;\nimport java.util.Deque;\nimport java.util.concurrent.ConcurrentHashMap;\nimport java.util.concurrent.ConcurrentMap;\n\npublic final class SlidingWindowRateLimiter implements RateLimiter {\n    private final RateLimitConfig config;\n    private final ConcurrentMap<String, Deque<Long>> requests = new ConcurrentHashMap<>();\n\n    public SlidingWindowRateLimiter(RateLimitConfig config) {\n        this.config = config;\n    }\n\n    @Override\n    public boolean allowRequest(String clientId) {\n        long now = System.currentTimeMillis();\n        Deque<Long> clientLog = requests.computeIfAbsent(clientId, key -> new ArrayDeque<>());\n        synchronized (clientLog) {\n            long cutoff = now - config.getWindowMillis();\n            while (!clientLog.isEmpty() && clientLog.peekFirst() <= cutoff) {\n                clientLog.removeFirst();\n            }\n            if (clientLog.size() >= config.getMaxRequests()) {\n                return false;\n            }\n            clientLog.addLast(now);\n            return true;\n        }\n    }\n}"
+          }
+        },
+        {
+          "title": "Select algorithms through a factory",
+          "detailMD": "A factory keeps construction logic out of callers and makes it easy to switch algorithms from configuration."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Strategy",
+          "why": "Each algorithm implements the same RateLimiter interface and can be selected without changing callers."
+        },
+        {
+          "name": "Factory",
+          "why": "RateLimiterFactory centralizes algorithm selection and construction."
+        },
+        {
+          "name": "Per-client monitor",
+          "why": "Synchronizing on a bucket or deque protects mutable state while allowing different clients to proceed concurrently."
+        }
+      ],
+      "code": [
+        {
+          "filename": "RateLimiter.java",
+          "language": "java",
+          "content": "public interface RateLimiter {\n    boolean allowRequest(String clientId);\n}"
+        },
+        {
+          "filename": "RateLimitConfig.java",
+          "language": "java",
+          "content": "public final class RateLimitConfig {\n    private final int capacity;\n    private final double refillPerSecond;\n    private final long windowMillis;\n    private final int maxRequests;\n\n    public RateLimitConfig(int capacity, double refillPerSecond, long windowMillis, int maxRequests) {\n        if (capacity <= 0 || refillPerSecond <= 0 || windowMillis <= 0 || maxRequests <= 0) {\n            throw new IllegalArgumentException(\"Rate limit values must be positive\");\n        }\n        this.capacity = capacity;\n        this.refillPerSecond = refillPerSecond;\n        this.windowMillis = windowMillis;\n        this.maxRequests = maxRequests;\n    }\n\n    public int getCapacity() {\n        return capacity;\n    }\n\n    public double getRefillPerSecond() {\n        return refillPerSecond;\n    }\n\n    public long getWindowMillis() {\n        return windowMillis;\n    }\n\n    public int getMaxRequests() {\n        return maxRequests;\n    }\n}"
+        },
+        {
+          "filename": "TokenBucket.java",
+          "language": "java",
+          "content": "public final class TokenBucket {\n    private final int capacity;\n    private final double refillPerSecond;\n    private double tokens;\n    private long lastRefillNanos;\n\n    public TokenBucket(int capacity, double refillPerSecond) {\n        this.capacity = capacity;\n        this.refillPerSecond = refillPerSecond;\n        this.tokens = capacity;\n        this.lastRefillNanos = System.nanoTime();\n    }\n\n    public synchronized boolean tryConsume() {\n        refill();\n        if (tokens < 1.0) {\n            return false;\n        }\n        tokens -= 1.0;\n        return true;\n    }\n\n    private void refill() {\n        long now = System.nanoTime();\n        double seconds = (now - lastRefillNanos) / 1_000_000_000.0;\n        tokens = Math.min(capacity, tokens + seconds * refillPerSecond);\n        lastRefillNanos = now;\n    }\n}"
+        },
+        {
+          "filename": "TokenBucketRateLimiter.java",
+          "language": "java",
+          "content": "import java.util.concurrent.ConcurrentHashMap;\nimport java.util.concurrent.ConcurrentMap;\n\npublic final class TokenBucketRateLimiter implements RateLimiter {\n    private final RateLimitConfig config;\n    private final ConcurrentMap<String, TokenBucket> buckets = new ConcurrentHashMap<>();\n\n    public TokenBucketRateLimiter(RateLimitConfig config) {\n        this.config = config;\n    }\n\n    @Override\n    public boolean allowRequest(String clientId) {\n        TokenBucket bucket = buckets.computeIfAbsent(\n            clientId,\n            key -> new TokenBucket(config.getCapacity(), config.getRefillPerSecond())\n        );\n        return bucket.tryConsume();\n    }\n}"
+        },
+        {
+          "filename": "SlidingWindowRateLimiter.java",
+          "language": "java",
+          "content": "import java.util.ArrayDeque;\nimport java.util.Deque;\nimport java.util.concurrent.ConcurrentHashMap;\nimport java.util.concurrent.ConcurrentMap;\n\npublic final class SlidingWindowRateLimiter implements RateLimiter {\n    private final RateLimitConfig config;\n    private final ConcurrentMap<String, Deque<Long>> requests = new ConcurrentHashMap<>();\n\n    public SlidingWindowRateLimiter(RateLimitConfig config) {\n        this.config = config;\n    }\n\n    @Override\n    public boolean allowRequest(String clientId) {\n        long now = System.currentTimeMillis();\n        Deque<Long> clientLog = requests.computeIfAbsent(clientId, key -> new ArrayDeque<>());\n        synchronized (clientLog) {\n            long cutoff = now - config.getWindowMillis();\n            while (!clientLog.isEmpty() && clientLog.peekFirst() <= cutoff) {\n                clientLog.removeFirst();\n            }\n            if (clientLog.size() >= config.getMaxRequests()) {\n                return false;\n            }\n            clientLog.addLast(now);\n            return true;\n        }\n    }\n}"
+        },
+        {
+          "filename": "RateLimiterFactory.java",
+          "language": "java",
+          "content": "public final class RateLimiterFactory {\n    public enum Algorithm {\n        TOKEN_BUCKET,\n        SLIDING_WINDOW_LOG\n    }\n\n    private RateLimiterFactory() {\n    }\n\n    public static RateLimiter create(Algorithm algorithm, RateLimitConfig config) {\n        switch (algorithm) {\n            case TOKEN_BUCKET:\n                return new TokenBucketRateLimiter(config);\n            case SLIDING_WINDOW_LOG:\n                return new SlidingWindowRateLimiter(config);\n            default:\n                throw new IllegalArgumentException(\"Unknown algorithm: \" + algorithm);\n        }\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-chess",
+    "title": "Design a Chess Game",
+    "difficulty": "HARD",
+    "tags": [
+      "ood",
+      "game-design",
+      "strategy",
+      "state-machine"
+    ],
+    "statementMD": "Design the object model and controller for a chess game played by two alternating players on an 8x8 board.\n\n**Requirements**\n- Represent an 8x8 board with addressable squares.\n- Model pieces with per-type movement rules for King, Queen, Rook, Bishop, Knight, and Pawn using polymorphism.\n- Alternate turns between two players.\n- Validate moves before applying them.\n- Detect check, checkmate, and stalemate at a high level.\n- Track game status throughout play.\n\nFocus on clean game-state transitions and extensible movement rules rather than every tournament edge case.",
+    "constraints": "Ignore UI, clocks, persistence, castling, en passant, and promotion details, but leave clear extension points for them.",
+    "hints": [
+      "Let pieces own movement rules.",
+      "Keep Board free of turn logic.",
+      "Treat status as a state machine."
+    ],
+    "referenceSolution": "**Core classes:** Color and GameStatus are enums; Square identifies board coordinates; Board owns piece placement; Piece is an abstract base for King, Queen, Rook, Bishop, Knight, and Pawn; Move and Player carry interaction data; Game coordinates turns and status. **Design notes:** Use polymorphism as the movement strategy so adding a piece variant does not change the controller. Game validates ownership, legal movement, and self-check before mutating the board. Checkmate and stalemate can be detected by combining king-in-check detection with a search for any legal move.",
+    "solution": {
+      "approachMD": "Keep the Board responsible only for squares and pieces. It should answer occupancy, path-clear, copy, and move operations, but it should not know whose turn it is.\n\nPut movement rules in Piece subclasses. This keeps Game from becoming a large switch statement and lets each piece express only its geometry and capture rules.\n\nMake Game the state machine. It validates the active player's move, prevents self-check, applies the move, evaluates checkmate or stalemate, and advances the turn only when the game remains active.",
+      "steps": [
+        {
+          "title": "Represent board coordinates",
+          "detailMD": "Square is an immutable value object. Board uses it to guard bounds, locate pieces, and move pieces without knowing turn order.",
+          "code": {
+            "filename": "Square.java",
+            "language": "java",
+            "content": "public final class Square {\n    private final int row;\n    private final int col;\n\n    public Square(int row, int col) {\n        this.row = row;\n        this.col = col;\n    }\n\n    public int getRow() {\n        return row;\n    }\n\n    public int getCol() {\n        return col;\n    }\n}"
+          }
+        },
+        {
+          "title": "Move rules live in pieces",
+          "detailMD": "The abstract Piece type defines the common color and target helpers. Subclasses implement their own movement geometry.",
+          "code": {
+            "filename": "Piece.java",
+            "language": "java",
+            "content": "public abstract class Piece {\n    private final Color color;\n\n    protected Piece(Color color) {\n        this.color = color;\n    }\n\n    public Color getColor() {\n        return color;\n    }\n\n    protected boolean canCaptureOrMoveTo(Board board, Square to) {\n        Piece target = board.get(to);\n        return target == null || target.getColor() != color;\n    }\n\n    public abstract boolean canMove(Board board, Square from, Square to);\n}"
+          }
+        },
+        {
+          "title": "Validate before mutating",
+          "detailMD": "Game checks status, source ownership, piece movement, and self-check on a copied board. The real board changes only after all validations pass.",
+          "code": {
+            "filename": "Game.java",
+            "language": "java",
+            "content": "public void move(Move move) {\n    if (status != GameStatus.ACTIVE) {\n        throw new IllegalStateException(\"Game is not active\");\n    }\n    Piece piece = board.get(move.getFrom());\n    if (piece == null || piece.getColor() != turn) {\n        throw new IllegalArgumentException(\"No current-player piece at source\");\n    }\n    if (!piece.canMove(board, move.getFrom(), move.getTo())) {\n        throw new IllegalArgumentException(\"Illegal movement for piece\");\n    }\n    Board candidate = board.copy();\n    candidate.moveUnchecked(move.getFrom(), move.getTo());\n    if (isKingInCheck(candidate, turn)) {\n        throw new IllegalArgumentException(\"Move leaves king in check\");\n    }\n    board.moveUnchecked(move.getFrom(), move.getTo());\n    Color next = turn.opposite();\n    updateStatus(next);\n    if (status == GameStatus.ACTIVE) {\n        turn = next;\n    }\n}"
+          }
+        },
+        {
+          "title": "Evaluate check and terminal states",
+          "detailMD": "Check is found by locating the king and asking every opposing piece whether it can attack that square. Checkmate and stalemate additionally require that no legal move exists."
+        },
+        {
+          "title": "Keep special rules as extensions",
+          "detailMD": "Castling, promotion, draw counters, and en passant can be added as extra validators or move effects without changing the Board and Piece responsibilities."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Strategy through polymorphism",
+          "why": "Each Piece subclass implements its own movement rule behind the same canMove method."
+        },
+        {
+          "name": "State machine",
+          "why": "GameStatus tracks ACTIVE, CHECKMATE, STALEMATE, and winner states as transitions after each valid move."
+        },
+        {
+          "name": "Controller",
+          "why": "Game coordinates validation and turn changes while Board remains a storage model."
+        }
+      ],
+      "code": [
+        {
+          "filename": "Color.java",
+          "language": "java",
+          "content": "public enum Color {\n    WHITE,\n    BLACK;\n\n    public Color opposite() {\n        return this == WHITE ? BLACK : WHITE;\n    }\n}"
+        },
+        {
+          "filename": "Square.java",
+          "language": "java",
+          "content": "public final class Square {\n    private final int row;\n    private final int col;\n\n    public Square(int row, int col) {\n        this.row = row;\n        this.col = col;\n    }\n\n    public int getRow() {\n        return row;\n    }\n\n    public int getCol() {\n        return col;\n    }\n\n    @Override\n    public boolean equals(Object other) {\n        if (this == other) {\n            return true;\n        }\n        if (!(other instanceof Square)) {\n            return false;\n        }\n        Square square = (Square) other;\n        return row == square.row && col == square.col;\n    }\n\n    @Override\n    public int hashCode() {\n        return 31 * row + col;\n    }\n}"
+        },
+        {
+          "filename": "Board.java",
+          "language": "java",
+          "content": "import java.util.ArrayList;\nimport java.util.List;\n\npublic final class Board {\n    private final Piece[][] pieces = new Piece[8][8];\n\n    public boolean isInside(Square square) {\n        return square.getRow() >= 0 && square.getRow() < 8\n            && square.getCol() >= 0 && square.getCol() < 8;\n    }\n\n    public Piece get(Square square) {\n        if (!isInside(square)) {\n            return null;\n        }\n        return pieces[square.getRow()][square.getCol()];\n    }\n\n    public void place(Piece piece, Square square) {\n        if (!isInside(square)) {\n            throw new IllegalArgumentException(\"Square is outside the board\");\n        }\n        pieces[square.getRow()][square.getCol()] = piece;\n    }\n\n    public void moveUnchecked(Square from, Square to) {\n        Piece piece = get(from);\n        place(piece, to);\n        pieces[from.getRow()][from.getCol()] = null;\n    }\n\n    public boolean isPathClear(Square from, Square to) {\n        int rowStep = Integer.compare(to.getRow(), from.getRow());\n        int colStep = Integer.compare(to.getCol(), from.getCol());\n        int row = from.getRow() + rowStep;\n        int col = from.getCol() + colStep;\n        while (row != to.getRow() || col != to.getCol()) {\n            if (pieces[row][col] != null) {\n                return false;\n            }\n            row += rowStep;\n            col += colStep;\n        }\n        return true;\n    }\n\n    public List<Square> occupiedSquares() {\n        List<Square> squares = new ArrayList<>();\n        for (int row = 0; row < 8; row++) {\n            for (int col = 0; col < 8; col++) {\n                if (pieces[row][col] != null) {\n                    squares.add(new Square(row, col));\n                }\n            }\n        }\n        return squares;\n    }\n\n    public Board copy() {\n        Board copy = new Board();\n        for (int row = 0; row < 8; row++) {\n            for (int col = 0; col < 8; col++) {\n                copy.pieces[row][col] = pieces[row][col];\n            }\n        }\n        return copy;\n    }\n\n    public void setupStartingPosition() {\n        for (int col = 0; col < 8; col++) {\n            place(new Pawn(Color.BLACK), new Square(1, col));\n            place(new Pawn(Color.WHITE), new Square(6, col));\n        }\n        placeBackRank(Color.BLACK, 0);\n        placeBackRank(Color.WHITE, 7);\n    }\n\n    private void placeBackRank(Color color, int row) {\n        place(new Rook(color), new Square(row, 0));\n        place(new Knight(color), new Square(row, 1));\n        place(new Bishop(color), new Square(row, 2));\n        place(new Queen(color), new Square(row, 3));\n        place(new King(color), new Square(row, 4));\n        place(new Bishop(color), new Square(row, 5));\n        place(new Knight(color), new Square(row, 6));\n        place(new Rook(color), new Square(row, 7));\n    }\n}"
+        },
+        {
+          "filename": "Piece.java",
+          "language": "java",
+          "content": "public abstract class Piece {\n    private final Color color;\n\n    protected Piece(Color color) {\n        this.color = color;\n    }\n\n    public Color getColor() {\n        return color;\n    }\n\n    protected boolean canCaptureOrMoveTo(Board board, Square to) {\n        Piece target = board.get(to);\n        return target == null || target.getColor() != color;\n    }\n\n    public abstract boolean canMove(Board board, Square from, Square to);\n}"
+        },
+        {
+          "filename": "King.java",
+          "language": "java",
+          "content": "public final class King extends Piece {\n    public King(Color color) {\n        super(color);\n    }\n\n    @Override\n    public boolean canMove(Board board, Square from, Square to) {\n        int rowDelta = Math.abs(to.getRow() - from.getRow());\n        int colDelta = Math.abs(to.getCol() - from.getCol());\n        return board.isInside(to)\n            && rowDelta <= 1\n            && colDelta <= 1\n            && rowDelta + colDelta > 0\n            && canCaptureOrMoveTo(board, to);\n    }\n}"
+        },
+        {
+          "filename": "Queen.java",
+          "language": "java",
+          "content": "public final class Queen extends Piece {\n    public Queen(Color color) {\n        super(color);\n    }\n\n    @Override\n    public boolean canMove(Board board, Square from, Square to) {\n        int rowDelta = Math.abs(to.getRow() - from.getRow());\n        int colDelta = Math.abs(to.getCol() - from.getCol());\n        boolean diagonal = rowDelta == colDelta;\n        boolean straight = from.getRow() == to.getRow() || from.getCol() == to.getCol();\n        return board.isInside(to)\n            && (diagonal || straight)\n            && rowDelta + colDelta > 0\n            && board.isPathClear(from, to)\n            && canCaptureOrMoveTo(board, to);\n    }\n}"
+        },
+        {
+          "filename": "Rook.java",
+          "language": "java",
+          "content": "public final class Rook extends Piece {\n    public Rook(Color color) {\n        super(color);\n    }\n\n    @Override\n    public boolean canMove(Board board, Square from, Square to) {\n        boolean straight = from.getRow() == to.getRow() || from.getCol() == to.getCol();\n        boolean sameSquare = from.equals(to);\n        return board.isInside(to)\n            && straight\n            && !sameSquare\n            && board.isPathClear(from, to)\n            && canCaptureOrMoveTo(board, to);\n    }\n}"
+        },
+        {
+          "filename": "Bishop.java",
+          "language": "java",
+          "content": "public final class Bishop extends Piece {\n    public Bishop(Color color) {\n        super(color);\n    }\n\n    @Override\n    public boolean canMove(Board board, Square from, Square to) {\n        int rowDelta = Math.abs(to.getRow() - from.getRow());\n        int colDelta = Math.abs(to.getCol() - from.getCol());\n        return board.isInside(to)\n            && rowDelta == colDelta\n            && rowDelta > 0\n            && board.isPathClear(from, to)\n            && canCaptureOrMoveTo(board, to);\n    }\n}"
+        },
+        {
+          "filename": "Knight.java",
+          "language": "java",
+          "content": "public final class Knight extends Piece {\n    public Knight(Color color) {\n        super(color);\n    }\n\n    @Override\n    public boolean canMove(Board board, Square from, Square to) {\n        int rowDelta = Math.abs(to.getRow() - from.getRow());\n        int colDelta = Math.abs(to.getCol() - from.getCol());\n        boolean lShape = rowDelta * colDelta == 2;\n        return board.isInside(to) && lShape && canCaptureOrMoveTo(board, to);\n    }\n}"
+        },
+        {
+          "filename": "Pawn.java",
+          "language": "java",
+          "content": "public final class Pawn extends Piece {\n    public Pawn(Color color) {\n        super(color);\n    }\n\n    @Override\n    public boolean canMove(Board board, Square from, Square to) {\n        if (!board.isInside(to)) {\n            return false;\n        }\n        int direction = getColor() == Color.WHITE ? -1 : 1;\n        int startRow = getColor() == Color.WHITE ? 6 : 1;\n        int rowDelta = to.getRow() - from.getRow();\n        int colDelta = Math.abs(to.getCol() - from.getCol());\n        Piece target = board.get(to);\n\n        if (colDelta == 0 && target == null) {\n            if (rowDelta == direction) {\n                return true;\n            }\n            Square middle = new Square(from.getRow() + direction, from.getCol());\n            return from.getRow() == startRow\n                && rowDelta == 2 * direction\n                && board.get(middle) == null;\n        }\n\n        return colDelta == 1\n            && rowDelta == direction\n            && target != null\n            && target.getColor() != getColor();\n    }\n}"
+        },
+        {
+          "filename": "Move.java",
+          "language": "java",
+          "content": "public final class Move {\n    private final Square from;\n    private final Square to;\n\n    public Move(Square from, Square to) {\n        this.from = from;\n        this.to = to;\n    }\n\n    public Square getFrom() {\n        return from;\n    }\n\n    public Square getTo() {\n        return to;\n    }\n}"
+        },
+        {
+          "filename": "Player.java",
+          "language": "java",
+          "content": "public final class Player {\n    private final String name;\n    private final Color color;\n\n    public Player(String name, Color color) {\n        this.name = name;\n        this.color = color;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public Color getColor() {\n        return color;\n    }\n}"
+        },
+        {
+          "filename": "GameStatus.java",
+          "language": "java",
+          "content": "public enum GameStatus {\n    ACTIVE,\n    WHITE_WON,\n    BLACK_WON,\n    STALEMATE\n}"
+        },
+        {
+          "filename": "Game.java",
+          "language": "java",
+          "content": "public final class Game {\n    private final Board board = new Board();\n    private final Player whitePlayer;\n    private final Player blackPlayer;\n    private Color turn = Color.WHITE;\n    private GameStatus status = GameStatus.ACTIVE;\n\n    public Game(Player whitePlayer, Player blackPlayer) {\n        this.whitePlayer = whitePlayer;\n        this.blackPlayer = blackPlayer;\n        board.setupStartingPosition();\n    }\n\n    public void move(Move move) {\n        if (status != GameStatus.ACTIVE) {\n            throw new IllegalStateException(\"Game is not active\");\n        }\n        Piece piece = board.get(move.getFrom());\n        if (piece == null || piece.getColor() != turn) {\n            throw new IllegalArgumentException(\"No current-player piece at source\");\n        }\n        if (!piece.canMove(board, move.getFrom(), move.getTo())) {\n            throw new IllegalArgumentException(\"Illegal movement for piece\");\n        }\n        Board candidate = board.copy();\n        candidate.moveUnchecked(move.getFrom(), move.getTo());\n        if (isKingInCheck(candidate, turn)) {\n            throw new IllegalArgumentException(\"Move leaves king in check\");\n        }\n        board.moveUnchecked(move.getFrom(), move.getTo());\n        Color next = turn.opposite();\n        updateStatus(next);\n        if (status == GameStatus.ACTIVE) {\n            turn = next;\n        }\n    }\n\n    private void updateStatus(Color nextToMove) {\n        boolean inCheck = isKingInCheck(board, nextToMove);\n        boolean hasLegalMove = hasAnyLegalMove(nextToMove);\n        if (inCheck && !hasLegalMove) {\n            status = nextToMove == Color.WHITE ? GameStatus.BLACK_WON : GameStatus.WHITE_WON;\n        } else if (!inCheck && !hasLegalMove) {\n            status = GameStatus.STALEMATE;\n        } else {\n            status = GameStatus.ACTIVE;\n        }\n    }\n\n    private boolean hasAnyLegalMove(Color color) {\n        for (Square from : board.occupiedSquares()) {\n            Piece piece = board.get(from);\n            if (piece == null || piece.getColor() != color) {\n                continue;\n            }\n            for (int row = 0; row < 8; row++) {\n                for (int col = 0; col < 8; col++) {\n                    Square to = new Square(row, col);\n                    if (!piece.canMove(board, from, to)) {\n                        continue;\n                    }\n                    Board candidate = board.copy();\n                    candidate.moveUnchecked(from, to);\n                    if (!isKingInCheck(candidate, color)) {\n                        return true;\n                    }\n                }\n            }\n        }\n        return false;\n    }\n\n    private boolean isKingInCheck(Board position, Color color) {\n        Square kingSquare = findKing(position, color);\n        if (kingSquare == null) {\n            return true;\n        }\n        for (Square from : position.occupiedSquares()) {\n            Piece attacker = position.get(from);\n            if (attacker != null\n                && attacker.getColor() != color\n                && attacker.canMove(position, from, kingSquare)) {\n                return true;\n            }\n        }\n        return false;\n    }\n\n    private Square findKing(Board position, Color color) {\n        for (Square square : position.occupiedSquares()) {\n            Piece piece = position.get(square);\n            if (piece instanceof King && piece.getColor() == color) {\n                return square;\n            }\n        }\n        return null;\n    }\n\n    public Player getCurrentPlayer() {\n        return turn == Color.WHITE ? whitePlayer : blackPlayer;\n    }\n\n    public GameStatus getStatus() {\n        return status;\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-snake-and-ladder",
+    "title": "Design Snake and Ladder",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "game-design",
+      "simulation"
+    ],
+    "statementMD": "Model a playable Snake and Ladder game where players advance on a numbered board and jumps change their positions.\n**Requirements**\n- Support an N x N board, defaulting to a 100-cell layout.\n- Store snakes and ladders as jumps from a start position to an end position.\n- Roll a dice and move players in queue order.\n- Apply at most one jump after a move and announce the destination.\n- Detect the first player that reaches the final cell as the winner.\nFocus on clear object boundaries, deterministic turn flow, and simple extension points for dice behavior.",
+    "constraints": "Assume positions are one-based, jumps never start on the first or final cell, and a move beyond the final cell keeps the player in place.",
+    "hints": [
+      "Represent snakes and ladders with one Jump class.",
+      "Keep players in a queue for turn order.",
+      "Inject Dice so tests can control rolls."
+    ],
+    "referenceSolution": "**Core classes:** Jump stores start and end, Board owns the cell count and jump map, Dice rolls values, Player tracks name and position, and Game owns the queue plus winner loop. **Design notes:** the board validates jump placement, the game applies only the board rules after a dice roll, and dice behavior stays swappable through an interface.",
+    "solution": {
+      "approachMD": "- Treat the board as a numbered track from 1 to size times size and keep jumps in a map keyed by start cell.\n- The game loop polls the next player, rolls the dice, asks the board for the resolved position, and either declares a winner or pushes the player back.\n- Dice is an interface so a random dice can be used in production while fixed dice can drive tests or demos.\n- Player remains small and mutable because position is part of the game state, not board state.",
+      "steps": [
+        {
+          "title": "Model jumps and board rules",
+          "detailMD": "Create one Jump type for snakes and ladders, then let Board validate jump positions and resolve the destination after a dice roll. The board should not know whose turn it is.",
+          "code": {
+            "filename": "BoardJumpRules.java",
+            "language": "java",
+            "content": "import java.util.Map;\n\npublic class BoardJumpRules {\n    public int resolve(int current, int roll, int finalCell, Map<Integer, Jump> jumps) {\n        int target = current + roll;\n        if (target > finalCell) {\n            return current;\n        }\n        Jump jump = jumps.get(target);\n        return jump == null ? target : jump.getEnd();\n    }\n}"
+          }
+        },
+        {
+          "title": "Add dice as a strategy",
+          "detailMD": "Keep dice behavior behind a Dice interface. Production can use random rolls, while examples and tests can provide predictable rolls without touching Game."
+        },
+        {
+          "title": "Keep player state minimal",
+          "detailMD": "A Player only needs a display name and current position. This keeps movement rules in Game and Board instead of scattering them across player objects."
+        },
+        {
+          "title": "Drive turns from a queue",
+          "detailMD": "Poll the next player, roll, move, check for a winner, and append the player back only if the game continues. This makes turn order explicit and fair.",
+          "code": {
+            "filename": "TurnLoopSnippet.java",
+            "language": "java",
+            "content": "import java.util.Queue;\n\npublic class TurnLoopSnippet {\n    public Player playOneTurn(Queue<Player> players, Board board, Dice dice) {\n        Player player = players.poll();\n        int roll = dice.roll();\n        int nextPosition = board.move(player.getPosition(), roll);\n        player.setPosition(nextPosition);\n        if (nextPosition == board.getFinalCell()) {\n            return player;\n        }\n        players.offer(player);\n        return null;\n    }\n}"
+          }
+        },
+        {
+          "title": "Validate setup and stop cleanly",
+          "detailMD": "Reject jumps outside the board, duplicate jump starts, and jumps that begin on terminal cells. The loop should stop immediately when one player reaches the final cell."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Strategy",
+          "why": "Dice is injected through an interface, making randomness replaceable for tests, demos, or special dice rules."
+        },
+        {
+          "name": "Encapsulation",
+          "why": "Board owns jump validation and movement boundaries, while Game owns turns and winner detection."
+        },
+        {
+          "name": "Queue-based simulation",
+          "why": "A queue mirrors real turn order and avoids manual index bookkeeping when players cycle."
+        }
+      ],
+      "code": [
+        {
+          "filename": "Jump.java",
+          "language": "java",
+          "content": "public final class Jump {\n    private final int start;\n    private final int end;\n\n    public Jump(int start, int end) {\n        if (start <= 0 || end <= 0) {\n            throw new IllegalArgumentException(\"Positions must be positive\");\n        }\n        if (start == end) {\n            throw new IllegalArgumentException(\"A jump must change the position\");\n        }\n        this.start = start;\n        this.end = end;\n    }\n\n    public int getStart() {\n        return start;\n    }\n\n    public int getEnd() {\n        return end;\n    }\n\n    public boolean isSnake() {\n        return end < start;\n    }\n\n    public boolean isLadder() {\n        return end > start;\n    }\n\n    public String describe() {\n        String type = isSnake() ? \"snake\" : \"ladder\";\n        return type + \" from \" + start + \" to \" + end;\n    }\n}"
+        },
+        {
+          "filename": "Board.java",
+          "language": "java",
+          "content": "import java.util.Collections;\nimport java.util.HashMap;\nimport java.util.Map;\n\npublic class Board {\n    private final int dimension;\n    private final Map<Integer, Jump> jumps = new HashMap<Integer, Jump>();\n\n    public Board() {\n        this(10);\n    }\n\n    public Board(int dimension) {\n        if (dimension < 2) {\n            throw new IllegalArgumentException(\"Board dimension must be at least two\");\n        }\n        this.dimension = dimension;\n    }\n\n    public int getFinalCell() {\n        return dimension * dimension;\n    }\n\n    public void addJump(Jump jump) {\n        int start = jump.getStart();\n        int end = jump.getEnd();\n        if (start <= 1 || start >= getFinalCell()) {\n            throw new IllegalArgumentException(\"Jump cannot start on the first or final cell\");\n        }\n        if (end < 1 || end > getFinalCell()) {\n            throw new IllegalArgumentException(\"Jump end is outside the board\");\n        }\n        if (jumps.containsKey(start)) {\n            throw new IllegalArgumentException(\"Only one jump may start from a cell\");\n        }\n        jumps.put(start, jump);\n    }\n\n    public Jump getJumpAt(int position) {\n        return jumps.get(position);\n    }\n\n    public int targetAfterRoll(int currentPosition, int roll) {\n        if (roll <= 0) {\n            throw new IllegalArgumentException(\"Roll must be positive\");\n        }\n        int target = currentPosition + roll;\n        return target > getFinalCell() ? currentPosition : target;\n    }\n\n    public int move(int currentPosition, int roll) {\n        int target = targetAfterRoll(currentPosition, roll);\n        Jump jump = jumps.get(target);\n        return jump == null ? target : jump.getEnd();\n    }\n\n    public Map<Integer, Jump> jumpsView() {\n        return Collections.unmodifiableMap(jumps);\n    }\n}"
+        },
+        {
+          "filename": "Dice.java",
+          "language": "java",
+          "content": "public interface Dice {\n    int roll();\n}"
+        },
+        {
+          "filename": "RandomDice.java",
+          "language": "java",
+          "content": "import java.util.Random;\n\npublic class RandomDice implements Dice {\n    private final int sides;\n    private final Random random;\n\n    public RandomDice() {\n        this(6, new Random());\n    }\n\n    public RandomDice(int sides, Random random) {\n        if (sides < 2) {\n            throw new IllegalArgumentException(\"Dice must have at least two sides\");\n        }\n        this.sides = sides;\n        this.random = random;\n    }\n\n    public int roll() {\n        return random.nextInt(sides) + 1;\n    }\n}"
+        },
+        {
+          "filename": "Player.java",
+          "language": "java",
+          "content": "public class Player {\n    private final String name;\n    private int position;\n\n    public Player(String name) {\n        if (name == null || name.trim().isEmpty()) {\n            throw new IllegalArgumentException(\"Player name is required\");\n        }\n        this.name = name;\n        this.position = 1;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public int getPosition() {\n        return position;\n    }\n\n    public void setPosition(int position) {\n        if (position <= 0) {\n            throw new IllegalArgumentException(\"Position must be positive\");\n        }\n        this.position = position;\n    }\n}"
+        },
+        {
+          "filename": "Game.java",
+          "language": "java",
+          "content": "import java.util.LinkedList;\nimport java.util.List;\nimport java.util.Queue;\n\npublic class Game {\n    private final Board board;\n    private final Dice dice;\n    private final Queue<Player> players = new LinkedList<Player>();\n    private Player winner;\n\n    public Game(Board board, Dice dice, List<Player> players) {\n        if (players == null || players.isEmpty()) {\n            throw new IllegalArgumentException(\"At least one player is required\");\n        }\n        this.board = board;\n        this.dice = dice;\n        this.players.addAll(players);\n    }\n\n    public Player start() {\n        while (winner == null) {\n            playTurn();\n        }\n        return winner;\n    }\n\n    public void playTurn() {\n        Player player = players.poll();\n        int before = player.getPosition();\n        int roll = dice.roll();\n        int target = board.targetAfterRoll(before, roll);\n        Jump jump = board.getJumpAt(target);\n        int after = jump == null ? target : jump.getEnd();\n\n        player.setPosition(after);\n        announce(player, roll, before, target, jump, after);\n\n        if (after == board.getFinalCell()) {\n            winner = player;\n            System.out.println(player.getName() + \" wins\");\n        } else {\n            players.offer(player);\n        }\n    }\n\n    public Player getWinner() {\n        return winner;\n    }\n\n    private void announce(Player player, int roll, int before, int target, Jump jump, int after) {\n        System.out.println(player.getName() + \" rolled \" + roll + \" from \" + before + \" to \" + target);\n        if (jump != null) {\n            System.out.println(\"Applied \" + jump.describe() + \", final position \" + after);\n        }\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-coffee-machine",
+    "title": "Design a Coffee Vending Machine",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "factory",
+      "builder",
+      "concurrency"
+    ],
+    "statementMD": "Design a coffee vending machine that can prepare recipe-based drinks while sharing ingredients across multiple outlets.\n**Requirements**\n- Support beverages such as espresso, latte, and cappuccino.\n- Define every beverage through ingredient quantities.\n- Check and decrement water, milk, coffee, and sugar from a shared inventory.\n- Allow multiple outlets to prepare beverages concurrently up to machine capacity.\n- Report insufficient ingredients and allow refilling inventory.\nFocus on atomic inventory updates, simple beverage creation, and safe concurrent preparation.",
+    "constraints": "Assume ingredient units are integer milliliters or grams, each preparation is atomic with respect to inventory, and outlet count only limits concurrent preparation.",
+    "hints": [
+      "Use an enum for ingredient names.",
+      "Synchronize inventory check and decrement together.",
+      "Use a factory to centralize recipes."
+    ],
+    "referenceSolution": "**Core classes:** Ingredient enumerates stock types, IngredientInventory synchronizes refill and consume, Recipe stores required quantities, Beverage names a recipe, BeverageFactory creates drinks, and CoffeeMachine coordinates outlets. **Design notes:** inventory consumption is a single critical section, a semaphore models outlet capacity, and recipes are built once through a small builder API.",
+    "solution": {
+      "approachMD": "- Keep recipes immutable so every beverage request reads a stable list of required ingredients.\n- Put all stock checks and deductions in one synchronized inventory method to prevent two outlets from spending the same ingredient units.\n- Use a factory to translate a beverage name into a Beverage and a builder to make recipes readable.\n- CoffeeMachine limits concurrent preparation with outlets but delegates correctness of stock mutation to IngredientInventory.",
+      "steps": [
+        {
+          "title": "Represent ingredients and recipes",
+          "detailMD": "Use Ingredient as the common vocabulary for recipes and inventory. A builder keeps recipe construction clear and prevents callers from mutating finished recipes.",
+          "code": {
+            "filename": "RecipeBuilderExample.java",
+            "language": "java",
+            "content": "public class RecipeBuilderExample {\n    public Recipe latte() {\n        return Recipe.builder()\n                .add(Ingredient.WATER, 120)\n                .add(Ingredient.MILK, 80)\n                .add(Ingredient.COFFEE, 18)\n                .add(Ingredient.SUGAR, 5)\n                .build();\n    }\n}"
+          }
+        },
+        {
+          "title": "Centralize beverage creation",
+          "detailMD": "BeverageFactory should own supported drink names and recipe quantities. Adding a new drink then changes one place instead of the machine workflow."
+        },
+        {
+          "title": "Make inventory operations atomic",
+          "detailMD": "Check every required ingredient before decrementing any of them, and keep that entire operation synchronized. This avoids partial consumption under concurrency.",
+          "code": {
+            "filename": "InventoryConsumeSnippet.java",
+            "language": "java",
+            "content": "public class InventoryConsumeSnippet {\n    public synchronized void consumeSafely(IngredientInventory inventory, Recipe recipe) {\n        inventory.consume(recipe.getIngredients());\n    }\n}"
+          }
+        },
+        {
+          "title": "Limit concurrent outlets",
+          "detailMD": "A semaphore represents available outlets. Preparing a drink acquires one permit, consumes ingredients, brews, and always releases the permit in a finally block.",
+          "code": {
+            "filename": "ConcurrentPrepareSnippet.java",
+            "language": "java",
+            "content": "public class ConcurrentPrepareSnippet {\n    public Beverage prepare(CoffeeMachine machine, String name) throws InterruptedException {\n        return machine.prepare(name);\n    }\n}"
+          }
+        },
+        {
+          "title": "Surface stock failures clearly",
+          "detailMD": "Throw an insufficient ingredient exception with the missing ingredient and required amount. Callers can catch it to show an outlet error without stopping the machine."
+        }
+      ],
+      "patterns": [
+        {
+          "name": "Factory",
+          "why": "BeverageFactory maps names to Beverage objects and keeps recipe selection away from outlet orchestration."
+        },
+        {
+          "name": "Builder",
+          "why": "Recipe.Builder creates readable immutable recipes without exposing internal maps to callers."
+        },
+        {
+          "name": "Monitor and semaphore",
+          "why": "Synchronized inventory methods protect stock, while a semaphore models limited outlet capacity."
+        }
+      ],
+      "code": [
+        {
+          "filename": "Ingredient.java",
+          "language": "java",
+          "content": "public enum Ingredient {\n    WATER,\n    MILK,\n    COFFEE,\n    SUGAR\n}"
+        },
+        {
+          "filename": "InsufficientIngredientException.java",
+          "language": "java",
+          "content": "public class InsufficientIngredientException extends RuntimeException {\n    private final Ingredient ingredient;\n    private final int required;\n    private final int available;\n\n    public InsufficientIngredientException(Ingredient ingredient, int required, int available) {\n        super(\"Insufficient \" + ingredient + \": required \" + required + \", available \" + available);\n        this.ingredient = ingredient;\n        this.required = required;\n        this.available = available;\n    }\n\n    public Ingredient getIngredient() {\n        return ingredient;\n    }\n\n    public int getRequired() {\n        return required;\n    }\n\n    public int getAvailable() {\n        return available;\n    }\n}"
+        },
+        {
+          "filename": "Recipe.java",
+          "language": "java",
+          "content": "import java.util.Collections;\nimport java.util.EnumMap;\nimport java.util.Map;\n\npublic final class Recipe {\n    private final Map<Ingredient, Integer> ingredients;\n\n    private Recipe(Map<Ingredient, Integer> ingredients) {\n        this.ingredients = Collections.unmodifiableMap(new EnumMap<Ingredient, Integer>(ingredients));\n    }\n\n    public Map<Ingredient, Integer> getIngredients() {\n        return ingredients;\n    }\n\n    public static Builder builder() {\n        return new Builder();\n    }\n\n    public static class Builder {\n        private final Map<Ingredient, Integer> ingredients = new EnumMap<Ingredient, Integer>(Ingredient.class);\n\n        public Builder add(Ingredient ingredient, int quantity) {\n            if (quantity <= 0) {\n                throw new IllegalArgumentException(\"Quantity must be positive\");\n            }\n            Integer existing = ingredients.get(ingredient);\n            int next = existing == null ? quantity : existing + quantity;\n            ingredients.put(ingredient, next);\n            return this;\n        }\n\n        public Recipe build() {\n            if (ingredients.isEmpty()) {\n                throw new IllegalStateException(\"Recipe must contain at least one ingredient\");\n            }\n            return new Recipe(ingredients);\n        }\n    }\n}"
+        },
+        {
+          "filename": "Beverage.java",
+          "language": "java",
+          "content": "public final class Beverage {\n    private final String name;\n    private final Recipe recipe;\n\n    public Beverage(String name, Recipe recipe) {\n        if (name == null || name.trim().isEmpty()) {\n            throw new IllegalArgumentException(\"Beverage name is required\");\n        }\n        this.name = name;\n        this.recipe = recipe;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public Recipe getRecipe() {\n        return recipe;\n    }\n\n    public String toString() {\n        return name;\n    }\n}"
+        },
+        {
+          "filename": "BeverageFactory.java",
+          "language": "java",
+          "content": "import java.util.Locale;\n\npublic class BeverageFactory {\n    public Beverage create(String beverageName) {\n        if (beverageName == null) {\n            throw new IllegalArgumentException(\"Beverage name is required\");\n        }\n        String key = beverageName.trim().toLowerCase(Locale.ROOT);\n        if (\"espresso\".equals(key)) {\n            return new Beverage(\"Espresso\", espressoRecipe());\n        }\n        if (\"latte\".equals(key)) {\n            return new Beverage(\"Latte\", latteRecipe());\n        }\n        if (\"cappuccino\".equals(key)) {\n            return new Beverage(\"Cappuccino\", cappuccinoRecipe());\n        }\n        throw new IllegalArgumentException(\"Unsupported beverage: \" + beverageName);\n    }\n\n    private Recipe espressoRecipe() {\n        return Recipe.builder()\n                .add(Ingredient.WATER, 60)\n                .add(Ingredient.COFFEE, 18)\n                .build();\n    }\n\n    private Recipe latteRecipe() {\n        return Recipe.builder()\n                .add(Ingredient.WATER, 120)\n                .add(Ingredient.MILK, 80)\n                .add(Ingredient.COFFEE, 18)\n                .add(Ingredient.SUGAR, 5)\n                .build();\n    }\n\n    private Recipe cappuccinoRecipe() {\n        return Recipe.builder()\n                .add(Ingredient.WATER, 100)\n                .add(Ingredient.MILK, 60)\n                .add(Ingredient.COFFEE, 20)\n                .add(Ingredient.SUGAR, 6)\n                .build();\n    }\n}"
+        },
+        {
+          "filename": "IngredientInventory.java",
+          "language": "java",
+          "content": "import java.util.Collections;\nimport java.util.EnumMap;\nimport java.util.Map;\n\npublic class IngredientInventory {\n    private final Map<Ingredient, Integer> stock = new EnumMap<Ingredient, Integer>(Ingredient.class);\n\n    public IngredientInventory() {\n        for (Ingredient ingredient : Ingredient.values()) {\n            stock.put(ingredient, 0);\n        }\n    }\n\n    public synchronized void refill(Ingredient ingredient, int quantity) {\n        if (quantity <= 0) {\n            throw new IllegalArgumentException(\"Refill quantity must be positive\");\n        }\n        stock.put(ingredient, stock.get(ingredient) + quantity);\n    }\n\n    public synchronized void consume(Map<Ingredient, Integer> required) {\n        for (Map.Entry<Ingredient, Integer> entry : required.entrySet()) {\n            Ingredient ingredient = entry.getKey();\n            int need = entry.getValue();\n            int have = stock.get(ingredient);\n            if (have < need) {\n                throw new InsufficientIngredientException(ingredient, need, have);\n            }\n        }\n        for (Map.Entry<Ingredient, Integer> entry : required.entrySet()) {\n            Ingredient ingredient = entry.getKey();\n            stock.put(ingredient, stock.get(ingredient) - entry.getValue());\n        }\n    }\n\n    public synchronized int available(Ingredient ingredient) {\n        return stock.get(ingredient);\n    }\n\n    public synchronized Map<Ingredient, Integer> snapshot() {\n        return Collections.unmodifiableMap(new EnumMap<Ingredient, Integer>(stock));\n    }\n}"
+        },
+        {
+          "filename": "CoffeeMachine.java",
+          "language": "java",
+          "content": "import java.util.concurrent.Semaphore;\n\npublic class CoffeeMachine {\n    private final IngredientInventory inventory;\n    private final BeverageFactory beverageFactory;\n    private final Semaphore outlets;\n\n    public CoffeeMachine(int outletCount, IngredientInventory inventory, BeverageFactory beverageFactory) {\n        if (outletCount <= 0) {\n            throw new IllegalArgumentException(\"At least one outlet is required\");\n        }\n        this.inventory = inventory;\n        this.beverageFactory = beverageFactory;\n        this.outlets = new Semaphore(outletCount);\n    }\n\n    public Beverage prepare(String beverageName) throws InterruptedException {\n        outlets.acquire();\n        try {\n            Beverage beverage = beverageFactory.create(beverageName);\n            inventory.consume(beverage.getRecipe().getIngredients());\n            brew(beverage);\n            return beverage;\n        } finally {\n            outlets.release();\n        }\n    }\n\n    public void refill(Ingredient ingredient, int quantity) {\n        inventory.refill(ingredient, quantity);\n    }\n\n    public int availableOutlets() {\n        return outlets.availablePermits();\n    }\n\n    private void brew(Beverage beverage) {\n        System.out.println(\"Prepared \" + beverage.getName());\n    }\n}"
+        }
+      ]
+    }
+  },
+  {
+    "slug": "design-atm",
+    "title": "Design an ATM",
+    "difficulty": "MEDIUM",
+    "tags": [
+      "ood",
+      "state-pattern",
+      "chain-of-responsibility"
+    ],
+    "statementMD": "Design an ATM that manages a card session, authenticates the user, and performs cash and account operations.\n**Requirements**\n- Transition through idle, card inserted, authenticated, selected operation, and transaction execution states.\n- Validate the card PIN through a bank or account service.\n- Withdraw cash only when the account balance and ATM denominations can satisfy the amount.\n- Deposit money into the selected account.\n- Eject the card and return to idle from any active session.\nFocus on state-specific behavior, safe account updates, and a clear cash dispensing chain.",
+    "constraints": "Assume one card session at a time, positive whole-number amounts, and dispenser denominations of 2000, 500, and 100.",
+    "hints": [
+      "Let each state reject invalid actions.",
+      "Check dispenser capacity before debiting.",
+      "Chain note handlers from high to low value."
+    ],
+    "referenceSolution": "**Core classes:** ATMState defines allowed actions, IdleState, HasCardState, AuthenticatedState, and TransactionState model lifecycle, ATM holds context, Card and Account represent bank data, BankService checks balance and debit, and CashDispenser uses DispenseChain handlers. **Design notes:** State removes conditional action checks from ATM, and Chain of Responsibility lets each denomination decide how many notes to release.",
+    "solution": {
+      "approachMD": "- Keep ATM as the context object and push action rules into ATMState implementations so invalid actions fail where they occur.\n- Authenticate through BankService, then store the active account only for the current card session.\n- Before withdrawal, ask the dispenser if its denomination chain can serve the amount, then debit the account and dispense notes.\n- Model each denomination as a handler that takes as many notes as it can and passes the remainder to the next handler.",
+      "steps": [
+        {
+          "title": "Define state-driven actions",
+          "detailMD": "ATMState lists user actions such as insert card, enter PIN, select operation, withdraw, deposit, and eject. Concrete states override only the actions they allow.",
+          "code": {
+            "filename": "StateTransitionSnippet.java",
+            "language": "java",
+            "content": "public class StateTransitionSnippet {\n    public void authenticate(ATM atm, String pin) {\n        atm.enterPin(pin);\n        atm.selectOperation(\"WITHDRAW\");\n    }\n}"
+          }
+        },
+        {
+          "title": "Use the ATM as context",
+          "detailMD": "ATM stores the current state, card, account, bank service, and dispenser. Public methods simply delegate to the current state."
+        },
+        {
+          "title": "Separate bank operations",
+          "detailMD": "BankService validates PINs and performs synchronized account debit or credit. This keeps account rules separate from kiosk flow."
+        },
+        {
+          "title": "Build the cash dispenser chain",
+          "detailMD": "Link note dispensers from largest to smallest denomination. Each handler uses available note count, reduces the remaining amount, and passes the rest onward.",
+          "code": {
+            "filename": "DispenseChainSnippet.java",
+            "language": "java",
+            "content": "public class DispenseChainSnippet {\n    public CashDispenser createDispenser() {\n        return new CashDispenser(10, 20, 50);\n    }\n}"
+          }
+        },
+        {
+          "title": "Perform withdrawal safely",
+          "detailMD": "Check dispenser capacity first, then debit the bank account, and only then dispense notes. If any check fails, leave cash inventory and account balance unchanged.",
+          "code": {
+            "filename": "WithdrawalFlowSnippet.java",
+            "language": "java",
+            "content": "public class WithdrawalFlowSnippet {\n    public void withdraw(ATM atm, int amount) {\n        atm.selectOperation(\"WITHDRAW\");\n        atm.withdraw(amount);\n    }\n}"
+          }
+        }
+      ],
+      "patterns": [
+        {
+          "name": "State",
+          "why": "ATM behavior changes by lifecycle stage without large conditional blocks in the context class."
+        },
+        {
+          "name": "Chain of Responsibility",
+          "why": "Each note dispenser handles its denomination and delegates the remaining amount to the next handler."
+        },
+        {
+          "name": "Service boundary",
+          "why": "BankService isolates account validation and mutation from ATM hardware flow."
+        }
+      ],
+      "code": [
+        {
+          "filename": "ATMState.java",
+          "language": "java",
+          "content": "public interface ATMState {\n    default void insertCard(ATM atm, Card card) {\n        throw new IllegalStateException(\"Cannot insert a card now\");\n    }\n\n    default void enterPin(ATM atm, String pin) {\n        throw new IllegalStateException(\"Cannot enter PIN now\");\n    }\n\n    default void selectOperation(ATM atm, String operation) {\n        throw new IllegalStateException(\"Cannot select an operation now\");\n    }\n\n    default void withdraw(ATM atm, int amount) {\n        throw new IllegalStateException(\"Cannot withdraw now\");\n    }\n\n    default void deposit(ATM atm, int amount) {\n        throw new IllegalStateException(\"Cannot deposit now\");\n    }\n\n    default void ejectCard(ATM atm) {\n        atm.clearSession();\n        atm.setState(new IdleState());\n    }\n\n    String name();\n}"
+        },
+        {
+          "filename": "IdleState.java",
+          "language": "java",
+          "content": "public class IdleState implements ATMState {\n    public void insertCard(ATM atm, Card card) {\n        if (card == null) {\n            throw new IllegalArgumentException(\"Card is required\");\n        }\n        atm.setCurrentCard(card);\n        atm.setState(new HasCardState());\n        System.out.println(\"Card inserted\");\n    }\n\n    public void ejectCard(ATM atm) {\n        System.out.println(\"No card to eject\");\n    }\n\n    public String name() {\n        return \"IDLE\";\n    }\n}"
+        },
+        {
+          "filename": "HasCardState.java",
+          "language": "java",
+          "content": "public class HasCardState implements ATMState {\n    public void enterPin(ATM atm, String pin) {\n        Card card = atm.getCurrentCard();\n        BankService bankService = atm.getBankService();\n        if (!bankService.validatePin(card, pin)) {\n            System.out.println(\"Invalid PIN\");\n            atm.clearSession();\n            atm.setState(new IdleState());\n            return;\n        }\n        Account account = bankService.getAccount(card.getAccountId());\n        atm.setCurrentAccount(account);\n        atm.setState(new AuthenticatedState());\n        System.out.println(\"Authenticated\");\n    }\n\n    public String name() {\n        return \"HAS_CARD\";\n    }\n}"
+        },
+        {
+          "filename": "AuthenticatedState.java",
+          "language": "java",
+          "content": "public class AuthenticatedState implements ATMState {\n    public void selectOperation(ATM atm, String operation) {\n        atm.setState(new TransactionState(operation));\n        System.out.println(\"Selected \" + operation);\n    }\n\n    public void ejectCard(ATM atm) {\n        atm.clearSession();\n        atm.setState(new IdleState());\n        System.out.println(\"Card ejected\");\n    }\n\n    public String name() {\n        return \"AUTHENTICATED\";\n    }\n}"
+        },
+        {
+          "filename": "TransactionState.java",
+          "language": "java",
+          "content": "public class TransactionState implements ATMState {\n    private final String operation;\n\n    public TransactionState(String operation) {\n        if (operation == null || operation.trim().isEmpty()) {\n            throw new IllegalArgumentException(\"Operation is required\");\n        }\n        this.operation = operation.trim().toUpperCase();\n    }\n\n    public void withdraw(ATM atm, int amount) {\n        if (!\"WITHDRAW\".equals(operation)) {\n            throw new IllegalStateException(\"Selected operation is not withdraw\");\n        }\n        atm.performWithdrawal(amount);\n        atm.setState(new AuthenticatedState());\n    }\n\n    public void deposit(ATM atm, int amount) {\n        if (!\"DEPOSIT\".equals(operation)) {\n            throw new IllegalStateException(\"Selected operation is not deposit\");\n        }\n        atm.performDeposit(amount);\n        atm.setState(new AuthenticatedState());\n    }\n\n    public void selectOperation(ATM atm, String nextOperation) {\n        atm.setState(new TransactionState(nextOperation));\n    }\n\n    public String name() {\n        return \"TRANSACTION_\" + operation;\n    }\n}"
+        },
+        {
+          "filename": "ATM.java",
+          "language": "java",
+          "content": "public class ATM {\n    private ATMState state = new IdleState();\n    private final BankService bankService;\n    private final CashDispenser cashDispenser;\n    private Card currentCard;\n    private Account currentAccount;\n\n    public ATM(BankService bankService, CashDispenser cashDispenser) {\n        this.bankService = bankService;\n        this.cashDispenser = cashDispenser;\n    }\n\n    public void insertCard(Card card) {\n        state.insertCard(this, card);\n    }\n\n    public void enterPin(String pin) {\n        state.enterPin(this, pin);\n    }\n\n    public void selectOperation(String operation) {\n        state.selectOperation(this, operation);\n    }\n\n    public void withdraw(int amount) {\n        state.withdraw(this, amount);\n    }\n\n    public void deposit(int amount) {\n        state.deposit(this, amount);\n    }\n\n    public void ejectCard() {\n        state.ejectCard(this);\n    }\n\n    void performWithdrawal(int amount) {\n        requirePositive(amount);\n        if (!cashDispenser.canDispense(amount)) {\n            throw new IllegalStateException(\"ATM cannot dispense requested amount\");\n        }\n        bankService.debit(currentAccount.getId(), amount);\n        cashDispenser.dispense(amount);\n        System.out.println(\"Dispensed \" + amount);\n    }\n\n    void performDeposit(int amount) {\n        requirePositive(amount);\n        bankService.credit(currentAccount.getId(), amount);\n        System.out.println(\"Deposited \" + amount);\n    }\n\n    void clearSession() {\n        currentCard = null;\n        currentAccount = null;\n    }\n\n    private void requirePositive(int amount) {\n        if (amount <= 0) {\n            throw new IllegalArgumentException(\"Amount must be positive\");\n        }\n    }\n\n    public ATMState getState() {\n        return state;\n    }\n\n    void setState(ATMState state) {\n        this.state = state;\n    }\n\n    Card getCurrentCard() {\n        return currentCard;\n    }\n\n    void setCurrentCard(Card currentCard) {\n        this.currentCard = currentCard;\n    }\n\n    void setCurrentAccount(Account currentAccount) {\n        this.currentAccount = currentAccount;\n    }\n\n    BankService getBankService() {\n        return bankService;\n    }\n}"
+        },
+        {
+          "filename": "Card.java",
+          "language": "java",
+          "content": "public final class Card {\n    private final String cardNumber;\n    private final String accountId;\n\n    public Card(String cardNumber, String accountId) {\n        if (cardNumber == null || accountId == null) {\n            throw new IllegalArgumentException(\"Card number and account id are required\");\n        }\n        this.cardNumber = cardNumber;\n        this.accountId = accountId;\n    }\n\n    public String getCardNumber() {\n        return cardNumber;\n    }\n\n    public String getAccountId() {\n        return accountId;\n    }\n}"
+        },
+        {
+          "filename": "Account.java",
+          "language": "java",
+          "content": "public class Account {\n    private final String id;\n    private final String pin;\n    private int balance;\n\n    public Account(String id, String pin, int openingBalance) {\n        if (openingBalance < 0) {\n            throw new IllegalArgumentException(\"Opening balance cannot be negative\");\n        }\n        this.id = id;\n        this.pin = pin;\n        this.balance = openingBalance;\n    }\n\n    public String getId() {\n        return id;\n    }\n\n    public synchronized boolean hasPin(String candidate) {\n        return pin.equals(candidate);\n    }\n\n    public synchronized int getBalance() {\n        return balance;\n    }\n\n    public synchronized void debit(int amount) {\n        if (amount > balance) {\n            throw new IllegalStateException(\"Insufficient account balance\");\n        }\n        balance -= amount;\n    }\n\n    public synchronized void credit(int amount) {\n        balance += amount;\n    }\n}"
+        },
+        {
+          "filename": "BankService.java",
+          "language": "java",
+          "content": "import java.util.HashMap;\nimport java.util.Map;\n\npublic class BankService {\n    private final Map<String, Account> accounts = new HashMap<String, Account>();\n\n    public synchronized void register(Account account) {\n        accounts.put(account.getId(), account);\n    }\n\n    public synchronized Account getAccount(String accountId) {\n        Account account = accounts.get(accountId);\n        if (account == null) {\n            throw new IllegalArgumentException(\"Account not found: \" + accountId);\n        }\n        return account;\n    }\n\n    public boolean validatePin(Card card, String pin) {\n        return getAccount(card.getAccountId()).hasPin(pin);\n    }\n\n    public void debit(String accountId, int amount) {\n        getAccount(accountId).debit(amount);\n    }\n\n    public void credit(String accountId, int amount) {\n        getAccount(accountId).credit(amount);\n    }\n\n    public int getBalance(String accountId) {\n        return getAccount(accountId).getBalance();\n    }\n}"
+        },
+        {
+          "filename": "DispenseChain.java",
+          "language": "java",
+          "content": "public interface DispenseChain {\n    void setNext(DispenseChain next);\n\n    boolean canDispense(int amount);\n\n    void dispense(int amount);\n}"
+        },
+        {
+          "filename": "NoteDispenser.java",
+          "language": "java",
+          "content": "public class NoteDispenser implements DispenseChain {\n    private final int denomination;\n    private int noteCount;\n    private DispenseChain next;\n\n    public NoteDispenser(int denomination, int noteCount) {\n        this.denomination = denomination;\n        this.noteCount = noteCount;\n    }\n\n    public void setNext(DispenseChain next) {\n        this.next = next;\n    }\n\n    public synchronized boolean canDispense(int amount) {\n        int usableNotes = Math.min(amount / denomination, noteCount);\n        int remaining = amount - usableNotes * denomination;\n        if (remaining == 0) {\n            return true;\n        }\n        return next != null && next.canDispense(remaining);\n    }\n\n    public synchronized void dispense(int amount) {\n        int notes = Math.min(amount / denomination, noteCount);\n        int value = notes * denomination;\n        if (notes > 0) {\n            noteCount -= notes;\n            System.out.println(\"Dispense \" + notes + \" notes of \" + denomination);\n        }\n        int remaining = amount - value;\n        if (remaining == 0) {\n            return;\n        }\n        if (next == null) {\n            throw new IllegalStateException(\"Cannot dispense remaining amount \" + remaining);\n        }\n        next.dispense(remaining);\n    }\n}"
+        },
+        {
+          "filename": "CashDispenser.java",
+          "language": "java",
+          "content": "public class CashDispenser {\n    private final DispenseChain head;\n\n    public CashDispenser(int notesOf2000, int notesOf500, int notesOf100) {\n        NoteDispenser twoThousand = new NoteDispenser(2000, notesOf2000);\n        NoteDispenser fiveHundred = new NoteDispenser(500, notesOf500);\n        NoteDispenser oneHundred = new NoteDispenser(100, notesOf100);\n        twoThousand.setNext(fiveHundred);\n        fiveHundred.setNext(oneHundred);\n        this.head = twoThousand;\n    }\n\n    public boolean canDispense(int amount) {\n        if (amount <= 0 || amount % 100 != 0) {\n            return false;\n        }\n        return head.canDispense(amount);\n    }\n\n    public void dispense(int amount) {\n        if (!canDispense(amount)) {\n            throw new IllegalStateException(\"Amount cannot be dispensed with available notes\");\n        }\n        head.dispense(amount);\n    }\n}"
+        }
+      ]
+    }
+  }
+]
