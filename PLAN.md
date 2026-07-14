@@ -1,4 +1,4 @@
-# InterviewPrep Platform — Build Plan
+# ElevateIQ Platform — Build Plan
 
 A single place to prepare for software interviews: **DSA**, **System Design (HLD)**, **LLD**,
 and **Behavioral** rounds — powered by AI, hosted on **Azure**, built lightweight for low traffic.

@@ -32,14 +32,19 @@ enum ProgressStatus {
 }
 
 model User {
-  id             String          @id @default(cuid())
-  name           String?
-  email          String          @unique
-  image          String?
-  createdAt      DateTime        @default(now())
-  submissions    Submission[]
-  progress       Progress[]
-  mockInterviews MockInterview[]
+  id                String             @id @default(cuid())
+  name              String?
+  email             String             @unique
+  image             String?
+  createdAt         DateTime           @default(now())
+  submissions       Submission[]
+  progress          Progress[]
+  mockInterviews    MockInterview[]
+  // Phase 2 career modules
+  questionBookmarks QuestionBookmark[]
+  questionProgress  QuestionProgress[]
+  starStories       StarStory[]
+  panelInterviews   PanelInterview[]
 }
 
 model Problem {
@@ -109,6 +114,76 @@ model MockInterview {
   transcript Json     @default("[]")
   summary    Json?
   createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+// --- Phase 2: Company Question Bank ---------------------------------------
+// Reference questions live in content/companies/*.json (keyed by a stable
+// questionId), so bookmarks/progress reference that id rather than an FK.
+
+model QuestionBookmark {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  questionId String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, questionId])
+  @@index([userId])
+}
+
+model QuestionProgress {
+  id         String         @id @default(cuid())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  questionId String
+  status     ProgressStatus @default(TODO)
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([userId, questionId])
+  @@index([userId])
+}
+
+// --- Phase 2: AI STAR Story Generator -------------------------------------
+
+model StarStory {
+  id                   String   @id @default(cuid())
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId               String
+  title                String
+  situation            String
+  task                 String
+  action               String
+  result               String
+  skills               String[]
+  leadershipPrinciples String[]
+  suggestedQuestions   String[]
+  tags                 String[]
+  // Original free-form project details the story was generated from (for reuse).
+  sourceProject        String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// --- Phase 2: Mock Panel Interview ----------------------------------------
+
+model PanelInterview {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  role       String
+  focus      String
+  // "active" while in progress, "completed" once the scorecard is generated.
+  status     String   @default("active")
+  // Array of PanelTurn: { personaId, role, content }.
+  transcript Json     @default("[]")
+  // PanelResult scorecard (scores, per-interviewer feedback, plan). Null until done.
+  result     Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([userId])
 }

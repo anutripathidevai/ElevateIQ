@@ -1,0 +1,104 @@
+{
+  "company": "Google",
+  "slug": "google",
+  "glyph": "G",
+  "blurb": "Emphasis on algorithmic depth, clean coding, and Googleyness. Expect data-structure heavy rounds and open-ended system design.",
+  "questions": [
+    {
+      "id": "google-coding-subarray-sum",
+      "category": "CODING",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "MID",
+      "tags": ["arrays", "hash-map", "prefix-sum"],
+      "question": "Given an integer array and a target k, return the number of contiguous subarrays whose sum equals k.",
+      "expectedAnswer": "Use a **prefix-sum + hash map** in O(n).\n\n- Track a running sum `sum` and a map of `prefixSum -> count`.\n- For each element, the number of subarrays ending here with sum `k` is `count[sum - k]`.\n- Seed the map with `{0: 1}` to count subarrays starting at index 0.\n\nTime O(n), space O(n). Watch for negatives (a sliding window will not work).",
+      "hints": [
+        "A brute force is O(n^2) — can a running sum help?",
+        "If sum(0..j) - sum(0..i) == k, what does that tell you?"
+      ],
+      "followUps": [
+        "What changes if we want the longest such subarray instead of the count?",
+        "How would you handle very large arrays that don't fit in memory?"
+      ],
+      "resources": [
+        { "label": "Prefix sum technique", "url": "https://en.wikipedia.org/wiki/Prefix_sum" }
+      ]
+    },
+    {
+      "id": "google-system-design-autocomplete",
+      "category": "SYSTEM_DESIGN",
+      "difficulty": "HARD",
+      "experienceLevel": "SENIOR",
+      "tags": ["search", "trie", "caching", "scalability"],
+      "question": "Design a search autocomplete (type-ahead) system serving millions of queries per second.",
+      "expectedAnswer": "Clarify scope (top-k suggestions, personalization, languages) then cover:\n\n- **Offline**: aggregate query logs, build a weighted **trie** / FST of top prefixes, precompute top-k per node.\n- **Serving**: shard the trie by prefix, cache hot prefixes in memory, return in <100ms.\n- **Freshness**: periodic rebuilds + a fast path for trending terms.\n- **Scale**: CDN/edge caching, read replicas, and rate limiting.\n\nDiscuss trade-offs: precompute vs on-the-fly ranking, memory vs latency.",
+      "hints": [
+        "Separate the offline index build from the online serving path.",
+        "Where do you store precomputed top-k results for each prefix?"
+      ],
+      "followUps": [
+        "How do you personalize suggestions per user without blowing up storage?",
+        "How would you support spelling correction?"
+      ],
+      "resources": [
+        { "label": "Trie data structure", "url": "https://en.wikipedia.org/wiki/Trie" }
+      ]
+    },
+    {
+      "id": "google-behavioral-disagreement",
+      "category": "BEHAVIORAL",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "MID",
+      "tags": ["collaboration", "conflict", "influence"],
+      "question": "Tell me about a time you disagreed with a technical decision made by your team or lead.",
+      "expectedAnswer": "Use **STAR**. Strong answers show:\n\n- **Data over opinion**: you brought benchmarks/evidence, not just preference.\n- **Respectful disagreement**: you voiced concerns, then committed to the group decision.\n- **Outcome + reflection**: what happened and what you learned.\n\nAvoid stories where you were simply proven right and gloated, or where you silently complied.",
+      "hints": [
+        "Pick a disagreement about approach, not people.",
+        "Show how you influenced without authority."
+      ],
+      "followUps": [
+        "What would you do differently now?",
+        "How did you rebuild trust afterward?"
+      ],
+      "resources": []
+    },
+    {
+      "id": "google-domain-consistency",
+      "category": "DOMAIN",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "SENIOR",
+      "tags": ["distributed-systems", "cap", "consistency"],
+      "question": "Explain the CAP theorem and how it influences real database choices.",
+      "expectedAnswer": "CAP: during a **network partition (P)** you must choose between **Consistency (C)** and **Availability (A)**.\n\n- **CP** systems (e.g. HBase, Zookeeper) reject requests to stay consistent.\n- **AP** systems (e.g. Dynamo, Cassandra) stay available and reconcile later (eventual consistency).\n- In practice it's a spectrum — tunable consistency (quorums) lets you trade latency for freshness.\n\nMention PACELC as a more complete model (latency vs consistency even without partitions).",
+      "hints": [
+        "Partitions are a given in distributed systems — the real choice is C vs A.",
+        "Is 'consistency' here the same as ACID consistency?"
+      ],
+      "followUps": [
+        "What is PACELC and why is it a better mental model?",
+        "How do quorum reads/writes give tunable consistency?"
+      ],
+      "resources": [
+        { "label": "CAP theorem", "url": "https://en.wikipedia.org/wiki/CAP_theorem" }
+      ]
+    },
+    {
+      "id": "google-coding-lru",
+      "category": "CODING",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "ENTRY",
+      "tags": ["design", "hash-map", "linked-list"],
+      "question": "Implement an LRU cache with O(1) get and put.",
+      "expectedAnswer": "Combine a **hash map** (key -> node) with a **doubly linked list** ordered by recency.\n\n- `get`: look up node, move it to the front, return value.\n- `put`: upsert node at front; if over capacity, evict the tail.\n\nBoth operations are O(1). A language built-in (e.g. `LinkedHashMap`, `OrderedDict`) is acceptable but be ready to explain the underlying structure.",
+      "hints": [
+        "You need both fast lookup and fast reordering.",
+        "Which structure gives O(1) removal from the middle?"
+      ],
+      "followUps": [
+        "How would you make it thread-safe?",
+        "How would you extend it to LFU?"
+      ],
+      "resources": []
+    }
+  ]
+}

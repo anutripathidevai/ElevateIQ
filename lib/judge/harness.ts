@@ -152,7 +152,7 @@ function clone<T>(x: T): T {
  * Throws with a friendly message if the entry cannot be found.
  */
 function buildEntry(code: string, entry: string): (...a: unknown[]) => unknown {
-  // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+  // eslint-disable-next-line no-new-func
   const factory = new Function(
     `"use strict";\n${code}\n;return typeof ${entry} !== "undefined" ? ${entry} : undefined;`,
   );

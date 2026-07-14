@@ -4,11 +4,11 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 
 export const metadata: Metadata = {
   title: {
-    default: "InterviewPrep — One place to prepare for tech interviews",
-    template: "%s · InterviewPrep",
+    default: "ElevateIQ — The AI career platform for software engineers",
+    template: "%s · ElevateIQ",
   },
   description:
-    "Practice DSA, System Design, LLD, and Behavioral interviews with instant AI feedback.",
+    "ElevateIQ helps software engineers land the offer: a company question bank, AI STAR story generator, mock panel interviews, and more — with instant AI feedback.",
 };
 
 export default function RootLayout({

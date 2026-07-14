@@ -14,7 +14,7 @@ export function TopBar({
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur md:px-6">
       <Link href="/" className="flex items-center gap-2 font-semibold">
         <GraduationCap className="h-5 w-5 text-primary" />
-        InterviewPrep
+        ElevateIQ
       </Link>
       <div className="flex items-center gap-2">
         <ThemeToggle />
