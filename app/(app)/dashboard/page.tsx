@@ -8,7 +8,6 @@ import {
   Trophy,
 } from "lucide-react";
 import {
-  USER_PROFILE,
   SCORE_STATS,
   TODAY_PLAN,
   CONTINUE_LEARNING,
@@ -24,7 +23,7 @@ import { cn } from "@/lib/utils";
 import { ScoreCard } from "@/components/blocks/score-card";
 import { AchievementBadge } from "@/components/blocks/achievement-badge";
 import { ActivityList } from "@/components/blocks/activity-list";
-import { AiActions } from "@/components/blocks/ai-actions";
+import { DashboardHero } from "@/components/blocks/dashboard-hero";
 import {
   DashboardCard,
   CardLink,
@@ -38,29 +37,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Hero */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Welcome back, {USER_PROFILE.name.split(" ")[0]} 👋
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Targeting <span className="font-medium text-foreground">{USER_PROFILE.targetRole}</span>{" "}
-              at <span className="font-medium text-foreground">{USER_PROFILE.targetCompany}</span> · You&apos;re on a{" "}
-              <span className="font-medium text-foreground">12-day streak</span>. Keep it going.
-            </p>
-          </div>
-          <Link href="/panel" className={cn(buttonVariants(), "gap-2")}>
-            <Sparkles className="h-4 w-4" /> Start AI Mock Interview
-          </Link>
-        </div>
-        <div className="mt-4">
-          <AiActions
-            actions={["Plan my day", "What should I study next?", "Analyze my weak areas"]}
-            context="Your AI Career Coach"
-          />
-        </div>
-      </section>
+      <DashboardHero />
 
       {/* Score row */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">

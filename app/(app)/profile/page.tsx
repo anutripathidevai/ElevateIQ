@@ -15,10 +15,13 @@ import {
   ACHIEVEMENTS,
   CERTIFICATES,
   CONTINUE_LEARNING,
+  SAVED_QUESTIONS,
+  RESUME_LIBRARY,
 } from "@/lib/dashboard-data";
 import { ACCENT_STYLES } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { AchievementBadge } from "@/components/blocks/achievement-badge";
+import { LogoutButton } from "@/components/auth/logout-button";
 import {
   DashboardCard,
   ProgressBar,
@@ -27,18 +30,6 @@ import {
 } from "@/components/blocks/primitives";
 
 export const metadata = { title: "Profile" };
-
-const SAVED_QUESTIONS = [
-  { q: "Design a distributed rate limiter", company: "Microsoft", tag: "System Design" },
-  { q: "Detect a cycle in a directed graph", company: "Google", tag: "DSA" },
-  { q: "Tell me about a time you disagreed with your manager", company: "Amazon", tag: "Behavioral" },
-];
-
-const RESUME_LIBRARY = [
-  { name: "v3 — Azure focused", updated: "Updated Jul 14", ats: 82 },
-  { name: "v2 — Backend generalist", updated: "Updated Jun 30", ats: 76 },
-  { name: "v1 — General SWE", updated: "Updated May 12", ats: 68 },
-];
 
 export default function ProfilePage() {
   const overall = CAREER_READINESS[0];
@@ -164,11 +155,11 @@ export default function ProfilePage() {
         <DashboardCard>
           <ul className="space-y-2">
             {SAVED_QUESTIONS.map((s) => (
-              <li key={s.q} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/50">
+              <li key={s.id} className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-muted/50">
                 <Bookmark className="h-4 w-4 shrink-0 text-violet-500" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{s.q}</p>
-                  <p className="truncate text-xs text-muted-foreground">{s.company} · {s.tag}</p>
+                  <p className="truncate text-sm font-medium">{s.label}</p>
+                  <p className="truncate text-xs text-muted-foreground">{s.context}</p>
                 </div>
               </li>
             ))}
@@ -191,11 +182,11 @@ export default function ProfilePage() {
         />
         <div className="grid gap-4 sm:grid-cols-3">
           {RESUME_LIBRARY.map((r) => (
-            <div key={r.name} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+            <div key={r.id} className="rounded-xl border border-border bg-card p-4 shadow-sm">
               <FolderOpen className="mb-2 h-5 w-5 text-orange-500" />
               <p className="text-sm font-medium">{r.name}</p>
-              <p className="text-xs text-muted-foreground">{r.updated}</p>
-              <p className="mt-2 text-xs font-medium text-orange-500">ATS {r.ats}%</p>
+              <p className="text-xs text-muted-foreground">Updated {r.updatedAt}</p>
+              <p className="mt-2 text-xs font-medium text-orange-500">ATS {r.atsScore}%</p>
             </div>
           ))}
         </div>
@@ -260,6 +251,9 @@ export default function ProfilePage() {
               </li>
             ))}
           </ul>
+          <div className="mt-4 flex justify-end border-t border-border pt-4">
+            <LogoutButton />
+          </div>
         </DashboardCard>
       </section>
     </div>

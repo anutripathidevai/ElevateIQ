@@ -1,17 +1,11 @@
 import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
-import { UserMenu, type SessionUser } from "./user-menu";
+import { AccountMenu } from "./account-menu";
 import { GlobalSearch } from "./global-search";
 import { MobileNav } from "./mobile-nav";
 
-export function TopBar({
-  user,
-  providers,
-}: {
-  user: SessionUser | null;
-  providers: string[];
-}) {
+export function TopBar() {
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur md:px-6">
       <MobileNav />
@@ -24,7 +18,7 @@ export function TopBar({
       </div>
       <div className="flex shrink-0 items-center gap-2">
         <ThemeToggle />
-        <UserMenu user={user} providers={providers} />
+        <AccountMenu />
       </div>
     </header>
   );
