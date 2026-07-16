@@ -1,7 +1,13 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowRight, Share2 } from "lucide-react";
 import type { Difficulty } from "@prisma/client";
 import { trackBySlug } from "@/lib/tracks";
 import { listProblems, listTagsForTrack } from "@/services/problems";
+import {
+  AUTHORED_PROBLEM_COUNT,
+  PLANNED_PROBLEM_COUNT,
+} from "@/features/graph-algorithms";
 import { FilterBar } from "@/components/practice/filter-bar";
 import { ProblemList } from "@/components/practice/problem-list";
 
@@ -57,6 +63,31 @@ export default async function TrackListPage({
       </header>
 
       <FilterBar tags={tags} />
+
+      {cfg.key === "DSA" && (
+        <Link
+          href="/practice/graph-algorithms"
+          className="group flex items-center gap-4 rounded-xl border border-violet-500/30 bg-gradient-to-br from-violet-500/15 to-violet-500/0 p-4 transition-colors hover:border-violet-500/50"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-500/15">
+            <Share2 className="h-6 w-6 text-violet-400" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="font-semibold">Graph Algorithms track</h2>
+              <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-xs font-medium text-violet-300">
+                New
+              </span>
+            </div>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              An intuition-first course of {PLANNED_PROBLEM_COUNT} curated graph
+              problems ({AUTHORED_PROBLEM_COUNT} available) with Java&nbsp;17
+              solutions, dry runs, and interview tips.
+            </p>
+          </div>
+          <ArrowRight className="h-5 w-5 shrink-0 text-violet-400 transition-transform group-hover:translate-x-0.5" />
+        </Link>
+      )}
 
       <ProblemList items={problems} trackSlug={cfg.slug} />
     </div>

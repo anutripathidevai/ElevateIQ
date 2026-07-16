@@ -31,6 +31,7 @@ import {
   ScrollText,
   Search,
   Settings,
+  Share2,
   Sparkles,
   Star,
   Table2,
@@ -159,6 +160,12 @@ export const NAV_GROUPS: NavGroup[] = [
     href: "/practice/dsa",
     items: [
       { href: "/practice/dsa", label: "DSA", icon: Code2 },
+      {
+        href: "/practice/graph-algorithms",
+        label: "Graph Algorithms",
+        icon: Share2,
+        badge: "New",
+      },
       { href: "/practice/system-design", label: "System Design / HLD", icon: Network },
       { href: "/practice/lld", label: "Low Level Design / LLD", icon: Boxes },
       { href: "/practice/behavioral", label: "Behavioral", icon: MessagesSquare },
