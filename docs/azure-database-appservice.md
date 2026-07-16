@@ -106,6 +106,20 @@ This runs:
 > (`prisma generate && next build`); it does **not** run migrations. Run them here
 > once, or later wire `prisma migrate deploy` into a CI/release step.
 
+### Portal-only alternative (no CLI) — for Neon/Supabase or any Postgres
+
+The seed is a Node script, so it can't be pasted into a web SQL editor directly.
+Instead, generate an equivalent **SQL file** (schema DDL + idempotent problem
+`INSERT`s) and paste it into the provider's SQL editor:
+
+```powershell
+node scripts/azure/gen-neon-seed.mjs neon-setup.sql
+```
+
+Then open the provider's **SQL Editor** (e.g. Neon Console → SQL Editor), paste the
+file, and run it. The schema section runs once; the data section is idempotent
+(`ON CONFLICT (slug) DO UPDATE`). This validated clean against a real Postgres.
+
 ---
 
 ## 4. Point the App Service at the database
