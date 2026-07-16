@@ -391,7 +391,7 @@ public final class LogManager {
     },
   },
   {
-    slug: "design-rate-limiter",
+    slug: "design-rate-limiter-lld",
     isNew: true,
     title: "Design a Rate Limiter",
     difficulty: "MEDIUM",

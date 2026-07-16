@@ -795,7 +795,7 @@
     }
   },
   {
-    "slug": "design-rate-limiter",
+    "slug": "design-rate-limiter-lld",
     "title": "Design a Rate Limiter",
     "difficulty": "MEDIUM",
     "tags": [
