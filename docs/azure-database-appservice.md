@@ -52,12 +52,30 @@ The script creates a **Burstable B1ms / PostgreSQL 16** server + database
 connect) and to **your current IP** (temporary, for migrations), then prints the
 `DATABASE_URL`.
 
-### Option B — portal
+### Option B — portal (step by step)
 
-Create → *Azure Database for PostgreSQL* → **Flexible Server**:
-Workload **Development**, **Burstable B1ms**, **PostgreSQL 16**, database name
-`elevateiq`. Networking → **Public access**, tick *Allow public access from any
-Azure service*, and add a firewall rule for your own IP.
+1. **Create a resource** → search **"Azure Database for PostgreSQL flexible server"** → **Create**.
+2. **Basics**:
+   - Subscription + **Resource group** = the same RG as your App Service.
+   - **Server name** = globally unique (e.g. `elevateiq-pg-9f3a`).
+   - **Region** = same region as the App Service.
+   - **PostgreSQL version** = **16**.
+   - **Workload type** = *Development* → this preselects **Burstable, Standard_B1ms**
+     (Compute + storage → confirm B1ms, 32 GiB).
+   - **Authentication** = *PostgreSQL authentication only*; set **admin username** +
+     **password** (save them).
+3. **Networking**:
+   - Connectivity method = **Public access (allowed IP addresses)**.
+   - Tick **Allow public access from any Azure service within Azure to this server**
+     (lets the App Service connect).
+   - Click **Add current client IP address** (temporary — for running migrations).
+4. **Review + create** → **Create** (provisioning takes a few minutes).
+5. **Create the database**: open the server → **Settings → Databases** → **Add** →
+   name it **`elevateiq`** → Save.
+6. Build the connection string (server → **Settings → Connect** gives the host):
+   ```
+   postgresql://<admin>:<url-encoded-password>@<server>.postgres.database.azure.com:5432/elevateiq?sslmode=require
+   ```
 
 ### DATABASE_URL format (note `sslmode=require`)
 
