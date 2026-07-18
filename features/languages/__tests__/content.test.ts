@@ -75,9 +75,10 @@ describe("javascript course structure", () => {
     expect(PLANNED_TOPIC_COUNT).toBe(all.length);
   });
 
-  it("publishes exactly modules 1-3", () => {
-    expect(publishedModuleIds().sort()).toEqual(
-      ["fundamentals", "scope-closures", "variables-data-types"].sort(),
+  it("publishes all 14 modules", () => {
+    expect(publishedModuleIds()).toHaveLength(14);
+    expect(new Set(publishedModuleIds())).toEqual(
+      new Set(JS_MODULES.map((m) => m.id)),
     );
   });
 });
@@ -95,7 +96,8 @@ describe("javascript authored content", () => {
 
   it("keeps AUTHORED_TOPIC_COUNT in sync with JS_TOPICS", () => {
     expect(AUTHORED_TOPIC_COUNT).toBe(JS_TOPICS.length);
-    expect(AUTHORED_TOPIC_COUNT).toBeGreaterThanOrEqual(26);
+    expect(AUTHORED_TOPIC_COUNT).toBe(114);
+    expect(AUTHORED_TOPIC_COUNT).toBe(PLANNED_TOPIC_COUNT);
   });
 
   it("assigns every authored topic a unique slug and order", () => {

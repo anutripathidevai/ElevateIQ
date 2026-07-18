@@ -1,11 +1,9 @@
 import type { CourseModule } from "../types";
 
 /**
- * The full 14-module JavaScript curriculum. Every module is listed so the
- * landing page and roadmap show the complete learning journey. Modules 1–3 are
- * fully authored and published; the remainder are defined (with their real
- * topic lists) and marked `coming-soon` so they appear in the roadmap and are
- * ready to be filled in by authoring topic data — no app-code changes needed.
+ * The full 14-module JavaScript curriculum. Every module is authored and
+ * published — the landing page and roadmap show the complete learning journey,
+ * and every topic listed here has a full learning page.
  *
  * Topic slugs are the source of truth for structure and ordering. All are
  * prefixed `js-`.
@@ -73,7 +71,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "Execution Context & Hoisting",
     summary:
       "The two-phase execution model, hoisting, the temporal dead zone, and the call stack.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-execution-context",
       "js-memory-creation-phase",
@@ -89,7 +87,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "Functions",
     summary:
       "Everything functions — declarations, expressions, arrows, IIFEs, callbacks, and higher-order/pure functions.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-function-declaration",
       "js-function-expression",
@@ -108,7 +106,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "Objects & Prototypes",
     summary:
       "Objects, property descriptors, freeze/seal/create, and the prototype chain that powers inheritance.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-objects",
       "js-property-descriptors",
@@ -126,7 +124,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "The this Keyword",
     summary:
       "How `this` is determined in every context, plus call, apply, and bind.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-this-global",
       "js-this-object",
@@ -143,7 +141,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "Asynchronous JavaScript",
     summary:
       "The event loop in depth — Web APIs, task vs microtask queues, callbacks, callback hell, promises, and async/await.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-event-loop",
       "js-web-apis",
@@ -161,7 +159,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "Promises",
     summary:
       "The promise lifecycle, chaining, error handling, and the combinators (all/any/allSettled/race).",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-promise-lifecycle",
       "js-promise-chaining",
@@ -178,7 +176,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "ES6+ Features",
     summary:
       "Modern syntax that shows up in every interview — destructuring, spread/rest, optional chaining, nullish coalescing, and modules.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-destructuring",
       "js-spread",
@@ -196,7 +194,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "Advanced JavaScript",
     summary:
       "The machine-coding toolkit — currying, memoization, debounce/throttle, deep clone, generators, iterators, WeakMap/Set, Proxy, and Reflect.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-currying",
       "js-memoization",
@@ -218,7 +216,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "Browser APIs",
     summary:
       "The DOM, the event model (bubbling, capturing, delegation), and client storage.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-dom",
       "js-events",
@@ -236,7 +234,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "JavaScript Design Patterns",
     summary:
       "The patterns interviewers ask you to implement — module, factory, singleton, observer, and pub/sub.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-module-pattern",
       "js-factory-pattern",
@@ -251,7 +249,7 @@ export const JS_MODULES: CourseModule[] = [
     title: "Machine Coding",
     summary:
       "Build interview-favourite features end to end — debounced search, autocomplete, infinite scroll, event emitter, polyfills, LRU cache, and a mini virtual DOM.",
-    status: "coming-soon",
+    status: "published",
     topicSlugs: [
       "js-mc-debounced-search",
       "js-mc-autocomplete",
