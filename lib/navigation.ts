@@ -182,6 +182,12 @@ export const NAV_GROUPS: NavGroup[] = [
     href: "/learning",
     items: [
       { href: "/learning", label: "Courses", icon: BookOpen },
+      {
+        href: "/learning/languages",
+        label: "Programming Languages",
+        icon: Code2,
+        badge: "New",
+      },
       { href: "/learning#azure", label: "Azure", icon: Cloud },
       { href: "/learning#aws", label: "AWS", icon: Cloud },
       { href: "/learning#genai", label: "Generative AI", icon: Sparkles },
