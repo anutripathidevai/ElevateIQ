@@ -23,7 +23,13 @@ export interface ModuleCardData {
 }
 
 /** A module tile on the hub: pattern, problem count, est. time, completion %. */
-export function ModuleCard({ data }: { data: ModuleCardData }) {
+export function ModuleCard({
+  data,
+  basePath = "/practice/graph-algorithms",
+}: {
+  data: ModuleCardData;
+  basePath?: string;
+}) {
   const solved = useSolvedSet();
   const done = data.authoredSlugs.filter((s) => solved.has(s)).length;
   const pct = data.plannedCount
@@ -98,7 +104,7 @@ export function ModuleCard({ data }: { data: ModuleCardData }) {
     return <div className={className}>{body}</div>;
   }
   return (
-    <Link href={`/practice/graph-algorithms/${firstSlug}`} className={className}>
+    <Link href={`${basePath}/${firstSlug}`} className={className}>
       {body}
     </Link>
   );

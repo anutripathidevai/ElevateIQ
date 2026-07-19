@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Award, BookOpen, CheckCircle2, Clock, Code2, Route } from "lucide-react";
+import { ArrowRight, Award, BookOpen, CheckCircle2, Clock, Code2, Layers, Route } from "lucide-react";
 import {
   COURSES,
   LEARNING_PATHS,
@@ -26,35 +26,64 @@ export default function LearningPage() {
         aiActions={["Recommend a course", "Build a learning path", "Quiz me"]}
       />
 
-      <Link
-        href="/learning/languages"
-        className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/15 to-orange-500/0 p-6 transition-colors hover:border-orange-500/50 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div className="flex items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/15">
-            <Code2 className="h-6 w-6 text-orange-500" />
-          </span>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold tracking-tight">
-                Programming Languages
-              </h2>
-              <span className="rounded-full bg-orange-500/15 px-2 py-0.5 text-xs font-medium text-orange-500">
-                New
-              </span>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Link
+          href="/learning/dsa"
+          className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-500/15 to-blue-500/0 p-6 transition-colors hover:border-blue-500/50 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/15">
+              <Layers className="h-6 w-6 text-blue-500" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Data Structures &amp; Algorithms
+                </h2>
+                <span className="rounded-full bg-blue-500/15 px-2 py-0.5 text-xs font-medium text-blue-500">
+                  New
+                </span>
+              </div>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                A structured, interview-focused DSA path — Dynamic Programming and
+                Graph Algorithms are live, with 15 more topics on the roadmap.
+              </p>
             </div>
-            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Interview-focused language courses starting with a deep JavaScript
-              track — the event loop, closures, async, and machine coding, with
-              an interactive playground.
-            </p>
           </div>
-        </div>
-        <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-transform group-hover:translate-x-0.5">
-          Explore <ArrowRight className="h-4 w-4" />
-        </span>
-      </Link>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-transform group-hover:translate-x-0.5">
+            Explore <ArrowRight className="h-4 w-4" />
+          </span>
+        </Link>
 
+        <Link
+          href="/learning/languages"
+          className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/15 to-orange-500/0 p-6 transition-colors hover:border-orange-500/50 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/15">
+              <Code2 className="h-6 w-6 text-orange-500" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Programming Languages
+                </h2>
+                <span className="rounded-full bg-orange-500/15 px-2 py-0.5 text-xs font-medium text-orange-500">
+                  New
+                </span>
+              </div>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                Interview-focused language courses starting with a deep JavaScript
+                track — the event loop, closures, async, and machine coding, with
+                an interactive playground.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-transform group-hover:translate-x-0.5">
+            Explore <ArrowRight className="h-4 w-4" />
+          </span>
+        </Link>
+      </div>
 
       <section className="space-y-4">
         <SectionHeader

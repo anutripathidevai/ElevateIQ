@@ -21,6 +21,21 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // Graph Algorithms moved under the DSA learning hub.
+      {
+        source: "/practice/graph-algorithms",
+        destination: "/learning/dsa/graph-algorithms",
+        permanent: true,
+      },
+      {
+        source: "/practice/graph-algorithms/:slug",
+        destination: "/learning/dsa/graph-algorithms/:slug",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

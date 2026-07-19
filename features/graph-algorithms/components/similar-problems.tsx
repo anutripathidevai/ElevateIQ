@@ -5,13 +5,17 @@ import type { SimilarProblem } from "../types";
 import { GraphDifficultyBadge } from "./graph-difficulty-badge";
 
 /** Grid of related-problem cards. Internal ones deep-link within the track. */
-export function SimilarProblems({ items }: { items: SimilarProblem[] }) {
+export function SimilarProblems({
+  items,
+  basePath = "/practice/graph-algorithms",
+}: {
+  items: SimilarProblem[];
+  basePath?: string;
+}) {
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {items.map((item) => {
-        const href = item.slug
-          ? `/practice/graph-algorithms/${item.slug}`
-          : item.url;
+        const href = item.slug ? `${basePath}/${item.slug}` : item.url;
         const external = !item.slug && Boolean(item.url);
         const inner = (
           <>

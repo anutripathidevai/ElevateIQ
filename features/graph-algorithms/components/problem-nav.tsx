@@ -11,15 +11,17 @@ interface NavTarget {
 export function ProblemNav({
   prev,
   next,
+  basePath = "/practice/graph-algorithms",
 }: {
   prev?: NavTarget;
   next?: NavTarget;
+  basePath?: string;
 }) {
   return (
     <nav className="grid gap-3 sm:grid-cols-2">
       {prev ? (
         <Link
-          href={`/practice/graph-algorithms/${prev.slug}`}
+          href={`${basePath}/${prev.slug}`}
           className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-muted/40"
         >
           <ArrowLeft className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:-translate-x-0.5" />
@@ -33,7 +35,7 @@ export function ProblemNav({
       )}
       {next && (
         <Link
-          href={`/practice/graph-algorithms/${next.slug}`}
+          href={`${basePath}/${next.slug}`}
           className={cn(
             "group flex items-center justify-end gap-3 rounded-xl border border-border bg-card p-4 text-right transition-colors hover:border-primary/40 hover:bg-muted/40",
           )}

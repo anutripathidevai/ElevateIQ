@@ -1,10 +1,9 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import type { Metadata } from "next";
 import {
-  ArrowLeft,
+  ArrowRightLeft,
+  Boxes,
   Code2,
   FileText,
+  Gauge,
   KeyRound,
   Lightbulb,
   MessagesSquare,
@@ -14,64 +13,61 @@ import {
   Workflow,
 } from "lucide-react";
 import { Markdown } from "@/components/practice/markdown";
-import { ACCENT_STYLES } from "@/lib/navigation";
+import { ACCENT_STYLES, type AccentKey } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import {
-  adjacentProblems,
-  getModule,
-  getProblem,
-  PLANNED_PROBLEM_COUNT,
-  PROBLEMS_IN_ORDER,
-} from "@/features/graph-algorithms";
-import {
+  ComplexityCards,
   DryRunTable,
   GraphSection,
-  MarkComplete,
-  ProblemMeta,
   ProblemNav,
-  ProblemToc,
   SimilarProblems,
   SolutionList,
-  moduleAccent,
 } from "@/features/graph-algorithms/components";
+import type { DsaProblemLesson } from "../types";
+import { LessonMeta } from "./lesson-meta";
+import { LessonToc } from "./lesson-toc";
+import { MarkComplete } from "@/features/graph-algorithms/components";
+import { RecursionTree } from "./recursion-tree";
+import { problemSections } from "./lesson-sections";
 
-export function generateStaticParams() {
-  return PROBLEMS_IN_ORDER.map((p) => ({ slug: p.slug }));
+interface NavTarget {
+  slug: string;
+  title: string;
 }
 
-export function generateMetadata({
-  params,
+/**
+ * Renders a full problem lesson using the shared Graph section components, so
+ * Dynamic Programming and Graph Algorithms problems look and behave identically.
+ * DP-specific sections (State Definition, State Transition, Complexity Analysis)
+ * render only when the lesson provides that content.
+ */
+export function ProblemLessonView({
+  lesson,
+  moduleLabel,
+  accent,
+  position,
+  total,
+  basePath,
+  prev,
+  next,
 }: {
-  params: { slug: string };
-}): Metadata {
-  const problem = getProblem(params.slug);
-  return { title: problem ? problem.title : "Graph problem" };
-}
-
-export default function GraphProblemPage({
-  params,
-}: {
-  params: { slug: string };
+  lesson: DsaProblemLesson;
+  moduleLabel?: string;
+  accent: AccentKey;
+  /** 1-based position among the course's problems. */
+  position: number;
+  total: number;
+  basePath: string;
+  prev?: NavTarget;
+  next?: NavTarget;
 }) {
-  const problem = getProblem(params.slug);
-  if (!problem) notFound();
-
-  const mod = getModule(problem.moduleId);
-  const accent = moduleAccent(mod?.order ?? 1);
   const a = ACCENT_STYLES[accent];
-  const { prev, next } = adjacentProblems(problem.slug);
+  const sections = problemSections(lesson);
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/practice/graph-algorithms"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" /> Graph Algorithms
-      </Link>
-
       <header className="space-y-3">
-        {mod && (
+        {moduleLabel && (
           <div
             className={cn(
               "inline-flex items-center gap-2 rounded-full px-2.5 py-0.5 text-xs font-medium",
@@ -79,16 +75,16 @@ export default function GraphProblemPage({
               a.text,
             )}
           >
-            Module {mod.order} · {mod.title}
+            {moduleLabel}
           </div>
         )}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {problem.title}
+            {lesson.title}
           </h1>
-          <MarkComplete slug={problem.slug} />
+          <MarkComplete slug={lesson.slug} />
         </div>
-        <ProblemMeta problem={problem} total={PLANNED_PROBLEM_COUNT} />
+        <LessonMeta lesson={lesson} position={position} total={total} />
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_15rem]">
@@ -101,20 +97,20 @@ export default function GraphProblemPage({
             accent={accent}
           >
             <div className="space-y-5">
-              <Markdown>{problem.statementMD}</Markdown>
+              <Markdown>{lesson.statementMD}</Markdown>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                     Input
                   </h4>
-                  <Markdown>{problem.inputMD}</Markdown>
+                  <Markdown>{lesson.inputMD}</Markdown>
                 </div>
                 <div>
                   <h4 className="mb-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                     Output
                   </h4>
-                  <Markdown>{problem.outputMD}</Markdown>
+                  <Markdown>{lesson.outputMD}</Markdown>
                 </div>
               </div>
 
@@ -123,7 +119,7 @@ export default function GraphProblemPage({
                   Constraints
                 </h4>
                 <ul className="space-y-1 text-sm">
-                  {problem.constraints.map((c, i) => (
+                  {lesson.constraints.map((c, i) => (
                     <li key={i} className="flex gap-2">
                       <span className="text-muted-foreground">•</span>
                       <code className="font-mono text-xs">{c}</code>
@@ -136,7 +132,7 @@ export default function GraphProblemPage({
                 <h4 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                   Examples
                 </h4>
-                {problem.examples.map((ex, i) => (
+                {lesson.examples.map((ex, i) => (
                   <div
                     key={i}
                     className="rounded-lg border border-border bg-muted/30 p-4"
@@ -178,11 +174,9 @@ export default function GraphProblemPage({
             accent={accent}
           >
             <ul className="space-y-2">
-              {problem.learningObjectives.map((o, i) => (
+              {lesson.learningObjectives.map((o, i) => (
                 <li key={i} className="flex gap-2.5 text-sm">
-                  <Target
-                    className={cn("mt-0.5 h-4 w-4 shrink-0", a.text)}
-                  />
+                  <Target className={cn("mt-0.5 h-4 w-4 shrink-0", a.text)} />
                   <span>{o}</span>
                 </li>
               ))}
@@ -197,14 +191,30 @@ export default function GraphProblemPage({
             accent={accent}
           >
             <div className="space-y-4">
-              <Markdown>{problem.intuitionMD}</Markdown>
-              {problem.commonMistakes.length > 0 && (
+              <Markdown>{lesson.intuitionMD}</Markdown>
+              {lesson.recursionTree && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    {lesson.recursionTree.rootLabel}
+                  </h4>
+                  <RecursionTree
+                    root={lesson.recursionTree.root}
+                    accent={accent}
+                  />
+                  {lesson.recursionTree.captionMD && (
+                    <div className="text-xs text-muted-foreground">
+                      <Markdown>{lesson.recursionTree.captionMD}</Markdown>
+                    </div>
+                  )}
+                </div>
+              )}
+              {lesson.commonMistakes.length > 0 && (
                 <div className="rounded-lg border border-warning/30 bg-warning/5 p-4">
                   <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-warning">
                     <Lightbulb className="h-4 w-4" /> Common mistakes
                   </h4>
                   <ul className="space-y-1.5 text-sm">
-                    {problem.commonMistakes.map((m, i) => (
+                    {lesson.commonMistakes.map((m, i) => (
                       <li key={i} className="flex gap-2">
                         <span className="text-warning">×</span>
                         <span>{m}</span>
@@ -216,37 +226,87 @@ export default function GraphProblemPage({
             </div>
           </GraphSection>
 
-          {/* 5 — Algorithm explanation */}
-          <GraphSection
-            id="algorithm"
-            title="Algorithm Explanation"
-            icon={Workflow}
-            accent={accent}
-          >
-            <Markdown>{problem.algorithmMD}</Markdown>
-          </GraphSection>
+          {/* 5 — State definition (DP) */}
+          {lesson.stateDefinitionMD && (
+            <GraphSection
+              id="state-definition"
+              title="State Definition"
+              icon={Boxes}
+              accent={accent}
+            >
+              <Markdown>{lesson.stateDefinitionMD}</Markdown>
+            </GraphSection>
+          )}
 
-          {/* 6 — Solutions */}
+          {/* 6 — State transition (DP) */}
+          {lesson.stateTransitionMD && (
+            <GraphSection
+              id="state-transition"
+              title="State Transition"
+              icon={ArrowRightLeft}
+              accent={accent}
+            >
+              <Markdown>{lesson.stateTransitionMD}</Markdown>
+            </GraphSection>
+          )}
+
+          {/* Algorithm explanation (Graph) */}
+          {lesson.algorithmMD && (
+            <GraphSection
+              id="algorithm"
+              title="Algorithm Explanation"
+              icon={Workflow}
+              accent={accent}
+            >
+              <Markdown>{lesson.algorithmMD}</Markdown>
+            </GraphSection>
+          )}
+
+          {/* 7 — Solutions */}
           <GraphSection
             id="solutions"
             title="Solutions"
             icon={Code2}
             accent={accent}
           >
-            <SolutionList solutions={problem.solutions} />
+            <SolutionList solutions={lesson.solutions} />
           </GraphSection>
 
-          {/* 7 — Dry run */}
+          {/* 8 — Dry run */}
           <GraphSection
             id="dry-run"
             title="Dry Run"
             icon={PlayCircle}
             accent={accent}
           >
-            <DryRunTable dryRun={problem.dryRun} />
+            <DryRunTable dryRun={lesson.dryRun} />
           </GraphSection>
 
-          {/* 8 — Interview tips */}
+          {/* 9 — Complexity analysis (DP) */}
+          {(lesson.stateDefinitionMD || lesson.stateTransitionMD) && (
+            <GraphSection
+              id="complexity"
+              title="Complexity Analysis"
+              icon={Gauge}
+              accent={accent}
+            >
+              <div className="space-y-4">
+                {lesson.complexityNote && (
+                  <Markdown>{lesson.complexityNote}</Markdown>
+                )}
+                <div className="space-y-4">
+                  {lesson.solutions.map((s) => (
+                    <div key={s.name} className="space-y-2">
+                      <h4 className="text-sm font-semibold">{s.name}</h4>
+                      <ComplexityCards complexity={s.complexity} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </GraphSection>
+          )}
+
+          {/* 10 — Interview tips */}
           <GraphSection
             id="interview-tips"
             title="Interview Tips"
@@ -254,14 +314,14 @@ export default function GraphProblemPage({
             accent={accent}
           >
             <div className="space-y-4">
-              <Markdown>{problem.interviewTipsMD}</Markdown>
-              {problem.followUps.length > 0 && (
+              <Markdown>{lesson.interviewTipsMD}</Markdown>
+              {lesson.followUps.length > 0 && (
                 <div>
                   <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                     Likely follow-ups
                   </h4>
                   <ul className="space-y-1.5 text-sm">
-                    {problem.followUps.map((f, i) => (
+                    {lesson.followUps.map((f, i) => (
                       <li key={i} className="flex gap-2">
                         <MessagesSquare
                           className={cn("mt-0.5 h-4 w-4 shrink-0", a.text)}
@@ -275,17 +335,17 @@ export default function GraphProblemPage({
             </div>
           </GraphSection>
 
-          {/* 9 — Similar problems */}
+          {/* 11 — Similar problems */}
           <GraphSection
             id="similar"
             title="Similar Problems"
             icon={Network}
             accent={accent}
           >
-            <SimilarProblems items={problem.similarProblems} />
+            <SimilarProblems items={lesson.similarProblems} basePath={basePath} />
           </GraphSection>
 
-          {/* 10 — Key takeaways */}
+          {/* 12 — Key takeaways */}
           <GraphSection
             id="takeaways"
             title="Key Takeaways"
@@ -294,11 +354,9 @@ export default function GraphProblemPage({
           >
             <div className="space-y-4">
               <ul className="space-y-2">
-                {problem.keyTakeaways.map((k, i) => (
+                {lesson.keyTakeaways.map((k, i) => (
                   <li key={i} className="flex gap-2.5 text-sm">
-                    <KeyRound
-                      className={cn("mt-0.5 h-4 w-4 shrink-0", a.text)}
-                    />
+                    <KeyRound className={cn("mt-0.5 h-4 w-4 shrink-0", a.text)} />
                     <span>{k}</span>
                   </li>
                 ))}
@@ -311,20 +369,17 @@ export default function GraphProblemPage({
                 )}
               >
                 <span className="font-semibold">Reusable template: </span>
-                {problem.pattern}
+                {lesson.pattern}
               </div>
             </div>
           </GraphSection>
 
-          <ProblemNav
-            prev={prev ? { slug: prev.slug, title: prev.title } : undefined}
-            next={next ? { slug: next.slug, title: next.title } : undefined}
-          />
+          <ProblemNav prev={prev} next={next} basePath={basePath} />
         </div>
 
         <aside className="hidden lg:block">
           <div className="sticky top-20">
-            <ProblemToc />
+            <LessonToc sections={sections} />
           </div>
         </aside>
       </div>
