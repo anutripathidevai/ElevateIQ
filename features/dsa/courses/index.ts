@@ -9,12 +9,14 @@ import { graphCourse } from "./graph";
 import { dpCourse } from "../dynamic-programming";
 import { greedyCourse } from "../greedy";
 import { slidingWindowCourse } from "../sliding-window";
+import { backtrackingCourse } from "../backtracking";
 
 const COURSES: Record<string, DsaCourse> = {
   "graph-algorithms": graphCourse,
   "dynamic-programming": dpCourse,
   greedy: greedyCourse,
   "sliding-window": slidingWindowCourse,
+  backtracking: backtrackingCourse,
 };
 
 export function getCourse(topicSlug: string): DsaCourse | undefined {
