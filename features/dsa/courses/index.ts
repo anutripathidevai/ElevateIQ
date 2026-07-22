@@ -7,10 +7,12 @@
 import type { DsaCourse } from "../types";
 import { graphCourse } from "./graph";
 import { dpCourse } from "../dynamic-programming";
+import { greedyCourse } from "../greedy";
 
 const COURSES: Record<string, DsaCourse> = {
   "graph-algorithms": graphCourse,
   "dynamic-programming": dpCourse,
+  greedy: greedyCourse,
 };
 
 export function getCourse(topicSlug: string): DsaCourse | undefined {
