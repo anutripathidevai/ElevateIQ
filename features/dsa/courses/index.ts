@@ -8,11 +8,13 @@ import type { DsaCourse } from "../types";
 import { graphCourse } from "./graph";
 import { dpCourse } from "../dynamic-programming";
 import { greedyCourse } from "../greedy";
+import { slidingWindowCourse } from "../sliding-window";
 
 const COURSES: Record<string, DsaCourse> = {
   "graph-algorithms": graphCourse,
   "dynamic-programming": dpCourse,
   greedy: greedyCourse,
+  "sliding-window": slidingWindowCourse,
 };
 
 export function getCourse(topicSlug: string): DsaCourse | undefined {
