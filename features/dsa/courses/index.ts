@@ -10,6 +10,7 @@ import { dpCourse } from "../dynamic-programming";
 import { greedyCourse } from "../greedy";
 import { slidingWindowCourse } from "../sliding-window";
 import { backtrackingCourse } from "../backtracking";
+import { arraysCourse } from "../arrays";
 
 const COURSES: Record<string, DsaCourse> = {
   "graph-algorithms": graphCourse,
@@ -17,6 +18,7 @@ const COURSES: Record<string, DsaCourse> = {
   greedy: greedyCourse,
   "sliding-window": slidingWindowCourse,
   backtracking: backtrackingCourse,
+  arrays: arraysCourse,
 };
 
 export function getCourse(topicSlug: string): DsaCourse | undefined {
