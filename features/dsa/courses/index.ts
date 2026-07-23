@@ -14,6 +14,7 @@ import { arraysCourse } from "../arrays";
 import { linkedListCourse } from "../linked-list";
 import { treesCourse } from "../trees";
 import { heapCourse } from "../heap";
+import { intervalsCourse } from "../intervals";
 
 const COURSES: Record<string, DsaCourse> = {
   "graph-algorithms": graphCourse,
@@ -25,6 +26,7 @@ const COURSES: Record<string, DsaCourse> = {
   "linked-list": linkedListCourse,
   tree: treesCourse,
   "heap-priority-queue": heapCourse,
+  intervals: intervalsCourse,
 };
 
 export function getCourse(topicSlug: string): DsaCourse | undefined {
