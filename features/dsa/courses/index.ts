@@ -12,6 +12,7 @@ import { slidingWindowCourse } from "../sliding-window";
 import { backtrackingCourse } from "../backtracking";
 import { arraysCourse } from "../arrays";
 import { linkedListCourse } from "../linked-list";
+import { treesCourse } from "../trees";
 
 const COURSES: Record<string, DsaCourse> = {
   "graph-algorithms": graphCourse,
@@ -21,6 +22,7 @@ const COURSES: Record<string, DsaCourse> = {
   backtracking: backtrackingCourse,
   arrays: arraysCourse,
   "linked-list": linkedListCourse,
+  tree: treesCourse,
 };
 
 export function getCourse(topicSlug: string): DsaCourse | undefined {
