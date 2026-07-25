@@ -183,6 +183,12 @@ export const NAV_GROUPS: NavGroup[] = [
         badge: "New",
       },
       {
+        href: "/learning/system-design",
+        label: "System Design",
+        icon: Network,
+        badge: "New",
+      },
+      {
         href: "/learning/languages",
         label: "Programming Languages",
         icon: Code2,

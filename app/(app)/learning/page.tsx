@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Award, BookOpen, CheckCircle2, Clock, Code2, Layers, Route } from "lucide-react";
+import { ArrowRight, Award, BookOpen, Boxes, CheckCircle2, Clock, Code2, Globe, Layers, Network, Route, Sparkles } from "lucide-react";
 import {
   COURSES,
   LEARNING_PATHS,
@@ -56,6 +56,35 @@ export default function LearningPage() {
         </Link>
 
         <Link
+          href="/learning/system-design"
+          className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/15 to-violet-500/0 p-6 transition-colors hover:border-violet-500/50 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-violet-500/15">
+              <Network className="h-6 w-6 text-violet-500" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  System Design (HLD)
+                </h2>
+                <span className="rounded-full bg-violet-500/15 px-2 py-0.5 text-xs font-medium text-violet-500">
+                  New
+                </span>
+              </div>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                High Level Design interview prep — a five-tier path from URL
+                shorteners and rate limiters to distributed systems and AI system
+                design, each a full 25-section deep dive with interactive diagrams.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-violet-500 px-4 py-2 text-sm font-medium text-white transition-transform group-hover:translate-x-0.5">
+            Explore <ArrowRight className="h-4 w-4" />
+          </span>
+        </Link>
+
+        <Link
           href="/learning/languages"
           className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/15 to-orange-500/0 p-6 transition-colors hover:border-orange-500/50 sm:flex-row sm:items-center sm:justify-between"
         >
@@ -84,6 +113,55 @@ export default function LearningPage() {
           </span>
         </Link>
       </div>
+
+      <section className="space-y-3">
+        <SectionHeader
+          title="More tracks coming soon"
+          description="Rounding out the interview-prep curriculum"
+          icon={Sparkles}
+          accent="violet"
+        />
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            {
+              title: "Low Level Design (LLD)",
+              desc: "Object-oriented design, SOLID, and machine-coding rounds.",
+              icon: Boxes,
+            },
+            {
+              title: "AI System Design",
+              desc: "Designing inference serving, RAG, agents, and vector stores.",
+              icon: Sparkles,
+            },
+            {
+              title: "Distributed Systems",
+              desc: "Consensus, replication, and multi-region data at depth.",
+              icon: Globe,
+            },
+          ].map((c) => {
+            const Icon = c.icon;
+            return (
+              <div
+                key={c.title}
+                className="flex flex-col gap-3 rounded-xl border border-dashed border-border bg-muted/20 p-5"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                  </span>
+                  <div>
+                    <h3 className="font-semibold leading-tight">{c.title}</h3>
+                    <span className="text-xs text-muted-foreground">
+                      Coming soon
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">{c.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
       <section className="space-y-4">
         <SectionHeader
