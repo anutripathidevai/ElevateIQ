@@ -1,14 +1,14 @@
 import type {
-  AISDCompany,
-  AISDDifficulty,
-  AISDLesson,
-  AISDLessonContent,
-  AISDLessonMeta,
-  AISDTierId,
-  AISDTopic,
+  GenAICompany,
+  GenAIDifficulty,
+  GenAILesson,
+  GenAILessonContent,
+  GenAILessonMeta,
+  GenAITierId,
+  GenAITopic,
 } from "./types";
-import { AISD_CATALOG, AISD_TIERS } from "./registry";
-import { AISD_CONTENT } from "./questions";
+import { GENAI_CATALOG, GENAI_TIERS } from "./registry";
+import { GENAI_CONTENT } from "./questions";
 
 /**
  * Public API for the AI System Design module. The dashboard and the dynamic
@@ -19,27 +19,27 @@ import { AISD_CONTENT } from "./questions";
 // ---- Catalog access --------------------------------------------------------
 
 /** All lesson metadata, in catalog order. */
-export function getCatalog(): AISDLessonMeta[] {
-  return AISD_CATALOG;
+export function getCatalog(): GenAILessonMeta[] {
+  return GENAI_CATALOG;
 }
 
 /** All published lessons (i.e. those with authored content). */
-export function getPublishedCatalog(): AISDLessonMeta[] {
-  return AISD_CATALOG.filter((q) => q.status === "published");
+export function getPublishedCatalog(): GenAILessonMeta[] {
+  return GENAI_CATALOG.filter((q) => q.status === "published");
 }
 
 /** Metadata for a single lesson by slug. */
-export function getLessonMeta(slug: string): AISDLessonMeta | undefined {
-  return AISD_CATALOG.find((q) => q.slug === slug);
+export function getLessonMeta(slug: string): GenAILessonMeta | undefined {
+  return GENAI_CATALOG.find((q) => q.slug === slug);
 }
 
 /** Authored content for a single lesson by slug (undefined if coming-soon). */
-export function getLessonContent(slug: string): AISDLessonContent | undefined {
-  return AISD_CONTENT[slug];
+export function getLessonContent(slug: string): GenAILessonContent | undefined {
+  return GENAI_CONTENT[slug];
 }
 
 /** Fully-assembled lesson (meta + content), or undefined if not published. */
-export function getLesson(slug: string): AISDLesson | undefined {
+export function getLesson(slug: string): GenAILesson | undefined {
   const meta = getLessonMeta(slug);
   const content = getLessonContent(slug);
   if (!meta || !content) return undefined;
@@ -48,16 +48,16 @@ export function getLesson(slug: string): AISDLesson | undefined {
 
 // ---- Tier grouping ---------------------------------------------------------
 
-export interface AISDTierGroup {
-  tier: (typeof AISD_TIERS)[number];
-  lessons: AISDLessonMeta[];
+export interface GenAITierGroup {
+  tier: (typeof GENAI_TIERS)[number];
+  lessons: GenAILessonMeta[];
 }
 
 /** Lessons grouped by learning-path tier, tiers in display order. */
 export function getTierGroups(
-  lessons: AISDLessonMeta[] = AISD_CATALOG,
-): AISDTierGroup[] {
-  return [...AISD_TIERS]
+  lessons: GenAILessonMeta[] = GENAI_CATALOG,
+): GenAITierGroup[] {
+  return [...GENAI_TIERS]
     .sort((a, b) => a.order - b.order)
     .map((tier) => ({
       tier,
@@ -69,23 +69,23 @@ export function getTierGroups(
 
 // ---- Aggregate stats -------------------------------------------------------
 
-export interface AISDTotals {
+export interface GenAITotals {
   total: number;
   published: number;
   companies: number;
   topics: number;
 }
 
-export function getTotals(): AISDTotals {
-  const companies = new Set<AISDCompany>();
-  const topics = new Set<AISDTopic>();
-  for (const q of AISD_CATALOG) {
+export function getTotals(): GenAITotals {
+  const companies = new Set<GenAICompany>();
+  const topics = new Set<GenAITopic>();
+  for (const q of GENAI_CATALOG) {
     q.companies.forEach((c) => companies.add(c));
     q.topics.forEach((t) => topics.add(t));
   }
   return {
-    total: AISD_CATALOG.length,
-    published: AISD_CATALOG.filter((q) => q.status === "published").length,
+    total: GENAI_CATALOG.length,
+    published: GENAI_CATALOG.filter((q) => q.status === "published").length,
     companies: companies.size,
     topics: topics.size,
   };
@@ -93,18 +93,18 @@ export function getTotals(): AISDTotals {
 
 // ---- Filtering & sorting (used by the dashboard) ---------------------------
 
-export type AISDSort = "newest" | "popular" | "difficulty" | "frequency";
+export type GenAISort = "newest" | "popular" | "difficulty" | "frequency";
 
-export interface AISDFilters {
+export interface GenAIFilters {
   query?: string;
-  difficulty?: AISDDifficulty | "All";
-  topic?: AISDTopic | "All";
-  company?: AISDCompany | "All";
-  tier?: AISDTierId | "All";
+  difficulty?: GenAIDifficulty | "All";
+  topic?: GenAITopic | "All";
+  company?: GenAICompany | "All";
+  tier?: GenAITierId | "All";
   tag?: string | "All";
 }
 
-const DIFFICULTY_RANK: Record<AISDDifficulty, number> = {
+const DIFFICULTY_RANK: Record<GenAIDifficulty, number> = {
   Beginner: 0,
   Intermediate: 1,
   Advanced: 2,
@@ -119,9 +119,9 @@ const FREQUENCY_RANK: Record<string, number> = {
 
 /** Apply the dashboard's search + facet filters to a list of lessons. */
 export function filterLessons(
-  lessons: AISDLessonMeta[],
-  filters: AISDFilters,
-): AISDLessonMeta[] {
+  lessons: GenAILessonMeta[],
+  filters: GenAIFilters,
+): GenAILessonMeta[] {
   const q = filters.query?.trim().toLowerCase() ?? "";
   return lessons.filter((item) => {
     if (
@@ -162,9 +162,9 @@ export function filterLessons(
 
 /** Sort lessons by the chosen dashboard sort mode (returns a new array). */
 export function sortLessons(
-  lessons: AISDLessonMeta[],
-  sort: AISDSort,
-): AISDLessonMeta[] {
+  lessons: GenAILessonMeta[],
+  sort: GenAISort,
+): GenAILessonMeta[] {
   const copy = [...lessons];
   switch (sort) {
     case "popular":
@@ -186,7 +186,7 @@ export function sortLessons(
 /** Distinct tags across the catalog, alphabetically sorted. */
 export function getAllTags(): string[] {
   const tags = new Set<string>();
-  for (const q of AISD_CATALOG) q.tags.forEach((t) => tags.add(t));
+  for (const q of GENAI_CATALOG) q.tags.forEach((t) => tags.add(t));
   return [...tags].sort((a, b) => a.localeCompare(b));
 }
 
@@ -196,7 +196,7 @@ export function getAllTags(): string[] {
  * Estimate reading time in minutes for authored content by counting words
  * across every Markdown field at ~200 wpm (min 1 minute).
  */
-export function estimateReadingMinutes(content: AISDLessonContent): number {
+export function estimateReadingMinutes(content: GenAILessonContent): number {
   const parts: string[] = [
     content.introductionMD,
     content.realWorldMD,

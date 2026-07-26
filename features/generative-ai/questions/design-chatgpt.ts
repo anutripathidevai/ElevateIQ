@@ -1,6 +1,6 @@
-import type { AISDLessonContent } from "../types";
+import type { GenAILessonContent } from "../types";
 
-export const designChatgptContent: AISDLessonContent = {
+export const designChatgptContent: GenAILessonContent = {
   slug: "design-chatgpt",
   introductionMD: `
 Designing ChatGPT is the flagship AI application system design question because it combines product UX, LLM inference, safety, personalization, reliability, and unit economics in one system. The core product looks simple: a user sends a message, the assistant streams tokens back, and the conversation remains coherent over many turns. The production system is not simple: every request must be authenticated, moderated, context-managed, routed to the right model, streamed with low perceived latency, persisted, monitored, and cost controlled.

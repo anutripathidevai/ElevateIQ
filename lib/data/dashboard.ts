@@ -40,7 +40,7 @@ export const TODAY_PLAN: PlanTask[] = [
 
 export const CONTINUE_LEARNING: ContinueItem[] = [
   { id: "c1", title: "Azure Fundamentals", subtitle: "Next: Identity and Access Management", progress: 48, accent: "emerald", icon: Cloud, href: "/learning#azure" },
-  { id: "c2", title: "Generative AI Essentials", subtitle: "Next: Retrieval-Augmented Generation", progress: 32, accent: "emerald", icon: Sparkles, href: "/learning#genai" },
+  { id: "c2", title: "Generative AI", subtitle: "Next: Retrieval-Augmented Generation", progress: 32, accent: "emerald", icon: Sparkles, href: "/learning/generative-ai" },
   { id: "c3", title: "System Design Roadmap", subtitle: "Next: Consistent Hashing", progress: 61, accent: "violet", icon: Network, href: "/practice/system-design" },
 ];
 

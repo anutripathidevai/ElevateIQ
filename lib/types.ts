@@ -223,6 +223,8 @@ export interface Course {
   certificate: boolean;
   accent: AccentKey;
   icon: LucideIcon;
+  /** Optional explicit link. When set, overrides the default `/learning#{anchor}`. */
+  href?: string;
 }
 
 /** A single lesson within a {@link Course}. */

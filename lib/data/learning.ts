@@ -35,9 +35,11 @@ export const COURSES: Course[] = [
   {
     id: "genai",
     anchor: "genai",
-    title: "Generative AI Essentials",
+    href: "/learning/generative-ai",
+    title: "Generative AI",
     category: "AI",
-    description: "LLMs, prompting, embeddings, RAG, and building AI-powered apps.",
+    description:
+      "The complete Generative AI roadmap — foundations, LLMs, RAG, vector databases, agents, AI system design, production AI, interview prep, and projects.",
     progress: 32,
     next: "Retrieval-Augmented Generation",
     lessons: 10,

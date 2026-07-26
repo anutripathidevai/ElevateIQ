@@ -190,8 +190,8 @@ export const NAV_GROUPS: NavGroup[] = [
         badge: "New",
       },
       {
-        href: "/learning/ai-system-design",
-        label: "AI System Design",
+        href: "/learning/generative-ai",
+        label: "Generative AI",
         icon: BrainCircuit,
         badge: "New",
       },
@@ -203,7 +203,6 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { href: "/learning#azure", label: "Azure", icon: Cloud },
       { href: "/learning#aws", label: "AWS", icon: Cloud },
-      { href: "/learning#genai", label: "Generative AI", icon: Sparkles },
       { href: "/learning#ml", label: "Machine Learning", icon: Brain },
       { href: "/learning#paths", label: "Learning Paths", icon: Route },
       { href: "/learning#certificates", label: "Certificates", icon: Award },

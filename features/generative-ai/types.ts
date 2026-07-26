@@ -16,7 +16,7 @@ import type {
  * Like the System Design (HLD) and DSA modules, this feature is entirely
  * metadata-driven: a registry/catalog of lesson metadata (see `registry.ts`)
  * powers the dashboard, filters and learning path, and each *published* lesson
- * maps to a typed `AISDLessonContent` object holding the authored sections.
+ * maps to a typed `GenAILessonContent` object holding the authored sections.
  * Adding a new lesson means authoring data (a catalog entry + a content file)
  * — never touching routing or UI. The dynamic `[lesson]` route renders any
  * lesson that conforms to this model.
@@ -31,28 +31,28 @@ import type {
 // Re-export the shared primitives so content files import everything from one
 // place and the two modules never drift apart.
 export type {
-  SDArchitecture as AISDArchitecture,
-  SDArchNode as AISDArchNode,
-  SDArchEdge as AISDArchEdge,
-  SDNodeKind as AISDNodeKind,
-  SDQuizItem as AISDQuizItem,
-  SDFlashcard as AISDFlashcard,
-  SDReference as AISDReference,
+  SDArchitecture as GenAIArchitecture,
+  SDArchNode as GenAIArchNode,
+  SDArchEdge as GenAIArchEdge,
+  SDNodeKind as GenAINodeKind,
+  SDQuizItem as GenAIQuizItem,
+  SDFlashcard as GenAIFlashcard,
+  SDReference as GenAIReference,
 } from "@/features/system-design/types";
 
 // ---- Enumerations ----------------------------------------------------------
 
 /** Difficulty band shown on cards and used for filtering. */
-export type AISDDifficulty = SDDifficulty;
+export type GenAIDifficulty = SDDifficulty;
 
 /** Publish state. Only lessons with authored content are "published". */
-export type AISDStatus = SDStatus;
+export type GenAIStatus = SDStatus;
 
 /** How often the topic shows up in real AI interviews (a soft ranking signal). */
-export type AISDFrequency = SDFrequency;
+export type GenAIFrequency = SDFrequency;
 
 /** Topic domains used for the topic filter (the AI-specific vocabulary). */
-export type AISDTopic =
+export type GenAITopic =
   | "LLM Fundamentals"
   | "Prompt Engineering"
   | "RAG"
@@ -68,7 +68,7 @@ export type AISDTopic =
   | "Multi-Agent Systems";
 
 /** Companies used for the company filter (AI labs + AI-heavy orgs). */
-export type AISDCompany =
+export type GenAICompany =
   | "OpenAI"
   | "Anthropic"
   | "Google DeepMind"
@@ -81,27 +81,27 @@ export type AISDCompany =
   | "Perplexity";
 
 /** Learning-path tier ids (the coloured sections on the dashboard). */
-export type AISDTierId =
-  | "ai-foundations"
-  | "llm-applications"
-  | "rag-systems"
-  | "vector-search"
-  | "ai-agents"
-  | "model-serving"
-  | "ai-infrastructure"
-  | "ai-safety"
-  | "production-ai"
-  | "ai-interview-problems";
+export type GenAITierId =
+  | "l1-foundations"
+  | "l2-working-with-llms"
+  | "l3-rag"
+  | "l4-vector-databases"
+  | "l5-agents"
+  | "l6-ai-system-design"
+  | "l7-production-ai"
+  | "l8-advanced-ai"
+  | "l9-interview-prep"
+  | "l10-projects";
 
 // ---- Registry / catalog ----------------------------------------------------
 
 /**
  * Card + header metadata for a single lesson. This is the single source of
  * truth for the dashboard (search, filters, sorting, learning path) and the
- * lesson-page header. Authored content lives separately in `AISDLessonContent`
+ * lesson-page header. Authored content lives separately in `GenAILessonContent`
  * so metadata is never duplicated.
  */
-export interface AISDLessonMeta {
+export interface GenAILessonMeta {
   /** URL slug, e.g. "design-chatgpt". */
   slug: string;
   /** Display name, e.g. "Design ChatGPT". */
@@ -109,26 +109,26 @@ export interface AISDLessonMeta {
   /** One-line positioning shown on the card. */
   summary: string;
   /** Owning learning-path tier. */
-  tier: AISDTierId;
-  difficulty: AISDDifficulty;
-  topics: AISDTopic[];
-  companies: AISDCompany[];
+  tier: GenAITierId;
+  difficulty: GenAIDifficulty;
+  topics: GenAITopic[];
+  companies: GenAICompany[];
   /** Free-form search / filter tags. */
   tags: string[];
   /** Popularity score 0–100, drives the "Most Popular" sort. */
   popularity: number;
   /** Interview frequency band, drives the "Interview Frequency" sort. */
-  frequency: AISDFrequency;
+  frequency: GenAIFrequency;
   /** Estimated interview / study time in minutes. */
   estimatedMinutes: number;
   /** Monotonic authoring order, drives the "Newest" sort (higher = newer). */
   addedOrder: number;
-  status: AISDStatus;
+  status: GenAIStatus;
 }
 
 /** Presentation metadata for a learning-path tier. */
-export interface AISDTierMeta {
-  id: AISDTierId;
+export interface GenAITierMeta {
+  id: GenAITierId;
   /** e.g. "AI & LLM Foundations". */
   label: string;
   /** Short emoji shown before the label. */
@@ -143,19 +143,19 @@ export interface AISDTierMeta {
 // ---- Section building blocks -----------------------------------------------
 
 /** A labelled block of prose (Theory concept, Deep Dive topic, …). */
-export interface AISDNamedDetail {
+export interface GenAINamedDetail {
   label: string;
   detailMD: string;
 }
 
 /** One numbered step in the request/data-flow walkthrough. */
-export interface AISDFlowStep {
+export interface GenAIFlowStep {
   step: string;
   detailMD: string;
 }
 
 /** A syntax-highlighted code sample (rendered in a labelled code block). */
-export interface AISDCodeSample {
+export interface GenAICodeSample {
   language: string;
   /** Optional caption above the block. */
   label?: string;
@@ -163,14 +163,14 @@ export interface AISDCodeSample {
 }
 
 /** A hands-on example — prose plus an optional code sample. */
-export interface AISDHandsOn {
+export interface GenAIHandsOn {
   title: string;
   detailMD: string;
-  code?: AISDCodeSample;
+  code?: GenAICodeSample;
 }
 
 /** An illustrative prompt/parameter "playground" (static, no live model call). */
-export interface AISDPlayground {
+export interface GenAIPlayground {
   descriptionMD: string;
   systemPrompt?: string;
   userPrompt?: string;
@@ -179,7 +179,7 @@ export interface AISDPlayground {
 }
 
 /** A comparison table for the Visual Learning section. */
-export interface AISDComparison {
+export interface GenAIComparison {
   title: string;
   columns: string[];
   /** Each row must have the same arity as `columns`. */
@@ -187,16 +187,16 @@ export interface AISDComparison {
 }
 
 /** A named alternative design considered in the Interview Perspective. */
-export interface AISDAlternative {
+export interface GenAIAlternative {
   name: string;
   detailMD: string;
 }
 
 /** The Interview Perspective block. */
-export interface AISDInterviewPerspective {
+export interface GenAIInterviewPerspective {
   whatInterviewersLookFor: string[];
   followUps: { question: string; answerMD: string }[];
-  alternativeDesigns: AISDAlternative[];
+  alternativeDesigns: GenAIAlternative[];
   commonMistakes: string[];
 }
 
@@ -204,11 +204,11 @@ export interface AISDInterviewPerspective {
 
 /**
  * The authored body of a lesson. The header (title, meta, companies) comes from
- * `AISDLessonMeta`; everything below is the teaching content. Optional sections
+ * `GenAILessonMeta`; everything below is the teaching content. Optional sections
  * render only when the content provides them, so concept lessons can omit the
  * architecture diagram while full "Design X" lessons include everything.
  */
-export interface AISDLessonContent {
+export interface GenAILessonContent {
   /** Must equal the catalog slug — enforced by the content test. */
   slug: string;
 
@@ -221,36 +221,36 @@ export interface AISDLessonContent {
   learningObjectives: string[];
 
   /** 3 — Theory & core concepts (with visual explanations in prose). */
-  theory: AISDNamedDetail[];
+  theory: GenAINamedDetail[];
 
   /** 4 — Architecture diagram (interactive, pan/zoom, fullscreen). */
   architecture?: SDArchitecture;
   architectureNotesMD?: string;
 
   /** 5 — Request / data flow. */
-  requestFlow: AISDFlowStep[];
+  requestFlow: GenAIFlowStep[];
 
   /** 6 — Deep dives (tradeoffs, latency, cost, caching, context, …). */
-  deepDives: AISDNamedDetail[];
+  deepDives: GenAINamedDetail[];
 
   /** 7 — Production considerations (monitoring, retries, fallback, cost, …). */
-  productionConsiderations: AISDNamedDetail[];
+  productionConsiderations: GenAINamedDetail[];
 
   /** 8 — Interview perspective. */
-  interview: AISDInterviewPerspective;
+  interview: GenAIInterviewPerspective;
 
   /** Progressive hints revealed one at a time in Interview Mode. */
   interviewHints: string[];
 
   /** 9 — Interactive playground (illustrative prompt + parameters). */
-  playground?: AISDPlayground;
+  playground?: GenAIPlayground;
 
   /** 10 — Visual learning: comparison tables + an optional decision guide. */
-  comparisons: AISDComparison[];
+  comparisons: GenAIComparison[];
   decisionGuideMD?: string;
 
   /** 11 — Hands-on examples. */
-  handsOn: AISDHandsOn[];
+  handsOn: GenAIHandsOn[];
 
   /** 12 — Quiz. */
   quiz: SDQuizItem[];
@@ -269,7 +269,7 @@ export interface AISDLessonContent {
 }
 
 /** A fully-assembled lesson: metadata + authored content. */
-export interface AISDLesson {
-  meta: AISDLessonMeta;
-  content: AISDLessonContent;
+export interface GenAILesson {
+  meta: GenAILessonMeta;
+  content: GenAILessonContent;
 }

@@ -1,6 +1,6 @@
-import type { AISDLessonContent } from "../types";
+import type { GenAILessonContent } from "../types";
 
-export const designRagPipelineContent: AISDLessonContent = {
+export const designRagPipelineContent: GenAILessonContent = {
   slug: "design-rag-pipeline",
   introductionMD: `A production retrieval-augmented generation system answers questions by retrieving trusted source material at request time, assembling the most useful evidence into the model context, and asking the model to generate an answer that is grounded in that evidence. The goal is not just better semantic search. The goal is a dependable answer engine with citations, freshness, access control, evaluation, latency budgets, and cost controls.
 

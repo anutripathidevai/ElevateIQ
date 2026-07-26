@@ -15,7 +15,7 @@ import type { SearchResult } from "@/lib/types";
 export const SEARCH_INDEX: SearchResult[] = [
   { id: "s1", label: "Azure Fundamentals Course", category: "Courses", href: "/learning#azure", icon: BookOpen },
   { id: "s2", label: "AWS Fundamentals Course", category: "Courses", href: "/learning#aws", icon: BookOpen },
-  { id: "s3", label: "Generative AI Essentials", category: "Courses", href: "/learning#genai", icon: BookOpen },
+  { id: "s3", label: "Generative AI", category: "Courses", href: "/learning/generative-ai", icon: BookOpen },
   { id: "s4", label: "Azure Interview Questions", category: "Interview Questions", href: "/companies", icon: MessagesSquare },
   { id: "s5", label: "System Design Questions", category: "Interview Questions", href: "/practice/system-design", icon: MessagesSquare },
   { id: "s6", label: "Behavioral Questions", category: "Interview Questions", href: "/practice/behavioral", icon: MessagesSquare },

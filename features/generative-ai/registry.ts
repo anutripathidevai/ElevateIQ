@@ -1,13 +1,13 @@
 import type {
-  AISDCompany,
-  AISDDifficulty,
-  AISDLessonMeta,
-  AISDTierMeta,
-  AISDTopic,
+  GenAICompany,
+  GenAIDifficulty,
+  GenAILessonMeta,
+  GenAITierMeta,
+  GenAITopic,
 } from "./types";
 
 /**
- * The AI System Design registry — the single source of truth for the dashboard.
+ * The Generative AI registry — the single source of truth for the dashboard.
  * Adding a lesson to the catalog makes it appear on the dashboard and in the
  * learning path automatically; authoring its content file (and flipping
  * `status` to "published") makes its page render. No UI/route changes.
@@ -15,10 +15,10 @@ import type {
 
 // ---- Learning-path tiers ---------------------------------------------------
 
-export const AISD_TIERS: AISDTierMeta[] = [
+export const GENAI_TIERS: GenAITierMeta[] = [
   {
-    id: "ai-foundations",
-    label: "AI & LLM Foundations",
+    id: "l1-foundations",
+    label: "Level 1 · AI Foundations",
     emoji: "🟢",
     accent: "emerald",
     description:
@@ -26,17 +26,17 @@ export const AISD_TIERS: AISDTierMeta[] = [
     order: 1,
   },
   {
-    id: "llm-applications",
-    label: "LLM Application Design",
+    id: "l2-working-with-llms",
+    label: "Level 2 · Working with LLMs",
     emoji: "🔵",
     accent: "blue",
     description:
-      "End-to-end product systems built on top of LLMs — chat assistants, copilots, answer engines, and streaming UX.",
+      "Building on model APIs day to day — provider SDKs, structured outputs, JSON mode, streaming, function/tool calling, prompt templates, and guardrails.",
     order: 2,
   },
   {
-    id: "rag-systems",
-    label: "Retrieval-Augmented Generation",
+    id: "l3-rag",
+    label: "Level 3 · Retrieval-Augmented Generation",
     emoji: "🟣",
     accent: "violet",
     description:
@@ -44,8 +44,8 @@ export const AISD_TIERS: AISDTierMeta[] = [
     order: 3,
   },
   {
-    id: "vector-search",
-    label: "Vector Databases & Search",
+    id: "l4-vector-databases",
+    label: "Level 4 · Vector Databases & Search",
     emoji: "🟦",
     accent: "cyan",
     description:
@@ -53,8 +53,8 @@ export const AISD_TIERS: AISDTierMeta[] = [
     order: 4,
   },
   {
-    id: "ai-agents",
-    label: "AI Agents & Orchestration",
+    id: "l5-agents",
+    label: "Level 5 · AI Agents & Orchestration",
     emoji: "🟠",
     accent: "orange",
     description:
@@ -62,61 +62,61 @@ export const AISD_TIERS: AISDTierMeta[] = [
     order: 5,
   },
   {
-    id: "model-serving",
-    label: "Model Serving & Inference",
+    id: "l6-ai-system-design",
+    label: "Level 6 · AI System Design",
     emoji: "🔴",
     accent: "rose",
     description:
-      "Serving LLMs at scale — KV cache, continuous batching, speculative decoding, quantization, and GPU autoscaling.",
+      "End-to-end product systems built on top of LLMs — ChatGPT, coding assistants, answer engines, content moderation, and streaming UX.",
     order: 6,
   },
   {
-    id: "ai-infrastructure",
-    label: "AI Infrastructure & Training",
-    emoji: "🟤",
-    accent: "slate",
-    description:
-      "The platforms behind the models — data pipelines, distributed training, fine-tuning, RLHF, and feature stores.",
-    order: 7,
-  },
-  {
-    id: "ai-safety",
-    label: "AI Safety, Security & Governance",
-    emoji: "🟡",
-    accent: "orange",
-    description:
-      "Keeping AI systems safe and compliant — prompt injection defense, guardrails, PII redaction, and audit logging.",
-    order: 8,
-  },
-  {
-    id: "production-ai",
-    label: "Production AI & LLMOps",
+    id: "l7-production-ai",
+    label: "Level 7 · Production AI",
     emoji: "🟩",
     accent: "emerald",
     description:
-      "Running AI in production — observability, evaluation, semantic caching, cost optimization, and CI/CD for prompts and models.",
-    order: 9,
+      "Running AI in production — model serving, KV cache, batching, quantization, observability, evaluation, semantic caching, and cost optimization.",
+    order: 7,
   },
   {
-    id: "ai-interview-problems",
-    label: "AI System Design Interview Problems",
+    id: "l8-advanced-ai",
+    label: "Level 8 · Advanced AI",
+    emoji: "🟤",
+    accent: "slate",
+    description:
+      "The platforms and hard problems behind the models — distributed training, fine-tuning, RLHF, feature stores, safety, security, and governance.",
+    order: 8,
+  },
+  {
+    id: "l9-interview-prep",
+    label: "Level 9 · Interview Preparation",
     emoji: "⭐",
     accent: "violet",
     description:
       "Full mock-interview problems that combine everything — recommendations, image generation, voice, translation, and more.",
+    order: 9,
+  },
+  {
+    id: "l10-projects",
+    label: "Level 10 · Hands-On Projects",
+    emoji: "🚀",
+    accent: "orange",
+    description:
+      "Capstone builds that turn the roadmap into portfolio projects — build ChatGPT, a coding copilot, a RAG system, an agent, and an AI search engine.",
     order: 10,
   },
 ];
 
 // ---- Filter vocabularies ---------------------------------------------------
 
-export const AISD_DIFFICULTIES: AISDDifficulty[] = [
+export const GENAI_DIFFICULTIES: GenAIDifficulty[] = [
   "Beginner",
   "Intermediate",
   "Advanced",
 ];
 
-export const AISD_TOPICS: AISDTopic[] = [
+export const GENAI_TOPICS: GenAITopic[] = [
   "LLM Fundamentals",
   "Prompt Engineering",
   "RAG",
@@ -132,7 +132,7 @@ export const AISD_TOPICS: AISDTopic[] = [
   "Multi-Agent Systems",
 ];
 
-export const AISD_COMPANIES: AISDCompany[] = [
+export const GENAI_COMPANIES: GenAICompany[] = [
   "OpenAI",
   "Anthropic",
   "Google DeepMind",
@@ -153,16 +153,16 @@ export const AISD_COMPANIES: AISDCompany[] = [
  * Newest sort; the three published exemplars sit at the top and therefore sort
  * first.
  */
-type RawMeta = Omit<AISDLessonMeta, "addedOrder">;
+type RawMeta = Omit<GenAILessonMeta, "addedOrder">;
 
 const RAW_CATALOG: RawMeta[] = [
-  // 🟢 AI & LLM Foundations
+  // 🟢 Level 1 · AI Foundations
   {
     slug: "transformer-architecture",
     title: "Transformer Architecture",
     summary:
       "How the transformer block works end-to-end — embeddings, self-attention, feed-forward layers, and residual streams.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Beginner",
     topics: ["LLM Fundamentals"],
     companies: ["OpenAI", "Google DeepMind", "Meta"],
@@ -177,7 +177,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Attention Mechanism",
     summary:
       "Scaled dot-product and multi-head attention — the intuition, the math, and why it scales to long context.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Intermediate",
     topics: ["LLM Fundamentals"],
     companies: ["OpenAI", "Google DeepMind", "NVIDIA"],
@@ -192,7 +192,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Tokenization & Embeddings",
     summary:
       "BPE, subword vocabularies, and how tokens become vectors — the input side of every LLM.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Beginner",
     topics: ["LLM Fundamentals", "Embeddings"],
     companies: ["OpenAI", "Cohere", "Meta"],
@@ -207,7 +207,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "How LLM Inference Works",
     summary:
       "Prefill vs decode, the KV cache, and why the first token is slow but the rest are fast.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Intermediate",
     topics: ["LLM Fundamentals", "Model Serving"],
     companies: ["OpenAI", "NVIDIA", "Databricks"],
@@ -222,7 +222,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Sampling & Decoding Strategies",
     summary:
       "Temperature, top-k, top-p, and beam search — how token probabilities become text, and when to use each.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Intermediate",
     topics: ["LLM Fundamentals", "Prompt Engineering"],
     companies: ["OpenAI", "Anthropic", "Cohere"],
@@ -237,7 +237,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Context Windows & KV Cache",
     summary:
       "Why context is expensive, how the KV cache grows, and the tricks that push context from 4K to 1M tokens.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Advanced",
     topics: ["LLM Fundamentals", "Model Serving"],
     companies: ["Anthropic", "Google DeepMind", "NVIDIA"],
@@ -252,7 +252,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Hallucinations & LLM Limitations",
     summary:
       "Why LLMs make things up, how to measure it, and the system-level mitigations interviewers expect you to know.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Intermediate",
     topics: ["LLM Fundamentals", "AI Evaluation"],
     companies: ["Anthropic", "OpenAI", "Microsoft"],
@@ -267,7 +267,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Prompt Engineering Foundations",
     summary:
       "System vs user prompts, few-shot, chain-of-thought, and structured output — the reliable building blocks.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Beginner",
     topics: ["Prompt Engineering", "LLM Fundamentals"],
     companies: ["OpenAI", "Anthropic", "Microsoft"],
@@ -282,7 +282,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Choosing the Right Model",
     summary:
       "Open vs closed, size vs latency vs cost, and how to pick a model (or a cascade) for a given workload.",
-    tier: "ai-foundations",
+    tier: "l1-foundations",
     difficulty: "Intermediate",
     topics: ["LLM Fundamentals", "Model Serving"],
     companies: ["Databricks", "Microsoft", "Amazon"],
@@ -293,13 +293,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // 🔵 LLM Application Design
+  // 🔴 Level 6 · AI System Design
   {
     slug: "design-chatgpt",
     title: "Design ChatGPT",
     summary:
       "Design a multi-turn conversational AI product — streaming responses, conversation memory, moderation, and scale to millions of users.",
-    tier: "llm-applications",
+    tier: "l6-ai-system-design",
     difficulty: "Advanced",
     topics: ["Model Serving", "Prompt Engineering", "AI Security"],
     companies: ["OpenAI", "Microsoft", "Anthropic", "Google DeepMind"],
@@ -314,7 +314,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Coding Assistant",
     summary:
       "Design a Copilot-style assistant — repo context, fill-in-the-middle completion, low latency, and privacy.",
-    tier: "llm-applications",
+    tier: "l6-ai-system-design",
     difficulty: "Advanced",
     topics: ["Model Serving", "RAG", "Prompt Engineering"],
     companies: ["Microsoft", "OpenAI", "Amazon"],
@@ -329,7 +329,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Customer Support System",
     summary:
       "Design an LLM support agent grounded in help-center docs with escalation, tools, and deflection metrics.",
-    tier: "llm-applications",
+    tier: "l6-ai-system-design",
     difficulty: "Intermediate",
     topics: ["RAG", "AI Agents", "AI Evaluation"],
     companies: ["Amazon", "Microsoft", "Anthropic"],
@@ -344,7 +344,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Writing Assistant",
     summary:
       "Design a Grammarly/Notion-AI-style assistant — inline suggestions, tone control, and multi-tenant data isolation.",
-    tier: "llm-applications",
+    tier: "l6-ai-system-design",
     difficulty: "Intermediate",
     topics: ["Prompt Engineering", "Model Serving"],
     companies: ["Microsoft", "Google DeepMind", "OpenAI"],
@@ -359,7 +359,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design a Multi-User LLM Chat Platform",
     summary:
       "Design the backend for a team chat product with shared threads, per-user quotas, and provider fallback.",
-    tier: "llm-applications",
+    tier: "l6-ai-system-design",
     difficulty: "Advanced",
     topics: ["Model Serving", "AI Observability"],
     companies: ["OpenAI", "Microsoft", "Databricks"],
@@ -374,7 +374,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Answer Engine",
     summary:
       "Design a Perplexity-style answer engine — live web retrieval, citation grounding, and streamed synthesis.",
-    tier: "llm-applications",
+    tier: "l6-ai-system-design",
     difficulty: "Advanced",
     topics: ["RAG", "AI Agents"],
     companies: ["Perplexity", "Google DeepMind", "Microsoft"],
@@ -389,7 +389,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an LLM Content Moderation System",
     summary:
       "Design a real-time safety classifier pipeline — policy taxonomy, latency budget, and human review loop.",
-    tier: "llm-applications",
+    tier: "l6-ai-system-design",
     difficulty: "Intermediate",
     topics: ["AI Security", "AI Evaluation"],
     companies: ["Meta", "OpenAI", "Microsoft"],
@@ -404,7 +404,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design Streaming Token Delivery",
     summary:
       "Design the transport for token-by-token responses — SSE vs WebSockets, backpressure, and cancellation.",
-    tier: "llm-applications",
+    tier: "l6-ai-system-design",
     difficulty: "Intermediate",
     topics: ["Model Serving"],
     companies: ["OpenAI", "Anthropic", "Amazon"],
@@ -415,13 +415,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // 🟣 Retrieval-Augmented Generation
+  // 🟣 Level 3 · Retrieval-Augmented Generation
   {
     slug: "design-rag-pipeline",
     title: "Design a Production RAG System",
     summary:
       "Design an end-to-end retrieval-augmented generation system — ingestion, chunking, embedding, hybrid retrieval, reranking, and grounded generation at scale.",
-    tier: "rag-systems",
+    tier: "l3-rag",
     difficulty: "Advanced",
     topics: ["RAG", "Vector Databases", "Embeddings"],
     companies: ["OpenAI", "Databricks", "Cohere", "Microsoft"],
@@ -436,7 +436,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Document Chunking Strategies",
     summary:
       "Fixed, recursive, semantic, and structure-aware chunking — how splitting decisions make or break retrieval quality.",
-    tier: "rag-systems",
+    tier: "l3-rag",
     difficulty: "Intermediate",
     topics: ["RAG", "Embeddings"],
     companies: ["Cohere", "Databricks", "Microsoft"],
@@ -451,7 +451,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Hybrid Search for RAG",
     summary:
       "Combine BM25 keyword search with dense vectors and fuse the results — the retrieval backbone of strong RAG.",
-    tier: "rag-systems",
+    tier: "l3-rag",
     difficulty: "Advanced",
     topics: ["RAG", "Vector Databases"],
     companies: ["Cohere", "Microsoft", "Databricks"],
@@ -466,7 +466,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Reranking in RAG Pipelines",
     summary:
       "Cross-encoder rerankers — why a second stage dramatically lifts precision, and how to keep it cheap.",
-    tier: "rag-systems",
+    tier: "l3-rag",
     difficulty: "Intermediate",
     topics: ["RAG", "AI Evaluation"],
     companies: ["Cohere", "OpenAI", "Google DeepMind"],
@@ -481,7 +481,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Evaluating RAG Quality",
     summary:
       "Retrieval and generation metrics — recall@k, faithfulness, answer relevance, and LLM-as-judge pipelines.",
-    tier: "rag-systems",
+    tier: "l3-rag",
     difficulty: "Advanced",
     topics: ["AI Evaluation", "RAG"],
     companies: ["Databricks", "Anthropic", "Microsoft"],
@@ -496,7 +496,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Multimodal RAG",
     summary:
       "Retrieve over text, tables, and images — unified embeddings, layout parsing, and grounded multimodal answers.",
-    tier: "rag-systems",
+    tier: "l3-rag",
     difficulty: "Advanced",
     topics: ["RAG", "Embeddings"],
     companies: ["Google DeepMind", "OpenAI", "Cohere"],
@@ -511,7 +511,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Agentic RAG",
     summary:
       "Let the model decide when and what to retrieve — query planning, multi-hop retrieval, and self-correction.",
-    tier: "rag-systems",
+    tier: "l3-rag",
     difficulty: "Advanced",
     topics: ["RAG", "AI Agents"],
     companies: ["Anthropic", "OpenAI", "Perplexity"],
@@ -526,7 +526,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Cost & Caching for RAG",
     summary:
       "Semantic caching, embedding reuse, and context trimming — how to cut RAG bills without hurting quality.",
-    tier: "rag-systems",
+    tier: "l3-rag",
     difficulty: "Intermediate",
     topics: ["RAG", "AI Observability"],
     companies: ["Databricks", "Amazon", "Microsoft"],
@@ -537,13 +537,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // 🟦 Vector Databases & Search
+  // 🟦 Level 4 · Vector Databases & Search
   {
     slug: "design-vector-database",
     title: "Design a Vector Database",
     summary:
       "Design a vector database that indexes billions of embeddings for millisecond similarity search — ANN indexing, sharding, filtering, and persistence.",
-    tier: "vector-search",
+    tier: "l4-vector-databases",
     difficulty: "Advanced",
     topics: ["Vector Databases", "Embeddings"],
     companies: ["Databricks", "NVIDIA", "Microsoft", "Cohere"],
@@ -558,7 +558,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Approximate Nearest Neighbor Algorithms",
     summary:
       "The ANN landscape — trees, LSH, graphs, and quantization — and the recall/latency/memory tradeoffs between them.",
-    tier: "vector-search",
+    tier: "l4-vector-databases",
     difficulty: "Advanced",
     topics: ["Vector Databases"],
     companies: ["NVIDIA", "Google DeepMind", "Databricks"],
@@ -573,7 +573,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "HNSW Index Deep Dive",
     summary:
       "Hierarchical navigable small worlds — how the graph is built and searched, and how to tune ef and M.",
-    tier: "vector-search",
+    tier: "l4-vector-databases",
     difficulty: "Advanced",
     topics: ["Vector Databases"],
     companies: ["NVIDIA", "Databricks", "Cohere"],
@@ -588,7 +588,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "IVF & Product Quantization",
     summary:
       "Inverted-file indexing and PQ compression — the technique that makes billion-vector search fit in RAM.",
-    tier: "vector-search",
+    tier: "l4-vector-databases",
     difficulty: "Advanced",
     topics: ["Vector Databases", "Embeddings"],
     companies: ["Meta", "NVIDIA", "Databricks"],
@@ -603,7 +603,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Storing Billions of Embeddings",
     summary:
       "Memory vs disk (DiskANN), tiered storage, and the cost model behind large-scale vector storage.",
-    tier: "vector-search",
+    tier: "l4-vector-databases",
     difficulty: "Advanced",
     topics: ["Vector Databases", "AI Infrastructure"],
     companies: ["Microsoft", "Amazon", "Databricks"],
@@ -618,7 +618,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Sharding & Replication for Vector DBs",
     summary:
       "Partition billions of vectors across nodes, replicate for availability, and scatter-gather queries with low tail latency.",
-    tier: "vector-search",
+    tier: "l4-vector-databases",
     difficulty: "Advanced",
     topics: ["Vector Databases", "AI Infrastructure"],
     companies: ["Databricks", "Amazon", "NVIDIA"],
@@ -633,7 +633,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Filtered Vector Search",
     summary:
       "Combine metadata predicates with similarity — pre-, post-, and single-stage filtering, and why it is surprisingly hard.",
-    tier: "vector-search",
+    tier: "l4-vector-databases",
     difficulty: "Advanced",
     topics: ["Vector Databases"],
     companies: ["Microsoft", "Cohere", "Databricks"],
@@ -648,7 +648,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Choosing an Embedding Model",
     summary:
       "Dimensionality, domain fit, MTEB benchmarks, and cost — how to pick and evaluate an embedding model.",
-    tier: "vector-search",
+    tier: "l4-vector-databases",
     difficulty: "Intermediate",
     topics: ["Embeddings", "AI Evaluation"],
     companies: ["Cohere", "OpenAI", "Databricks"],
@@ -659,13 +659,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // 🟠 AI Agents & Orchestration
+  // 🟠 Level 5 · AI Agents & Orchestration
   {
     slug: "design-ai-agent",
     title: "Design an AI Agent",
     summary:
       "Design a single tool-using agent — the reasoning loop, tool schema, memory, and error recovery.",
-    tier: "ai-agents",
+    tier: "l5-agents",
     difficulty: "Advanced",
     topics: ["AI Agents", "Prompt Engineering"],
     companies: ["Anthropic", "OpenAI", "Microsoft"],
@@ -680,7 +680,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Tool Calling & Function Calling",
     summary:
       "How models call functions — schema design, argument validation, parallel calls, and safe execution.",
-    tier: "ai-agents",
+    tier: "l5-agents",
     difficulty: "Intermediate",
     topics: ["AI Agents", "Prompt Engineering"],
     companies: ["OpenAI", "Anthropic", "Google DeepMind"],
@@ -695,7 +695,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Agent Memory Systems",
     summary:
       "Short-term, long-term, and episodic memory — summarization, vector recall, and context management for agents.",
-    tier: "ai-agents",
+    tier: "l5-agents",
     difficulty: "Advanced",
     topics: ["AI Agents", "RAG"],
     companies: ["Anthropic", "OpenAI", "Microsoft"],
@@ -710,7 +710,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "ReAct & Planning Loops",
     summary:
       "Reason-act-observe loops, plan-and-execute, and reflection — the control structures behind capable agents.",
-    tier: "ai-agents",
+    tier: "l5-agents",
     difficulty: "Advanced",
     topics: ["AI Agents"],
     companies: ["Google DeepMind", "Anthropic", "OpenAI"],
@@ -725,7 +725,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an Autonomous Task Agent",
     summary:
       "Design a long-running agent that decomposes goals, runs tools, and checkpoints progress with human approval gates.",
-    tier: "ai-agents",
+    tier: "l5-agents",
     difficulty: "Advanced",
     topics: ["AI Agents", "AI Security"],
     companies: ["OpenAI", "Anthropic", "Amazon"],
@@ -740,7 +740,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Agent Guardrails & Safety",
     summary:
       "Sandboxing tools, permission scopes, and output validation — keeping autonomous agents from doing damage.",
-    tier: "ai-agents",
+    tier: "l5-agents",
     difficulty: "Advanced",
     topics: ["AI Security", "AI Agents"],
     companies: ["Anthropic", "Microsoft", "OpenAI"],
@@ -755,7 +755,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design a Multi-Agent System",
     summary:
       "Design an orchestrator-worker multi-agent system — role decomposition, shared state, and conflict resolution.",
-    tier: "ai-agents",
+    tier: "l5-agents",
     difficulty: "Advanced",
     topics: ["Multi-Agent Systems", "AI Agents"],
     companies: ["Microsoft", "OpenAI", "Google DeepMind"],
@@ -770,7 +770,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design a Web-Browsing Agent",
     summary:
       "Design an agent that navigates real web pages — DOM grounding, action space, safety, and rate limiting.",
-    tier: "ai-agents",
+    tier: "l5-agents",
     difficulty: "Advanced",
     topics: ["AI Agents", "AI Security"],
     companies: ["OpenAI", "Anthropic", "Google DeepMind"],
@@ -781,13 +781,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // 🔴 Model Serving & Inference
+  // 🟩 Level 7 · Production AI — Model Serving & Inference
   {
     slug: "design-llm-inference-service",
     title: "Design an LLM Inference Service",
     summary:
       "Design a high-throughput inference service — request queue, batching, KV cache, GPU pooling, and autoscaling.",
-    tier: "model-serving",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["Model Serving", "AI Infrastructure"],
     companies: ["NVIDIA", "OpenAI", "Databricks", "Amazon"],
@@ -802,7 +802,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "KV Cache Optimization",
     summary:
       "PagedAttention, cache eviction, and prefix sharing — the memory tricks that multiply inference throughput.",
-    tier: "model-serving",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["Model Serving"],
     companies: ["NVIDIA", "OpenAI", "Anthropic"],
@@ -817,7 +817,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Continuous Batching",
     summary:
       "Iteration-level scheduling that keeps GPUs saturated — why it beats static batching for LLM serving.",
-    tier: "model-serving",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["Model Serving"],
     companies: ["NVIDIA", "Databricks", "OpenAI"],
@@ -832,7 +832,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Speculative Decoding",
     summary:
       "Draft-and-verify decoding — use a small model to propose tokens a big model checks, cutting latency.",
-    tier: "model-serving",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["Model Serving"],
     companies: ["NVIDIA", "Google DeepMind", "Anthropic"],
@@ -847,7 +847,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "GPU Scheduling & Autoscaling",
     summary:
       "Bin-packing GPUs, cold-start mitigation, and scaling on queue depth — the ops side of inference at scale.",
-    tier: "model-serving",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["Model Serving", "AI Infrastructure"],
     companies: ["Amazon", "NVIDIA", "Databricks"],
@@ -862,7 +862,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Quantization for Inference",
     summary:
       "INT8, FP8, and 4-bit weights — how quantization shrinks models and the accuracy tradeoffs to defend.",
-    tier: "model-serving",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["Model Serving", "Fine-Tuning"],
     companies: ["NVIDIA", "Meta", "Databricks"],
@@ -877,7 +877,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Multi-Model & LoRA Serving",
     summary:
       "Serve hundreds of fine-tuned adapters from one base model — LoRA swapping, routing, and memory sharing.",
-    tier: "model-serving",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["Model Serving", "Fine-Tuning"],
     companies: ["Databricks", "NVIDIA", "Amazon"],
@@ -892,7 +892,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an LLM Gateway",
     summary:
       "Design a unified gateway across providers — routing, rate limits, key management, caching, and fallbacks.",
-    tier: "model-serving",
+    tier: "l7-production-ai",
     difficulty: "Intermediate",
     topics: ["Model Serving", "AI Observability"],
     companies: ["Microsoft", "Amazon", "Databricks"],
@@ -903,13 +903,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // 🟤 AI Infrastructure & Training
+  // 🟤 Level 8 · Advanced AI — Infrastructure & Training
   {
     slug: "design-training-platform",
     title: "Design a Distributed Training Platform",
     summary:
       "Design a platform to train large models — job scheduling, data/model/pipeline parallelism, and checkpointing.",
-    tier: "ai-infrastructure",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Infrastructure", "Fine-Tuning"],
     companies: ["NVIDIA", "Google DeepMind", "Meta", "Databricks"],
@@ -924,7 +924,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an LLM Data Pipeline",
     summary:
       "Design a pretraining/fine-tuning data pipeline — crawling, dedup, filtering, tokenization, and lineage.",
-    tier: "ai-infrastructure",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Infrastructure", "Fine-Tuning"],
     companies: ["Meta", "Databricks", "Google DeepMind"],
@@ -939,7 +939,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Distributed Training Strategies",
     summary:
       "Data, tensor, pipeline, and FSDP parallelism — how huge models are split across thousands of GPUs.",
-    tier: "ai-infrastructure",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Infrastructure"],
     companies: ["NVIDIA", "Meta", "Google DeepMind"],
@@ -954,7 +954,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design a Feature Store",
     summary:
       "Design online/offline feature storage — consistency, point-in-time correctness, and low-latency serving.",
-    tier: "ai-infrastructure",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Infrastructure"],
     companies: ["Databricks", "Amazon", "Meta"],
@@ -969,7 +969,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Experiment Tracking & Model Registry",
     summary:
       "Track runs, version datasets and models, and gate promotions — the reproducibility backbone of ML.",
-    tier: "ai-infrastructure",
+    tier: "l8-advanced-ai",
     difficulty: "Intermediate",
     topics: ["AI Infrastructure", "AI Observability"],
     companies: ["Databricks", "Microsoft", "Amazon"],
@@ -984,7 +984,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design a Fine-Tuning Pipeline",
     summary:
       "Design a pipeline for supervised fine-tuning and LoRA — data curation, training, eval gates, and rollout.",
-    tier: "ai-infrastructure",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["Fine-Tuning", "AI Infrastructure"],
     companies: ["Databricks", "OpenAI", "Meta"],
@@ -999,7 +999,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an RLHF Pipeline",
     summary:
       "Design reinforcement learning from human feedback — preference data, reward modeling, and PPO/DPO training.",
-    tier: "ai-infrastructure",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["Fine-Tuning", "AI Infrastructure"],
     companies: ["OpenAI", "Anthropic", "Google DeepMind"],
@@ -1014,7 +1014,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "GPU Cluster Management",
     summary:
       "Fair-share scheduling, gang scheduling, and fault recovery for large GPU clusters running mixed workloads.",
-    tier: "ai-infrastructure",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Infrastructure"],
     companies: ["NVIDIA", "Meta", "Amazon"],
@@ -1025,13 +1025,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // 🟡 AI Safety, Security & Governance
+  // 🟤 Level 8 · Advanced AI — Safety, Security & Governance
   {
     slug: "defending-against-prompt-injection",
     title: "Defending Against Prompt Injection",
     summary:
       "Direct and indirect prompt injection — the threat model, and layered defenses interviewers want to hear.",
-    tier: "ai-safety",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Security", "AI Agents"],
     companies: ["Anthropic", "Microsoft", "OpenAI"],
@@ -1046,7 +1046,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an LLM Guardrail System",
     summary:
       "Design input/output guardrails — policy checks, schema validation, PII filters, and safe-completion routing.",
-    tier: "ai-safety",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Security", "AI Evaluation"],
     companies: ["Microsoft", "OpenAI", "Anthropic"],
@@ -1061,7 +1061,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "PII Detection & Redaction",
     summary:
       "Detect and redact sensitive data before it reaches a model — classifiers, tokenization, and reversible masking.",
-    tier: "ai-safety",
+    tier: "l8-advanced-ai",
     difficulty: "Intermediate",
     topics: ["AI Security"],
     companies: ["Microsoft", "Amazon", "Databricks"],
@@ -1076,7 +1076,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Hallucination Mitigation",
     summary:
       "System-level mitigations — grounding, citations, self-consistency, and abstention — with measurable guarantees.",
-    tier: "ai-safety",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Evaluation", "RAG"],
     companies: ["Anthropic", "Google DeepMind", "OpenAI"],
@@ -1091,7 +1091,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Content Safety Pipeline",
     summary:
       "Design a safety pipeline for generated text and images — classifiers, thresholds, appeals, and audit trails.",
-    tier: "ai-safety",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Security", "AI Evaluation"],
     companies: ["Meta", "Microsoft", "OpenAI"],
@@ -1106,7 +1106,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Model Access Control & Rate Limiting",
     summary:
       "Per-tenant quotas, token budgets, and abuse detection — protecting expensive model endpoints.",
-    tier: "ai-safety",
+    tier: "l8-advanced-ai",
     difficulty: "Intermediate",
     topics: ["AI Security", "Model Serving"],
     companies: ["OpenAI", "Amazon", "Microsoft"],
@@ -1121,7 +1121,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "AI Governance & Audit Logging",
     summary:
       "Model cards, data lineage, approval workflows, and immutable audit logs — the compliance layer for AI.",
-    tier: "ai-safety",
+    tier: "l8-advanced-ai",
     difficulty: "Intermediate",
     topics: ["AI Security", "AI Observability"],
     companies: ["Microsoft", "Databricks", "Amazon"],
@@ -1136,7 +1136,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Jailbreak Detection",
     summary:
       "Detect adversarial prompts that bypass safety — classifiers, canaries, and red-teaming feedback loops.",
-    tier: "ai-safety",
+    tier: "l8-advanced-ai",
     difficulty: "Advanced",
     topics: ["AI Security", "AI Evaluation"],
     companies: ["Anthropic", "OpenAI", "Google DeepMind"],
@@ -1147,13 +1147,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // 🟩 Production AI & LLMOps
+  // 🟩 Level 7 · Production AI — LLMOps
   {
     slug: "design-llm-observability",
     title: "Design LLM Observability",
     summary:
       "Design tracing for LLM apps — spans across retrieval and generation, token/cost metrics, and quality signals.",
-    tier: "production-ai",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["AI Observability", "AI Evaluation"],
     companies: ["Databricks", "Microsoft", "Amazon"],
@@ -1168,7 +1168,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an LLM Evaluation Platform",
     summary:
       "Design an offline+online eval platform — golden sets, LLM-as-judge, human review, and regression gates.",
-    tier: "production-ai",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["AI Evaluation", "AI Observability"],
     companies: ["OpenAI", "Databricks", "Anthropic"],
@@ -1183,7 +1183,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "A/B Testing LLM Features",
     summary:
       "Experiment on prompts and models — metrics, guardrail metrics, and why LLM experiments are noisy.",
-    tier: "production-ai",
+    tier: "l7-production-ai",
     difficulty: "Intermediate",
     topics: ["AI Evaluation", "AI Observability"],
     companies: ["Meta", "Microsoft", "Amazon"],
@@ -1198,7 +1198,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "LLM Cost Optimization",
     summary:
       "Model cascades, caching, batching, and prompt compression — a systematic playbook for cutting inference cost.",
-    tier: "production-ai",
+    tier: "l7-production-ai",
     difficulty: "Intermediate",
     topics: ["AI Observability", "Model Serving"],
     companies: ["Databricks", "Amazon", "Microsoft"],
@@ -1213,7 +1213,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design a Prompt Management System",
     summary:
       "Design versioned prompt storage — templates, variables, staged rollout, and rollback tied to evals.",
-    tier: "production-ai",
+    tier: "l7-production-ai",
     difficulty: "Intermediate",
     topics: ["Prompt Engineering", "AI Observability"],
     companies: ["Microsoft", "Databricks", "OpenAI"],
@@ -1228,7 +1228,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design a Semantic Cache",
     summary:
       "Design an embedding-based cache for LLM responses — similarity thresholds, staleness, and correctness risks.",
-    tier: "production-ai",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["AI Observability", "Vector Databases"],
     companies: ["Databricks", "Amazon", "Cohere"],
@@ -1243,7 +1243,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Model Monitoring & Drift Detection",
     summary:
       "Detect data and quality drift in production — distribution monitors, canaries, and automated rollback.",
-    tier: "production-ai",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["AI Observability", "AI Evaluation"],
     companies: ["Databricks", "Amazon", "Microsoft"],
@@ -1258,7 +1258,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an LLMOps CI/CD Pipeline",
     summary:
       "Design CI/CD for prompts, models, and RAG indexes — eval gates, staged rollout, and automated rollback.",
-    tier: "production-ai",
+    tier: "l7-production-ai",
     difficulty: "Advanced",
     topics: ["AI Observability", "AI Infrastructure"],
     companies: ["Databricks", "Microsoft", "Amazon"],
@@ -1269,13 +1269,13 @@ const RAW_CATALOG: RawMeta[] = [
     status: "coming-soon",
   },
 
-  // ⭐ AI System Design Interview Problems
+  // ⭐ Level 9 · Interview Preparation
   {
     slug: "design-ai-recommendations",
     title: "Design AI-Powered Recommendations",
     summary:
       "Design a recommendation system with embeddings and LLM re-ranking — candidate generation, ranking, and freshness.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Advanced",
     topics: ["Embeddings", "Vector Databases", "Model Serving"],
     companies: ["Meta", "Amazon", "Google DeepMind"],
@@ -1290,7 +1290,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an Image Generation Service",
     summary:
       "Design a text-to-image service — diffusion inference, GPU queueing, safety filters, and asset storage.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Advanced",
     topics: ["Model Serving", "AI Infrastructure", "AI Security"],
     companies: ["OpenAI", "NVIDIA", "Google DeepMind"],
@@ -1305,7 +1305,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design a Voice Assistant",
     summary:
       "Design a real-time voice assistant — streaming ASR, LLM reasoning, TTS, and end-to-end latency budgets.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Advanced",
     topics: ["Model Serving", "AI Agents"],
     companies: ["Amazon", "Google DeepMind", "OpenAI"],
@@ -1320,7 +1320,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Code Review System",
     summary:
       "Design an AI reviewer for pull requests — repo context, diff analysis, false-positive control, and CI integration.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Advanced",
     topics: ["RAG", "AI Agents", "AI Evaluation"],
     companies: ["Microsoft", "OpenAI", "Amazon"],
@@ -1335,7 +1335,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Fraud Detection System",
     summary:
       "Design a hybrid ML + LLM fraud system — features, real-time scoring, explanations, and analyst tooling.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Advanced",
     topics: ["AI Infrastructure", "Model Serving"],
     companies: ["Amazon", "Microsoft", "Meta"],
@@ -1350,7 +1350,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Meeting Notetaker",
     summary:
       "Design a meeting assistant — diarized transcription, summarization, action items, and searchable history.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Intermediate",
     topics: ["Model Serving", "RAG"],
     companies: ["Microsoft", "Google DeepMind", "Amazon"],
@@ -1365,7 +1365,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design Real-Time AI Translation",
     summary:
       "Design streaming speech-to-speech translation — incremental decoding, latency, and quality/latency tradeoffs.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Advanced",
     topics: ["Model Serving"],
     companies: ["Meta", "Google DeepMind", "Microsoft"],
@@ -1380,7 +1380,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an AI Tutor",
     summary:
       "Design a personalized tutoring system — knowledge modeling, adaptive prompts, grounding, and safety for minors.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Intermediate",
     topics: ["RAG", "Prompt Engineering", "AI Security"],
     companies: ["Microsoft", "OpenAI", "Google DeepMind"],
@@ -1395,7 +1395,7 @@ const RAW_CATALOG: RawMeta[] = [
     title: "Design an LLM Personalization Engine",
     summary:
       "Design a system that personalizes LLM outputs per user — profile memory, retrieval, and privacy controls.",
-    tier: "ai-interview-problems",
+    tier: "l9-interview-prep",
     difficulty: "Advanced",
     topics: ["RAG", "Embeddings", "AI Security"],
     companies: ["Meta", "Amazon", "Microsoft"],
@@ -1405,10 +1405,298 @@ const RAW_CATALOG: RawMeta[] = [
     estimatedMinutes: 55,
     status: "coming-soon",
   },
+  // 🔵 Level 2 · Working with LLMs
+  {
+    slug: "calling-the-openai-api",
+    title: "Calling the OpenAI API",
+    summary:
+      "The Chat Completions and Responses APIs end-to-end — messages, roles, parameters, token accounting, and error handling.",
+    tier: "l2-working-with-llms",
+    difficulty: "Beginner",
+    topics: ["LLM Fundamentals", "Prompt Engineering"],
+    companies: ["OpenAI", "Microsoft"],
+    tags: ["OpenAI", "Chat Completions", "SDK", "API"],
+    popularity: 88,
+    frequency: "High",
+    estimatedMinutes: 35,
+    status: "coming-soon",
+  },
+  {
+    slug: "calling-the-anthropic-api",
+    title: "Calling the Anthropic (Claude) API",
+    summary:
+      "Claude's Messages API — system prompts, content blocks, stop reasons, and prompt-caching for cheaper long context.",
+    tier: "l2-working-with-llms",
+    difficulty: "Beginner",
+    topics: ["LLM Fundamentals", "Prompt Engineering"],
+    companies: ["Anthropic"],
+    tags: ["Anthropic", "Claude", "Messages API", "Prompt Caching"],
+    popularity: 84,
+    frequency: "High",
+    estimatedMinutes: 35,
+    status: "coming-soon",
+  },
+  {
+    slug: "calling-the-gemini-api",
+    title: "Calling the Google Gemini API",
+    summary:
+      "Gemini's generateContent API — multimodal inputs, safety settings, and grounding with Google Search.",
+    tier: "l2-working-with-llms",
+    difficulty: "Beginner",
+    topics: ["LLM Fundamentals", "Prompt Engineering"],
+    companies: ["Google DeepMind"],
+    tags: ["Gemini", "Multimodal", "generateContent", "Grounding"],
+    popularity: 80,
+    frequency: "Medium",
+    estimatedMinutes: 35,
+    status: "coming-soon",
+  },
+  {
+    slug: "azure-openai-service",
+    title: "Azure OpenAI Service",
+    summary:
+      "Running OpenAI models on Azure — deployments, regional data residency, private networking, and enterprise auth.",
+    tier: "l2-working-with-llms",
+    difficulty: "Intermediate",
+    topics: ["LLM Fundamentals", "AI Infrastructure"],
+    companies: ["Microsoft", "OpenAI"],
+    tags: ["Azure", "Deployments", "Enterprise", "Networking"],
+    popularity: 78,
+    frequency: "Medium",
+    estimatedMinutes: 35,
+    status: "coming-soon",
+  },
+  {
+    slug: "structured-outputs",
+    title: "Structured Outputs",
+    summary:
+      "Guaranteeing schema-valid responses — JSON Schema, response formats, and refusal handling for reliable pipelines.",
+    tier: "l2-working-with-llms",
+    difficulty: "Intermediate",
+    topics: ["Prompt Engineering", "AI Evaluation"],
+    companies: ["OpenAI", "Anthropic"],
+    tags: ["Structured Outputs", "JSON Schema", "Validation"],
+    popularity: 85,
+    frequency: "High",
+    estimatedMinutes: 35,
+    status: "coming-soon",
+  },
+  {
+    slug: "json-mode",
+    title: "JSON Mode",
+    summary:
+      "Forcing valid JSON from any model — when to use JSON mode vs structured outputs, and how to recover from partial output.",
+    tier: "l2-working-with-llms",
+    difficulty: "Beginner",
+    topics: ["Prompt Engineering"],
+    companies: ["OpenAI", "Anthropic", "Google DeepMind"],
+    tags: ["JSON Mode", "Parsing", "Reliability"],
+    popularity: 79,
+    frequency: "Medium",
+    estimatedMinutes: 30,
+    status: "coming-soon",
+  },
+  {
+    slug: "streaming-responses",
+    title: "Streaming Responses",
+    summary:
+      "Server-sent events and token streaming — delta parsing, backpressure, cancellation, and rendering partial tokens in the UI.",
+    tier: "l2-working-with-llms",
+    difficulty: "Intermediate",
+    topics: ["LLM Fundamentals", "Model Serving"],
+    companies: ["OpenAI", "Anthropic"],
+    tags: ["Streaming", "SSE", "Tokens", "UX"],
+    popularity: 83,
+    frequency: "High",
+    estimatedMinutes: 35,
+    status: "coming-soon",
+  },
+  {
+    slug: "function-and-tool-calling",
+    title: "Function & Tool Calling",
+    summary:
+      "Letting the model call your code — tool schemas, argument validation, parallel tool calls, and the tool-result loop.",
+    tier: "l2-working-with-llms",
+    difficulty: "Intermediate",
+    topics: ["AI Agents", "Prompt Engineering"],
+    companies: ["OpenAI", "Anthropic", "Google DeepMind"],
+    tags: ["Tool Calling", "Function Calling", "Schemas", "Agents"],
+    popularity: 89,
+    frequency: "Very High",
+    estimatedMinutes: 40,
+    status: "coming-soon",
+  },
+  {
+    slug: "model-context-protocol",
+    title: "Model Context Protocol (MCP)",
+    summary:
+      "The open standard for connecting models to tools and data — servers, resources, tools, and transport, and why it matters.",
+    tier: "l2-working-with-llms",
+    difficulty: "Intermediate",
+    topics: ["AI Agents", "AI Infrastructure"],
+    companies: ["Anthropic", "OpenAI"],
+    tags: ["MCP", "Tools", "Integration", "Standard"],
+    popularity: 81,
+    frequency: "Medium",
+    estimatedMinutes: 40,
+    status: "coming-soon",
+  },
+  {
+    slug: "prompt-templates-and-chaining",
+    title: "Prompt Templates & Chaining",
+    summary:
+      "Reusable, versioned prompts and multi-step chains — variables, few-shot templates, and composing calls into workflows.",
+    tier: "l2-working-with-llms",
+    difficulty: "Intermediate",
+    topics: ["Prompt Engineering"],
+    companies: ["OpenAI", "Databricks"],
+    tags: ["Prompt Templates", "Chaining", "Versioning", "Few-Shot"],
+    popularity: 77,
+    frequency: "Medium",
+    estimatedMinutes: 35,
+    status: "coming-soon",
+  },
+  {
+    slug: "output-guardrails-and-validation",
+    title: "Output Guardrails & Validation",
+    summary:
+      "Keeping model output safe and correct — content filters, schema validation, retries, and fallbacks before you trust a response.",
+    tier: "l2-working-with-llms",
+    difficulty: "Intermediate",
+    topics: ["AI Security", "AI Evaluation"],
+    companies: ["OpenAI", "Anthropic", "Microsoft"],
+    tags: ["Guardrails", "Validation", "Safety", "Retries"],
+    popularity: 82,
+    frequency: "High",
+    estimatedMinutes: 40,
+    status: "coming-soon",
+  },
+
+  // 🚀 Level 10 · Hands-On Projects
+  {
+    slug: "build-chatgpt-from-scratch",
+    title: "Build ChatGPT from Scratch",
+    summary:
+      "A capstone build of a streaming chat app — conversation state, streaming responses, message history, and persistence.",
+    tier: "l10-projects",
+    difficulty: "Intermediate",
+    topics: ["LLM Fundamentals", "Model Serving"],
+    companies: ["OpenAI"],
+    tags: ["Project", "Chat", "Streaming", "Capstone"],
+    popularity: 86,
+    frequency: "Medium",
+    estimatedMinutes: 90,
+    status: "coming-soon",
+  },
+  {
+    slug: "build-an-ai-coding-copilot",
+    title: "Build an AI Coding Copilot",
+    summary:
+      "A capstone build of an inline code assistant — repo context, fill-in-the-middle, tool calling, and diff application.",
+    tier: "l10-projects",
+    difficulty: "Advanced",
+    topics: ["RAG", "AI Agents"],
+    companies: ["Microsoft", "OpenAI"],
+    tags: ["Project", "Copilot", "Code", "Capstone"],
+    popularity: 84,
+    frequency: "Medium",
+    estimatedMinutes: 120,
+    status: "coming-soon",
+  },
+  {
+    slug: "build-a-rag-system",
+    title: "Build a RAG System",
+    summary:
+      "A capstone build of an end-to-end RAG app — ingestion, chunking, embeddings, a vector store, retrieval, and grounded answers.",
+    tier: "l10-projects",
+    difficulty: "Intermediate",
+    topics: ["RAG", "Vector Databases", "Embeddings"],
+    companies: ["Cohere", "Databricks"],
+    tags: ["Project", "RAG", "Retrieval", "Capstone"],
+    popularity: 85,
+    frequency: "Medium",
+    estimatedMinutes: 120,
+    status: "coming-soon",
+  },
+  {
+    slug: "build-an-ai-agent",
+    title: "Build an AI Agent",
+    summary:
+      "A capstone build of a tool-using agent — planning loop, tool execution, memory, and guardrails against runaway loops.",
+    tier: "l10-projects",
+    difficulty: "Advanced",
+    topics: ["AI Agents", "Multi-Agent Systems"],
+    companies: ["Anthropic", "OpenAI"],
+    tags: ["Project", "Agent", "Tools", "Capstone"],
+    popularity: 83,
+    frequency: "Medium",
+    estimatedMinutes: 120,
+    status: "coming-soon",
+  },
+  {
+    slug: "build-an-ai-coding-assistant",
+    title: "Build an AI Coding Assistant",
+    summary:
+      "A capstone build of a chat-based coding assistant — codebase indexing, retrieval over source, and multi-file edits.",
+    tier: "l10-projects",
+    difficulty: "Advanced",
+    topics: ["RAG", "AI Agents", "Vector Databases"],
+    companies: ["Microsoft", "OpenAI"],
+    tags: ["Project", "Coding Assistant", "Codebase", "Capstone"],
+    popularity: 80,
+    frequency: "Medium",
+    estimatedMinutes: 120,
+    status: "coming-soon",
+  },
+  {
+    slug: "build-an-ai-search-engine",
+    title: "Build an AI Search Engine",
+    summary:
+      "A capstone build of an answer engine — query understanding, retrieval, reranking, cited synthesis, and follow-ups.",
+    tier: "l10-projects",
+    difficulty: "Advanced",
+    topics: ["RAG", "Vector Databases", "AI Evaluation"],
+    companies: ["Perplexity", "OpenAI"],
+    tags: ["Project", "Search", "Answer Engine", "Capstone"],
+    popularity: 82,
+    frequency: "Medium",
+    estimatedMinutes: 120,
+    status: "coming-soon",
+  },
+  {
+    slug: "build-an-ai-workflow-platform",
+    title: "Build an AI Workflow Platform",
+    summary:
+      "A capstone build of a node-based workflow runner — chaining prompts and tools, branching, retries, and observability.",
+    tier: "l10-projects",
+    difficulty: "Advanced",
+    topics: ["AI Agents", "AI Observability", "AI Infrastructure"],
+    companies: ["Databricks", "Microsoft"],
+    tags: ["Project", "Workflow", "Orchestration", "Capstone"],
+    popularity: 76,
+    frequency: "Medium",
+    estimatedMinutes: 120,
+    status: "coming-soon",
+  },
+  {
+    slug: "build-a-document-chat-app",
+    title: "Build a Document Chat App",
+    summary:
+      "A capstone build of chat-with-your-PDF — upload, parsing, chunking, retrieval, and grounded answers with citations.",
+    tier: "l10-projects",
+    difficulty: "Intermediate",
+    topics: ["RAG", "Vector Databases", "Embeddings"],
+    companies: ["Cohere", "OpenAI"],
+    tags: ["Project", "Document Chat", "PDF", "Capstone"],
+    popularity: 81,
+    frequency: "Medium",
+    estimatedMinutes: 90,
+    status: "coming-soon",
+  },
 ];
 
 /** The full lesson catalog, with `addedOrder` derived (earlier = newer). */
-export const AISD_CATALOG: AISDLessonMeta[] = RAW_CATALOG.map((q, i) => ({
+export const GENAI_CATALOG: GenAILessonMeta[] = RAW_CATALOG.map((q, i) => ({
   ...q,
   addedOrder: RAW_CATALOG.length - i,
 }));

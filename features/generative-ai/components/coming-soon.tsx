@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Bell, Building2, Clock, Gauge, Lock } from "lucide-react";
 import { ACCENT_STYLES, type AccentKey } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import type { AISDLessonMeta } from "../types";
+import type { GenAILessonMeta } from "../types";
 
 /**
  * Placeholder shown for catalog lessons that don't yet have authored content.
@@ -14,7 +14,7 @@ export function ComingSoon({
   tierLabel,
   accent,
 }: {
-  meta: AISDLessonMeta;
+  meta: GenAILessonMeta;
   tierLabel: string;
   accent: AccentKey;
 }) {
@@ -22,7 +22,7 @@ export function ComingSoon({
   return (
     <div className="space-y-6">
       <Link
-        href="/learning/ai-system-design"
+        href="/learning/generative-ai"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> All AI system design lessons
@@ -36,7 +36,7 @@ export function ComingSoon({
         )}
       >
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          <span>AI System Design</span>
+          <span>Generative AI</span>
           <span>/</span>
           <span>{tierLabel}</span>
         </div>
@@ -89,7 +89,7 @@ export function ComingSoon({
           examples. In the meantime, explore the published lessons in this track.
         </p>
         <Link
-          href="/learning/ai-system-design"
+          href="/learning/generative-ai"
           className={cn(
             "mt-5 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-white transition-transform hover:translate-x-0.5",
             a.solid,

@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
-  AISD_CATALOG,
-  AISD_TIERS,
+  GENAI_CATALOG,
+  GENAI_TIERS,
   estimateReadingMinutes,
   getLesson,
   getLessonMeta,
-} from "@/features/ai-system-design";
-import { ComingSoon, LessonView } from "@/features/ai-system-design/components";
+} from "@/features/generative-ai";
+import { ComingSoon, LessonView } from "@/features/generative-ai/components";
 
 /** Prerender every published lesson. */
 export function generateStaticParams() {
-  return AISD_CATALOG.filter((q) => q.status === "published").map((q) => ({
+  return GENAI_CATALOG.filter((q) => q.status === "published").map((q) => ({
     lesson: q.slug,
   }));
 }
@@ -22,27 +22,27 @@ export function generateMetadata({
   params: { lesson: string };
 }): Metadata {
   const meta = getLessonMeta(params.lesson);
-  if (!meta) return { title: "AI System Design" };
+  if (!meta) return { title: "Generative AI" };
   return {
-    title: `${meta.title} · AI System Design`,
+    title: `${meta.title} · Generative AI`,
     description: meta.summary,
   };
 }
 
 function tierLabel(tierId: string): string {
-  return AISD_TIERS.find((t) => t.id === tierId)?.label ?? "AI System Design";
+  return GENAI_TIERS.find((t) => t.id === tierId)?.label ?? "Generative AI";
 }
 
 function tierAccent(tierId: string) {
-  return AISD_TIERS.find((t) => t.id === tierId)?.accent ?? "cyan";
+  return GENAI_TIERS.find((t) => t.id === tierId)?.accent ?? "cyan";
 }
 
 /**
- * A single AI System Design lesson page. Published lessons render the full
+ * A single Generative AI lesson page. Published lessons render the full
  * `LessonView`; catalog entries without authored content render a polished
  * `ComingSoon` placeholder. Both are driven entirely by the registry.
  */
-export default function AISystemDesignLessonPage({
+export default function GenerativeAiLessonPage({
   params,
 }: {
   params: { lesson: string };

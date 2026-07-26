@@ -1,6 +1,6 @@
-import type { AISDLessonContent } from "../types";
+import type { GenAILessonContent } from "../types";
 
-export const designVectorDatabaseContent: AISDLessonContent = {
+export const designVectorDatabaseContent: GenAILessonContent = {
   slug: "design-vector-database",
   introductionMD: `A vector database stores embeddings and returns the nearest vectors to a query embedding in milliseconds. In interviews, this is the flagship vector-search design problem because it sits at the intersection of algorithms, distributed systems, storage engines, and AI product quality.
 

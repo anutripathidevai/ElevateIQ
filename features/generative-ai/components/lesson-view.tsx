@@ -35,8 +35,8 @@ import { ACCENT_STYLES, type AccentKey } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { GraphSection, MarkComplete } from "@/features/graph-algorithms/components";
 import { ArchitectureDiagram, Quiz, Flashcards } from "@/features/system-design/components";
-import type { AISDLessonContent, AISDLessonMeta } from "../types";
-import { AISD_TIERS } from "../registry";
+import type { GenAILessonContent, GenAILessonMeta } from "../types";
+import { GENAI_TIERS } from "../registry";
 import {
   recordRecentlyViewed,
   toggleBookmark,
@@ -62,14 +62,14 @@ export function LessonView({
   related,
   tierLabel,
 }: {
-  meta: AISDLessonMeta;
-  content: AISDLessonContent;
+  meta: GenAILessonMeta;
+  content: GenAILessonContent;
   readingMinutes: number;
   related: RelatedTarget[];
   tierLabel: string;
 }) {
   const accent: AccentKey =
-    AISD_TIERS.find((t) => t.id === meta.tier)?.accent ?? "blue";
+    GENAI_TIERS.find((t) => t.id === meta.tier)?.accent ?? "blue";
   const a = ACCENT_STYLES[accent];
   const [interviewMode, setInterviewMode] = useState(false);
   const bookmarked = useIsBookmarked(meta.slug);
@@ -125,7 +125,7 @@ export function LessonView({
   return (
     <div className="space-y-6">
       <Link
-        href="/learning/ai-system-design"
+        href="/learning/generative-ai"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> All AI system design lessons
@@ -140,7 +140,7 @@ export function LessonView({
         )}
       >
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          <span>AI System Design</span>
+          <span>Generative AI</span>
           <span>/</span>
           <span>{tierLabel}</span>
         </div>
@@ -641,7 +641,7 @@ export function LessonView({
                 {related.map((r) => (
                   <Link
                     key={r.slug}
-                    href={`/learning/ai-system-design/${r.slug}`}
+                    href={`/learning/generative-ai/${r.slug}`}
                     className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40"
                   >
                     <h4 className="text-sm font-semibold">{r.title}</h4>

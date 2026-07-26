@@ -114,7 +114,7 @@ export default function LearningPage() {
         </Link>
 
         <Link
-          href="/learning/ai-system-design"
+          href="/learning/generative-ai"
           className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/15 to-cyan-500/0 p-6 transition-colors hover:border-cyan-500/50 sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="flex items-start gap-4">
@@ -124,16 +124,17 @@ export default function LearningPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold tracking-tight">
-                  AI System Design
+                  Generative AI
                 </h2>
                 <span className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-xs font-medium text-cyan-500">
                   New
                 </span>
               </div>
               <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-                Design production AI systems — ChatGPT, RAG pipelines, vector
-                databases, agents, and inference serving — as full deep dives
-                with interactive architecture diagrams and interview framing.
+                The complete Generative AI roadmap — foundations, LLMs, RAG,
+                vector databases, agents, AI system design (ChatGPT, coding
+                assistants), production AI, interview prep, and hands-on
+                projects, all in one place.
               </p>
             </div>
           </div>

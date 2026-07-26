@@ -8,9 +8,9 @@
  */
 import { useSyncExternalStore } from "react";
 
-const BOOKMARK_KEY = "elevateiq:aisd:bookmarks:v1";
-const RECENT_KEY = "elevateiq:aisd:recent:v1";
-const EVENT = "elevateiq:aisd:store";
+const BOOKMARK_KEY = "elevateiq:genai:bookmarks:v1";
+const RECENT_KEY = "elevateiq:genai:recent:v1";
+const EVENT = "elevateiq:genai:store";
 const RECENT_LIMIT = 8;
 
 function readList(key: string): string[] {

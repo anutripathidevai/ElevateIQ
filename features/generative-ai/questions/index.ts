@@ -1,4 +1,4 @@
-import type { AISDLessonContent } from "../types";
+import type { GenAILessonContent } from "../types";
 import { designChatgptContent } from "./design-chatgpt";
 import { designRagPipelineContent } from "./design-rag-pipeline";
 import { designVectorDatabaseContent } from "./design-vector-database";
@@ -10,7 +10,7 @@ import { designVectorDatabaseContent } from "./design-vector-database";
  * placeholder. Adding a lesson = author a `<slug>.ts` content file, import it
  * here, and flip the catalog entry to "published".
  */
-export const AISD_CONTENT: Record<string, AISDLessonContent> = {
+export const GENAI_CONTENT: Record<string, GenAILessonContent> = {
   [designChatgptContent.slug]: designChatgptContent,
   [designRagPipelineContent.slug]: designRagPipelineContent,
   [designVectorDatabaseContent.slug]: designVectorDatabaseContent,

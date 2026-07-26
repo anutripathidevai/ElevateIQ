@@ -12,8 +12,8 @@ import {
 import { ACCENT_STYLES } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { useSolved } from "@/lib/progress-store";
-import type { AISDLessonMeta } from "../types";
-import { AISD_TIERS } from "../registry";
+import type { GenAILessonMeta } from "../types";
+import { GENAI_TIERS } from "../registry";
 import { toggleBookmark, useIsBookmarked } from "./bookmark-store";
 
 const DIFFICULTY_ACCENT = {
@@ -22,8 +22,8 @@ const DIFFICULTY_ACCENT = {
   Advanced: "orange",
 } as const;
 
-function tierAccent(tier: AISDLessonMeta["tier"]) {
-  return AISD_TIERS.find((t) => t.id === tier)?.accent ?? "blue";
+function tierAccent(tier: GenAILessonMeta["tier"]) {
+  return GENAI_TIERS.find((t) => t.id === tier)?.accent ?? "blue";
 }
 
 /**
@@ -31,7 +31,7 @@ function tierAccent(tier: AISDLessonMeta["tier"]) {
  * and expose bookmark + solved state; coming-soon lessons render a disabled,
  * clearly-labelled placeholder. Purely data-driven.
  */
-export function LessonCard({ meta }: { meta: AISDLessonMeta }) {
+export function LessonCard({ meta }: { meta: GenAILessonMeta }) {
   const published = meta.status === "published";
   const solved = useSolved(meta.slug);
   const bookmarked = useIsBookmarked(meta.slug);
@@ -144,7 +144,7 @@ export function LessonCard({ meta }: { meta: AISDLessonMeta }) {
 
   return (
     <Link
-      href={`/learning/ai-system-design/${meta.slug}`}
+      href={`/learning/generative-ai/${meta.slug}`}
       className={cn(
         cardClass,
         "focus:outline-none focus:ring-2 focus:ring-primary/40",

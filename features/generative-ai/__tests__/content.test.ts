@@ -1,22 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
-  AISD_CATALOG,
-  AISD_COMPANIES,
-  AISD_DIFFICULTIES,
-  AISD_TIERS,
-  AISD_TOPICS,
+  GENAI_CATALOG,
+  GENAI_COMPANIES,
+  GENAI_DIFFICULTIES,
+  GENAI_TIERS,
+  GENAI_TOPICS,
   getLesson,
   getLessonContent,
   getPublishedCatalog,
 } from "..";
-import { AISD_CONTENT } from "../questions";
-import type { AISDLessonContent } from "../types";
+import { GENAI_CONTENT } from "../questions";
+import type { GenAILessonContent } from "../types";
 
-const CATALOG_SLUGS = new Set(AISD_CATALOG.map((q) => q.slug));
-const COMPANY_SET = new Set<string>(AISD_COMPANIES);
-const TIER_IDS = new Set(AISD_TIERS.map((t) => t.id));
-const DIFFICULTY_SET = new Set<string>(AISD_DIFFICULTIES);
-const TOPIC_SET = new Set<string>(AISD_TOPICS);
+const CATALOG_SLUGS = new Set(GENAI_CATALOG.map((q) => q.slug));
+const COMPANY_SET = new Set<string>(GENAI_COMPANIES);
+const TIER_IDS = new Set(GENAI_TIERS.map((t) => t.id));
+const DIFFICULTY_SET = new Set<string>(GENAI_DIFFICULTIES);
+const TOPIC_SET = new Set<string>(GENAI_TOPICS);
 
 const EXEMPLARS = [
   "design-chatgpt",
@@ -30,7 +30,7 @@ const EXEMPLARS = [
  * delimited in the authored content, so a stray backtick would not even
  * compile — this test keeps them prose-safe and interpolation-free too).
  */
-function proseFields(c: AISDLessonContent): string[] {
+function proseFields(c: GenAILessonContent): string[] {
   return [
     c.introductionMD,
     c.realWorldMD,
@@ -77,12 +77,12 @@ function proseFields(c: AISDLessonContent): string[] {
   ];
 }
 
-describe("ai-system-design catalog", () => {
+describe("generative-ai catalog", () => {
   it("has unique slugs and valid metadata across the whole catalog", () => {
-    expect(new Set(AISD_CATALOG.map((q) => q.slug)).size).toBe(
-      AISD_CATALOG.length,
+    expect(new Set(GENAI_CATALOG.map((q) => q.slug)).size).toBe(
+      GENAI_CATALOG.length,
     );
-    for (const q of AISD_CATALOG) {
+    for (const q of GENAI_CATALOG) {
       const where = `catalog ${q.slug}`;
       expect(q.title, where).toBeTruthy();
       expect(q.summary.length, `${where} summary`).toBeGreaterThan(10);
@@ -110,8 +110,8 @@ describe("ai-system-design catalog", () => {
   });
 
   it("gives every tier at least one lesson", () => {
-    for (const tier of AISD_TIERS) {
-      const count = AISD_CATALOG.filter((q) => q.tier === tier.id).length;
+    for (const tier of GENAI_TIERS) {
+      const count = GENAI_CATALOG.filter((q) => q.tier === tier.id).length;
       expect(count, `tier ${tier.id}`).toBeGreaterThan(0);
     }
   });
@@ -124,16 +124,16 @@ describe("published lesson ↔ content integrity", () => {
       expect(content, `content for ${meta.slug}`).toBeDefined();
       expect(content!.slug, `${meta.slug} slug match`).toBe(meta.slug);
     }
-    for (const slug of Object.keys(AISD_CONTENT)) {
+    for (const slug of Object.keys(GENAI_CONTENT)) {
       expect(CATALOG_SLUGS.has(slug), `content ${slug} in catalog`).toBe(true);
-      const meta = AISD_CATALOG.find((q) => q.slug === slug)!;
+      const meta = GENAI_CATALOG.find((q) => q.slug === slug)!;
       expect(meta.status, `content ${slug} published`).toBe("published");
     }
   });
 });
 
 describe("authored content quality", () => {
-  const entries = Object.values(AISD_CONTENT);
+  const entries = Object.values(GENAI_CONTENT);
 
   it("populates every required section", () => {
     for (const c of entries) {

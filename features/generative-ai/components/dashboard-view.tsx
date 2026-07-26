@@ -4,24 +4,24 @@ import { useMemo, useState } from "react";
 import { Bookmark, History, LayoutGrid, ListTree, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
-  AISDCompany,
-  AISDDifficulty,
-  AISDLessonMeta,
-  AISDTierMeta,
-  AISDTopic,
+  GenAICompany,
+  GenAIDifficulty,
+  GenAILessonMeta,
+  GenAITierMeta,
+  GenAITopic,
 } from "../types";
 import {
   filterLessons,
   sortLessons,
-  type AISDFilters,
-  type AISDSort,
+  type GenAIFilters,
+  type GenAISort,
 } from "../content-api";
 import { LessonCard } from "./lesson-card";
 import { useBookmarks, useRecentlyViewed } from "./bookmark-store";
 
 type ViewMode = "path" | "grid";
 
-const SORTS: { key: AISDSort; label: string }[] = [
+const SORTS: { key: GenAISort; label: string }[] = [
   { key: "newest", label: "Newest" },
   { key: "popular", label: "Most Popular" },
   { key: "difficulty", label: "Difficulty" },
@@ -66,21 +66,21 @@ export function DashboardView({
   companies,
   difficulties,
 }: {
-  catalog: AISDLessonMeta[];
-  tiers: AISDTierMeta[];
-  topics: AISDTopic[];
-  companies: AISDCompany[];
-  difficulties: AISDDifficulty[];
+  catalog: GenAILessonMeta[];
+  tiers: GenAITierMeta[];
+  topics: GenAITopic[];
+  companies: GenAICompany[];
+  difficulties: GenAIDifficulty[];
 }) {
   const [query, setQuery] = useState("");
-  const [difficulty, setDifficulty] = useState<AISDDifficulty | "All">("All");
-  const [topic, setTopic] = useState<AISDTopic | "All">("All");
-  const [company, setCompany] = useState<AISDCompany | "All">("All");
-  const [sort, setSort] = useState<AISDSort>("newest");
+  const [difficulty, setDifficulty] = useState<GenAIDifficulty | "All">("All");
+  const [topic, setTopic] = useState<GenAITopic | "All">("All");
+  const [company, setCompany] = useState<GenAICompany | "All">("All");
+  const [sort, setSort] = useState<GenAISort>("newest");
   const [view, setView] = useState<ViewMode>("path");
 
   const metaBySlug = useMemo(() => {
-    const m = new Map<string, AISDLessonMeta>();
+    const m = new Map<string, GenAILessonMeta>();
     catalog.forEach((q) => m.set(q.slug, q));
     return m;
   }, [catalog]);
@@ -88,7 +88,7 @@ export function DashboardView({
   const bookmarks = useBookmarks();
   const recent = useRecentlyViewed();
 
-  const filters: AISDFilters = { query, difficulty, topic, company };
+  const filters: GenAIFilters = { query, difficulty, topic, company };
   const hasFilters =
     query.trim() !== "" ||
     difficulty !== "All" ||
@@ -105,10 +105,10 @@ export function DashboardView({
 
   const bookmarkMetas = bookmarks
     .map((s) => metaBySlug.get(s))
-    .filter((m): m is AISDLessonMeta => Boolean(m));
+    .filter((m): m is GenAILessonMeta => Boolean(m));
   const recentMetas = recent
     .map((s) => metaBySlug.get(s))
-    .filter((m): m is AISDLessonMeta => Boolean(m));
+    .filter((m): m is GenAILessonMeta => Boolean(m));
 
   return (
     <div className="space-y-8">
@@ -135,13 +135,13 @@ export function DashboardView({
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="sr-only" htmlFor="aisd-sort">
+            <label className="sr-only" htmlFor="genai-sort">
               Sort
             </label>
             <select
-              id="aisd-sort"
+              id="genai-sort"
               value={sort}
-              onChange={(e) => setSort(e.target.value as AISDSort)}
+              onChange={(e) => setSort(e.target.value as GenAISort)}
               className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm outline-none focus:border-primary/50"
             >
               {SORTS.map((s) => (
@@ -324,7 +324,7 @@ function Shelf({
 }: {
   title: string;
   icon: typeof Bookmark;
-  metas: AISDLessonMeta[];
+  metas: GenAILessonMeta[];
 }) {
   return (
     <section className="space-y-3">

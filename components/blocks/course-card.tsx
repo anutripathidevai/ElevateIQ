@@ -55,7 +55,7 @@ export function CourseCard({ course }: { course: Course }) {
         </div>
         <ProgressBar value={course.progress} accent={course.accent} />
         <Link
-          href={`/learning#${course.anchor}`}
+          href={course.href ?? `/learning#${course.anchor}`}
           className={cn(buttonVariants({ size: "sm" }), "mt-2 w-full")}
         >
           <PlayCircle className="h-4 w-4" />

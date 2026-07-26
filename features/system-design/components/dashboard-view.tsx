@@ -1,7 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bookmark, History, LayoutGrid, ListTree, Search } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Bookmark,
+  History,
+  LayoutGrid,
+  ListTree,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type {
   SDCategory,
@@ -233,6 +242,59 @@ export function DashboardView({
                 sort,
               );
               if (items.length === 0) return null;
+
+              // AI System Design has been consolidated into the dedicated
+              // Generative AI learning hub. Keep the track visible here for
+              // discoverability, but redirect learners to its new home.
+              if (tier.id === "ai") {
+                return (
+                  <section key={tier.id} className="space-y-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span className="text-2xl" aria-hidden>
+                        {tier.emoji}
+                      </span>
+                      <div>
+                        <h2 className="text-lg font-semibold tracking-tight">
+                          {tier.label}
+                        </h2>
+                        <p className="max-w-2xl text-sm text-muted-foreground">
+                          {tier.description}
+                        </p>
+                      </div>
+                      <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-0.5 text-xs font-medium text-cyan-400">
+                        <Sparkles className="h-3 w-3" />
+                        Moved
+                      </span>
+                    </div>
+                    <Link
+                      href="/learning/generative-ai"
+                      className="group flex flex-col gap-3 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 to-cyan-500/0 p-5 transition-colors hover:border-cyan-500/50 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15">
+                          <Sparkles className="h-5 w-5 text-cyan-400" />
+                        </span>
+                        <div>
+                          <p className="text-sm font-semibold">
+                            Now part of Generative AI
+                          </p>
+                          <p className="mt-0.5 max-w-xl text-sm text-muted-foreground">
+                            AI system design — ChatGPT, RAG, vector databases,
+                            agents, and inference serving — now lives in the
+                            dedicated Generative AI hub, alongside foundations,
+                            production AI, interview prep, and projects.
+                          </p>
+                        </div>
+                      </div>
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-white transition-transform group-hover:translate-x-0.5">
+                        Go to Generative AI
+                        <ArrowRight className="h-4 w-4" />
+                      </span>
+                    </Link>
+                  </section>
+                );
+              }
+
               const publishedCount = items.filter(
                 (q) => q.status === "published",
               ).length;
