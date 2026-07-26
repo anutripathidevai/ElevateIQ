@@ -36,3 +36,4 @@ next-env.d.ts
 
 # deployable build artifacts
 elevateiq-standalone-*.zip
+elevateiq-source-*.zip
