@@ -2,6 +2,16 @@ import type { GenAILessonContent } from "../types";
 import { designChatgptContent } from "./design-chatgpt";
 import { designRagPipelineContent } from "./design-rag-pipeline";
 import { designVectorDatabaseContent } from "./design-vector-database";
+// Level 1 · AI Foundations
+import { transformerArchitectureContent } from "./transformer-architecture";
+import { attentionMechanismContent } from "./attention-mechanism";
+import { tokenizationAndEmbeddingsContent } from "./tokenization-and-embeddings";
+import { howLlmInferenceWorksContent } from "./how-llm-inference-works";
+import { samplingAndDecodingContent } from "./sampling-and-decoding";
+import { contextWindowsAndKvCacheContent } from "./context-windows-and-kv-cache";
+import { hallucinationsAndLimitationsContent } from "./hallucinations-and-limitations";
+import { promptEngineeringFoundationsContent } from "./prompt-engineering-foundations";
+import { choosingTheRightModelContent } from "./choosing-the-right-model";
 
 /**
  * The content map: slug → authored lesson content. A lesson renders its full
@@ -14,4 +24,14 @@ export const GENAI_CONTENT: Record<string, GenAILessonContent> = {
   [designChatgptContent.slug]: designChatgptContent,
   [designRagPipelineContent.slug]: designRagPipelineContent,
   [designVectorDatabaseContent.slug]: designVectorDatabaseContent,
+  // Level 1 · AI Foundations
+  [transformerArchitectureContent.slug]: transformerArchitectureContent,
+  [attentionMechanismContent.slug]: attentionMechanismContent,
+  [tokenizationAndEmbeddingsContent.slug]: tokenizationAndEmbeddingsContent,
+  [howLlmInferenceWorksContent.slug]: howLlmInferenceWorksContent,
+  [samplingAndDecodingContent.slug]: samplingAndDecodingContent,
+  [contextWindowsAndKvCacheContent.slug]: contextWindowsAndKvCacheContent,
+  [hallucinationsAndLimitationsContent.slug]: hallucinationsAndLimitationsContent,
+  [promptEngineeringFoundationsContent.slug]: promptEngineeringFoundationsContent,
+  [choosingTheRightModelContent.slug]: choosingTheRightModelContent,
 };

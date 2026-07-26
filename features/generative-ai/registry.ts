@@ -170,7 +170,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 90,
     frequency: "Very High",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "attention-mechanism",
@@ -185,7 +185,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 86,
     frequency: "High",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "tokenization-and-embeddings",
@@ -200,7 +200,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 82,
     frequency: "High",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "how-llm-inference-works",
@@ -215,7 +215,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 84,
     frequency: "High",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "sampling-and-decoding",
@@ -230,7 +230,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 78,
     frequency: "Medium",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "context-windows-and-kv-cache",
@@ -245,7 +245,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 80,
     frequency: "Medium",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "hallucinations-and-limitations",
@@ -260,7 +260,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 79,
     frequency: "Medium",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "prompt-engineering-foundations",
@@ -275,7 +275,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 83,
     frequency: "High",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "choosing-the-right-model",
@@ -290,7 +290,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 76,
     frequency: "Medium",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
 
   // 🔴 Level 6 · AI System Design
