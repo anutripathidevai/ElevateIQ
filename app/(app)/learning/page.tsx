@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Award, BookOpen, Boxes, CheckCircle2, Clock, Code2, Globe, Layers, Network, Route, Sparkles } from "lucide-react";
+import { ArrowRight, Award, BookOpen, BrainCircuit, Boxes, CheckCircle2, Clock, Code2, Globe, Layers, Network, Route, Sparkles } from "lucide-react";
 import {
   COURSES,
   LEARNING_PATHS,
@@ -112,6 +112,35 @@ export default function LearningPage() {
             Explore <ArrowRight className="h-4 w-4" />
           </span>
         </Link>
+
+        <Link
+          href="/learning/ai-system-design"
+          className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/15 to-cyan-500/0 p-6 transition-colors hover:border-cyan-500/50 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cyan-500/15">
+              <BrainCircuit className="h-6 w-6 text-cyan-500" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  AI System Design
+                </h2>
+                <span className="rounded-full bg-cyan-500/15 px-2 py-0.5 text-xs font-medium text-cyan-500">
+                  New
+                </span>
+              </div>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                Design production AI systems — ChatGPT, RAG pipelines, vector
+                databases, agents, and inference serving — as full deep dives
+                with interactive architecture diagrams and interview framing.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-cyan-500 px-4 py-2 text-sm font-medium text-white transition-transform group-hover:translate-x-0.5">
+            Explore <ArrowRight className="h-4 w-4" />
+          </span>
+        </Link>
       </div>
 
       <section className="space-y-3">
@@ -129,9 +158,9 @@ export default function LearningPage() {
               icon: Boxes,
             },
             {
-              title: "AI System Design",
-              desc: "Designing inference serving, RAG, agents, and vector stores.",
-              icon: Sparkles,
+              title: "Microservices &amp; APIs",
+              desc: "Service boundaries, gRPC/REST, and API gateway patterns.",
+              icon: Route,
             },
             {
               title: "Distributed Systems",

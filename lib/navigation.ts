@@ -8,6 +8,7 @@ import {
   CalendarClock,
   CalendarDays,
   CalendarRange,
+  BrainCircuit,
   Cloud,
   Code2,
   FileText,
@@ -186,6 +187,12 @@ export const NAV_GROUPS: NavGroup[] = [
         href: "/learning/system-design",
         label: "System Design",
         icon: Network,
+        badge: "New",
+      },
+      {
+        href: "/learning/ai-system-design",
+        label: "AI System Design",
+        icon: BrainCircuit,
         badge: "New",
       },
       {
