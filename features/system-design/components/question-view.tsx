@@ -357,7 +357,10 @@ export function QuestionView({
           {/* 8 — High-level architecture */}
           <GraphSection id="architecture" title="High-Level Architecture" icon={Network} accent={accent} defaultOpen={open}>
             <div className="space-y-3">
-              <ArchitectureDiagram architecture={content.architecture} />
+              <ArchitectureDiagram
+                architecture={content.architecture}
+                title={`${meta.title} — High-Level Architecture`}
+              />
               {content.architecture.captionMD && (
                 <div className="text-xs text-muted-foreground"><Markdown>{content.architecture.captionMD}</Markdown></div>
               )}
