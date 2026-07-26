@@ -1419,7 +1419,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 88,
     frequency: "High",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "calling-the-anthropic-api",
@@ -1434,7 +1434,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 84,
     frequency: "High",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "calling-the-gemini-api",
@@ -1449,7 +1449,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 80,
     frequency: "Medium",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "azure-openai-service",
@@ -1464,7 +1464,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 78,
     frequency: "Medium",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "structured-outputs",
@@ -1479,7 +1479,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 85,
     frequency: "High",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "json-mode",
@@ -1494,7 +1494,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 79,
     frequency: "Medium",
     estimatedMinutes: 30,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "streaming-responses",
@@ -1509,7 +1509,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 83,
     frequency: "High",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "function-and-tool-calling",
@@ -1524,7 +1524,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 89,
     frequency: "Very High",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "model-context-protocol",
@@ -1539,7 +1539,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 81,
     frequency: "Medium",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "prompt-templates-and-chaining",
@@ -1554,7 +1554,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 77,
     frequency: "Medium",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "output-guardrails-and-validation",
@@ -1569,7 +1569,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 82,
     frequency: "High",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
 
   // 🚀 Level 10 · Hands-On Projects
