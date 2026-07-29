@@ -142,6 +142,36 @@ export default function LearningPage() {
             Explore <ArrowRight className="h-4 w-4" />
           </span>
         </Link>
+
+        <Link
+          href="/learning/lld"
+          className="group flex flex-col gap-4 overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 to-emerald-500/0 p-6 transition-colors hover:border-emerald-500/50 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15">
+              <Boxes className="h-6 w-6 text-emerald-500" />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold tracking-tight">
+                  Low Level Design (LLD)
+                </h2>
+                <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-500">
+                  New
+                </span>
+              </div>
+              <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+                Object-oriented design and machine-coding rounds — a five-tier
+                path from OOP and SOLID to Parking Lot, LRU Cache, and expert
+                systems, each a full walkthrough with UML, patterns, and
+                complete Java.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition-transform group-hover:translate-x-0.5">
+            Explore <ArrowRight className="h-4 w-4" />
+          </span>
+        </Link>
       </div>
 
       <section className="space-y-3">
@@ -153,11 +183,6 @@ export default function LearningPage() {
         />
         <div className="grid gap-4 sm:grid-cols-3">
           {[
-            {
-              title: "Low Level Design (LLD)",
-              desc: "Object-oriented design, SOLID, and machine-coding rounds.",
-              icon: Boxes,
-            },
             {
               title: "Microservices &amp; APIs",
               desc: "Service boundaries, gRPC/REST, and API gateway patterns.",

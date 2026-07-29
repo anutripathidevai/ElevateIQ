@@ -190,6 +190,12 @@ export const NAV_GROUPS: NavGroup[] = [
         badge: "New",
       },
       {
+        href: "/learning/lld",
+        label: "Low Level Design",
+        icon: Boxes,
+        badge: "New",
+      },
+      {
         href: "/learning/generative-ai",
         label: "Generative AI",
         icon: BrainCircuit,
