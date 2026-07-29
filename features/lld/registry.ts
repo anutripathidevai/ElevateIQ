@@ -209,7 +209,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 84,
     frequency: "High",
     estimatedMinutes: 30,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "creational-patterns",
@@ -226,7 +226,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 92,
     frequency: "Very High",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "structural-patterns",
@@ -243,7 +243,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 88,
     frequency: "High",
     estimatedMinutes: 40,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "behavioral-patterns",
@@ -260,7 +260,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 91,
     frequency: "Very High",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "concurrency-and-multithreading",
@@ -277,7 +277,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 87,
     frequency: "High",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "java-collections-for-lld",
@@ -294,7 +294,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 82,
     frequency: "Medium",
     estimatedMinutes: 35,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "lld-best-practices",
@@ -311,7 +311,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 80,
     frequency: "Medium",
     estimatedMinutes: 25,
-    status: "coming-soon",
+    status: "published",
   },
 
   // ── 🟢 Beginner ───────────────────────────────────────────────────────────
@@ -432,7 +432,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 78,
     frequency: "Medium",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
 
   // ── 🔵 Intermediate ───────────────────────────────────────────────────────
@@ -485,7 +485,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 91,
     frequency: "High",
     estimatedMinutes: 55,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "logging-framework",
@@ -502,7 +502,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 84,
     frequency: "High",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "rate-limiter",
@@ -519,7 +519,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 90,
     frequency: "High",
     estimatedMinutes: 50,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "url-shortener",
@@ -536,7 +536,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 82,
     frequency: "Medium",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "movie-booking",
@@ -553,7 +553,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 89,
     frequency: "High",
     estimatedMinutes: 55,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "hotel-management",
@@ -570,7 +570,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 76,
     frequency: "Medium",
     estimatedMinutes: 55,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "shopping-cart",
@@ -587,7 +587,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 80,
     frequency: "Medium",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "digital-wallet",
@@ -604,7 +604,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 83,
     frequency: "Medium",
     estimatedMinutes: 50,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "inventory-management",
@@ -621,7 +621,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 74,
     frequency: "Medium",
     estimatedMinutes: 50,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "minesweeper",
@@ -638,7 +638,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 72,
     frequency: "Medium",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "ludo",
@@ -655,7 +655,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 68,
     frequency: "Low",
     estimatedMinutes: 50,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "notification-system",
@@ -672,7 +672,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 86,
     frequency: "High",
     estimatedMinutes: 50,
-    status: "coming-soon",
+    status: "published",
   },
 
   // ── 🟠 Advanced ───────────────────────────────────────────────────────────
@@ -691,7 +691,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 88,
     frequency: "High",
     estimatedMinutes: 60,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "lfu-cache",
@@ -708,7 +708,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 81,
     frequency: "Medium",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "task-scheduler",
@@ -725,7 +725,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 85,
     frequency: "High",
     estimatedMinutes: 55,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "message-queue",
@@ -742,7 +742,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 84,
     frequency: "High",
     estimatedMinutes: 55,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "file-system",
@@ -759,7 +759,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 83,
     frequency: "High",
     estimatedMinutes: 50,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "linux-find",
@@ -776,7 +776,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 78,
     frequency: "Medium",
     estimatedMinutes: 45,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "text-editor",
@@ -793,7 +793,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 79,
     frequency: "Medium",
     estimatedMinutes: 55,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "airline-reservation",
@@ -810,7 +810,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 73,
     frequency: "Medium",
     estimatedMinutes: 60,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "food-delivery",
@@ -827,7 +827,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 87,
     frequency: "High",
     estimatedMinutes: 60,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "cab-booking",
@@ -844,7 +844,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 88,
     frequency: "High",
     estimatedMinutes: 60,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "feature-flag-service",
@@ -861,7 +861,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 77,
     frequency: "Medium",
     estimatedMinutes: 50,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "authentication-service",
@@ -878,7 +878,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 80,
     frequency: "Medium",
     estimatedMinutes: 55,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "rbac-system",
@@ -895,7 +895,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 79,
     frequency: "Medium",
     estimatedMinutes: 55,
-    status: "coming-soon",
+    status: "published",
   },
 
   // ── 🔴 Expert ─────────────────────────────────────────────────────────────
@@ -914,7 +914,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 90,
     frequency: "High",
     estimatedMinutes: 70,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "banking-system",
@@ -931,7 +931,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 82,
     frequency: "Medium",
     estimatedMinutes: 70,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "whatsapp",
@@ -948,7 +948,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 89,
     frequency: "High",
     estimatedMinutes: 65,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "slack",
@@ -965,7 +965,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 81,
     frequency: "Medium",
     estimatedMinutes: 65,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "google-docs",
@@ -982,7 +982,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 86,
     frequency: "High",
     estimatedMinutes: 70,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "trello",
@@ -999,7 +999,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 78,
     frequency: "Medium",
     estimatedMinutes: 60,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "jira",
@@ -1016,7 +1016,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 80,
     frequency: "Medium",
     estimatedMinutes: 65,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "dropbox",
@@ -1033,7 +1033,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 77,
     frequency: "Medium",
     estimatedMinutes: 65,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "google-drive",
@@ -1050,7 +1050,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 79,
     frequency: "Medium",
     estimatedMinutes: 65,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "api-gateway",
@@ -1067,7 +1067,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 83,
     frequency: "Medium",
     estimatedMinutes: 60,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "ai-chat-platform",
@@ -1084,7 +1084,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 85,
     frequency: "Medium",
     estimatedMinutes: 65,
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "rag-pipeline",
@@ -1101,7 +1101,7 @@ const RAW_CATALOG: RawMeta[] = [
     popularity: 84,
     frequency: "Medium",
     estimatedMinutes: 65,
-    status: "coming-soon",
+    status: "published",
   },
 ];
 
