@@ -36,6 +36,7 @@ import {
 import Link from "next/link";
 import { Markdown } from "@/components/practice/markdown";
 import { CodeViewer } from "@/components/practice/code-viewer";
+import { ReadingLayout } from "@/components/focus-mode";
 import { ACCENT_STYLES, type AccentKey } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -254,7 +255,7 @@ export function ProblemView({
         )}
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_15rem]">
+      <ReadingLayout sections={SECTIONS}>
         <div className="min-w-0 space-y-5">
           {/* 1 — Problem statement */}
           <GraphSection id="statement" title="Problem Statement" icon={FileText} accent={accent} defaultOpen>
@@ -547,20 +548,7 @@ export function ProblemView({
           )}
         </div>
 
-        {/* TOC */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-20">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">On this page</p>
-            <nav className="max-h-[calc(100vh-8rem)] space-y-0.5 overflow-y-auto border-l border-border">
-              {SECTIONS.map((s) => (
-                <a key={s.id} href={`#${s.id}`} className="block border-l-2 border-transparent px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground">
-                  {s.label}
-                </a>
-              ))}
-            </nav>
-          </div>
-        </aside>
-      </div>
+      </ReadingLayout>
     </div>
   );
 }

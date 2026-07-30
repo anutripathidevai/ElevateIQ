@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Markdown } from "@/components/practice/markdown";
+import { ReadingLayout } from "@/components/focus-mode";
 import { ACCENT_STYLES, type AccentKey } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { GraphSection, MarkComplete } from "@/features/graph-algorithms/components";
@@ -243,7 +244,7 @@ export function LessonView({
         <HintsPanel hints={content.interviewHints} accent={accent} />
       )}
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_15rem]">
+      <ReadingLayout sections={sections}>
         <div className="min-w-0 space-y-5">
           {/* 1 — Introduction */}
           <GraphSection
@@ -656,27 +657,7 @@ export function LessonView({
             </GraphSection>
           )}
         </div>
-
-        {/* TOC */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-20">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              On this page
-            </p>
-            <nav className="space-y-0.5 border-l border-border">
-              {sections.map((s) => (
-                <a
-                  key={s.id}
-                  href={`#${s.id}`}
-                  className="block border-l-2 border-transparent px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
-                >
-                  {s.label}
-                </a>
-              ))}
-            </nav>
-          </div>
-        </aside>
-      </div>
+      </ReadingLayout>
     </div>
   );
 }

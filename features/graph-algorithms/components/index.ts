@@ -8,7 +8,6 @@ export { ModuleCard, type ModuleCardData } from "./module-card";
 export { ProblemIndex, type ProblemIndexItem } from "./problem-index";
 export { ProblemMeta } from "./problem-meta";
 export { ProblemNav } from "./problem-nav";
-export { ProblemToc } from "./problem-toc";
 export { Roadmap, type RoadmapModule } from "./roadmap";
 export { SimilarProblems } from "./similar-problems";
 export { SolutionBlock, SolutionList } from "./solution-block";

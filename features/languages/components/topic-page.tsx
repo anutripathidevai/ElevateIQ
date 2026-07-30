@@ -6,9 +6,9 @@ import { Markdown } from "@/components/practice/markdown";
 import type { CourseModule, Topic } from "../types";
 import { TOPIC_SECTIONS, presentSectionIds, type TopicSectionDef } from "./sections";
 import { moduleAccent } from "./ui";
+import { ReadingLayout } from "@/components/focus-mode";
 import { Breadcrumb } from "./breadcrumb";
 import { TopicMeta } from "./topic-meta";
-import { TopicToc } from "./topic-toc";
 import { TopicNav } from "./topic-nav";
 import { TopicSection } from "./topic-section";
 import { MarkComplete } from "./mark-complete";
@@ -72,6 +72,10 @@ export function TopicPage({
   const accent = moduleAccent(module?.order ?? 1);
   const a = ACCENT_STYLES[accent];
   const sectionIds = presentSectionIds(topic);
+  const readingSections = sectionIds.map((id) => ({
+    id,
+    label: SECTION_BY_ID.get(id)?.label ?? id,
+  }));
 
   return (
     <div className="space-y-6">
@@ -105,7 +109,7 @@ export function TopicPage({
         <TopicMeta topic={topic} />
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_15rem]">
+      <ReadingLayout sections={readingSections}>
         <div className="min-w-0 space-y-5">
           <Section id="introduction" topic={topic} accent={accent}>
             <Markdown>{topic.introMD}</Markdown>
@@ -164,13 +168,7 @@ export function TopicPage({
 
           <TopicNav language={languageSlug} prev={prev} next={next} />
         </div>
-
-        <aside className="hidden lg:block">
-          <div className="sticky top-20">
-            <TopicToc sectionIds={sectionIds} />
-          </div>
-        </aside>
-      </div>
+      </ReadingLayout>
     </div>
   );
 }

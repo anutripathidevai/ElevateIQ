@@ -3,7 +3,7 @@ import type { DsaConceptLesson, DsaProblemLesson } from "../types";
 /**
  * Icon keys for lesson sections. Kept as strings (not icon components) so the
  * section list is serialisable and can cross the server → client boundary into
- * the `LessonToc` client component, which resolves them to Lucide icons.
+ * the client-side reading layout / table of contents.
  */
 export type SectionIconKey =
   | "statement"

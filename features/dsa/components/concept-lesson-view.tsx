@@ -5,9 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { ACCENT_STYLES, type AccentKey } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { GraphSection, MarkComplete, ProblemNav } from "@/features/graph-algorithms/components";
+import { ReadingLayout } from "@/components/focus-mode";
 import type { DsaConceptLesson } from "../types";
 import { conceptSections } from "./lesson-sections";
-import { LessonToc } from "./lesson-toc";
 import { RecursionTree } from "./recursion-tree";
 
 interface NavTarget {
@@ -79,7 +79,7 @@ export function ConceptLessonView({
         )}
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_15rem]">
+      <ReadingLayout sections={sections}>
         <div className="min-w-0 space-y-5">
           {lesson.sections.map((s, i) => (
             <GraphSection
@@ -145,13 +145,7 @@ export function ConceptLessonView({
 
           <ProblemNav prev={prev} next={next} basePath={basePath} />
         </div>
-
-        <aside className="hidden lg:block">
-          <div className="sticky top-20">
-            <LessonToc sections={sections} />
-          </div>
-        </aside>
-      </div>
+      </ReadingLayout>
     </div>
   );
 }

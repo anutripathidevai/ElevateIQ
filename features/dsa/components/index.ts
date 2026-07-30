@@ -12,7 +12,6 @@ export {
   conceptSections,
   type LessonSection,
 } from "./lesson-sections";
-export { LessonToc } from "./lesson-toc";
 export { LessonMeta } from "./lesson-meta";
 export { RecursionTree } from "./recursion-tree";
 export { ProblemLessonView } from "./problem-lesson-view";

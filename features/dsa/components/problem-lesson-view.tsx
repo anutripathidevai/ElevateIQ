@@ -24,8 +24,8 @@ import {
   SolutionList,
 } from "@/features/graph-algorithms/components";
 import type { DsaProblemLesson } from "../types";
+import { ReadingLayout } from "@/components/focus-mode";
 import { LessonMeta } from "./lesson-meta";
-import { LessonToc } from "./lesson-toc";
 import { MarkComplete } from "@/features/graph-algorithms/components";
 import { RecursionTree } from "./recursion-tree";
 import { problemSections } from "./lesson-sections";
@@ -87,7 +87,7 @@ export function ProblemLessonView({
         <LessonMeta lesson={lesson} position={position} total={total} />
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_15rem]">
+      <ReadingLayout sections={sections}>
         <div className="min-w-0 space-y-5">
           {/* 1 — Problem statement */}
           <GraphSection
@@ -376,13 +376,7 @@ export function ProblemLessonView({
 
           <ProblemNav prev={prev} next={next} basePath={basePath} />
         </div>
-
-        <aside className="hidden lg:block">
-          <div className="sticky top-20">
-            <LessonToc sections={sections} />
-          </div>
-        </aside>
-      </div>
+      </ReadingLayout>
     </div>
   );
 }

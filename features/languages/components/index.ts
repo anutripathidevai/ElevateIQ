@@ -13,7 +13,6 @@ export {
 // Topic page + building blocks
 export { TopicPage } from "./topic-page";
 export { TopicSection } from "./topic-section";
-export { TopicToc } from "./topic-toc";
 export { TopicMeta, TopicDifficultyBadge } from "./topic-meta";
 export { TopicNav } from "./topic-nav";
 export { MarkComplete } from "./mark-complete";
