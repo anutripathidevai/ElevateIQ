@@ -2,6 +2,33 @@
  * Central, typed access to environment variables + feature flags.
  * Features degrade gracefully when optional integrations are unconfigured.
  */
+
+/**
+ * Normalize a base URL that may arrive without a scheme. Azure's portal often
+ * yields a bare hostname (e.g. "app.azurewebsites.net") when copying the
+ * default domain, but Auth.js calls `new URL(AUTH_URL)`, which throws
+ * `ERR_INVALID_URL` without a protocol. Prepend https:// when the scheme is
+ * missing so a scheme-less value still works.
+ */
+export function normalizeBaseUrl(
+  value: string | undefined,
+): string | undefined {
+  if (!value) return value;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+// Auth.js reads AUTH_URL / NEXTAUTH_URL directly from process.env and crashes on
+// a scheme-less value; normalize them once at module load (this module is
+// imported by lib/auth.ts before NextAuth() runs).
+for (const key of ["AUTH_URL", "NEXTAUTH_URL"] as const) {
+  const normalized = normalizeBaseUrl(process.env[key]);
+  if (normalized && normalized !== process.env[key]) {
+    process.env[key] = normalized;
+  }
+}
+
 export const env = {
   databaseUrl: process.env.DATABASE_URL,
 

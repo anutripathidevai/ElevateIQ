@@ -1,4 +1,4 @@
-# InterviewPrep — Azure Deployment Guide
+# ElevateIQ — Azure Deployment Guide
 
 You'll create infra in the **Azure Portal**; this guide lists exactly what to create,
 how to containerize the Next.js app, and two ways to deploy (manual CLI or GitHub Actions).

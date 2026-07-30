@@ -1,0 +1,82 @@
+{
+  "company": "Meta",
+  "slug": "meta",
+  "glyph": "M",
+  "blurb": "Fast-paced product engineering. Expect tight coding rounds, product-flavored system design, and 'move fast' behavioral signals.",
+  "questions": [
+    {
+      "id": "meta-coding-valid-parentheses",
+      "category": "CODING",
+      "difficulty": "EASY",
+      "experienceLevel": "ENTRY",
+      "tags": ["stack", "strings"],
+      "question": "Given a string of brackets, determine if it is validly balanced.",
+      "expectedAnswer": "Use a **stack**:\n\n- Push opening brackets; on a closing bracket, the top must be its match.\n- Reject early on mismatch or empty stack.\n- Valid only if the stack is empty at the end.\n\nO(n) time, O(n) space. Clarify the allowed bracket types up front.",
+      "hints": [
+        "Which structure naturally reverses order?",
+        "What must be true about the stack when you finish?"
+      ],
+      "followUps": [
+        "How would you also return the index of the first invalid bracket?",
+        "What if you must support arbitrary custom bracket pairs?"
+      ],
+      "resources": []
+    },
+    {
+      "id": "meta-system-design-news-feed",
+      "category": "SYSTEM_DESIGN",
+      "difficulty": "HARD",
+      "experienceLevel": "SENIOR",
+      "tags": ["feed", "fan-out", "caching", "ranking"],
+      "question": "Design the News Feed for a social network.",
+      "expectedAnswer": "Clarify scale, ranking vs chronological, and latency targets.\n\n- **Fan-out on write** (push) for most users: precompute each follower's feed for fast reads.\n- **Fan-out on read** (pull) for celebrities with millions of followers to avoid write storms — hybrid approach.\n- **Ranking**: feature store + ML model scoring candidate posts.\n- **Storage/cache**: feed cache in Redis, posts in a sharded store, CDN for media.\n\nDiscuss the hot-key/celebrity problem explicitly.",
+      "hints": [
+        "Push vs pull — when does each break down?",
+        "How do you handle a user followed by 50M people?"
+      ],
+      "followUps": [
+        "How do you keep the feed fresh without recomputing everything?",
+        "How would you A/B test a new ranking model safely?"
+      ],
+      "resources": [
+        { "label": "Fan-out patterns", "url": "https://en.wikipedia.org/wiki/Fan-out_(software)" }
+      ]
+    },
+    {
+      "id": "meta-behavioral-move-fast",
+      "category": "BEHAVIORAL",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "MID",
+      "tags": ["impact", "speed", "ownership"],
+      "question": "Tell me about a project where you had to ship quickly with incomplete information.",
+      "expectedAnswer": "Signals: **bias for action** balanced with judgment.\n\n- How you scoped an MVP and de-risked the unknowns.\n- What you deliberately deferred and why it was safe.\n- The measurable impact and how you iterated after launch.\n\nShow you moved fast without being reckless — mention guardrails (feature flags, metrics, rollback).",
+      "hints": [
+        "Show judgment about what to cut, not just speed.",
+        "Quantify the impact of shipping early."
+      ],
+      "followUps": [
+        "What guardrails let you move fast safely?",
+        "What did you learn post-launch that changed the plan?"
+      ],
+      "resources": []
+    },
+    {
+      "id": "meta-coding-lca",
+      "category": "CODING",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "MID",
+      "tags": ["trees", "recursion"],
+      "question": "Find the lowest common ancestor of two nodes in a binary tree.",
+      "expectedAnswer": "Recurse post-order:\n\n- If the current node is null or one of the targets, return it.\n- Recurse left and right; if both sides return non-null, the current node is the LCA.\n- Otherwise return whichever side is non-null.\n\nO(n) time, O(h) stack. Clarify whether it's a BST (then you can use ordering for O(h)).",
+      "hints": [
+        "What does it mean if both subtrees contain a target?",
+        "Is it a BST? That changes the approach."
+      ],
+      "followUps": [
+        "How would you do it with parent pointers?",
+        "What changes for a BST specifically?"
+      ],
+      "resources": []
+    }
+  ]
+}

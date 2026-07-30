@@ -1,0 +1,84 @@
+{
+  "company": "Microsoft",
+  "slug": "microsoft",
+  "glyph": "M",
+  "blurb": "Balanced rounds across coding, design, and collaboration. Strong signal on clear communication and a growth mindset.",
+  "questions": [
+    {
+      "id": "microsoft-coding-reverse-linked-list",
+      "category": "CODING",
+      "difficulty": "EASY",
+      "experienceLevel": "ENTRY",
+      "tags": ["linked-list", "pointers"],
+      "question": "Reverse a singly linked list, iteratively and recursively.",
+      "expectedAnswer": "**Iterative**: walk the list keeping `prev`, `curr`, `next`; reverse each `next` pointer; return `prev`. O(n) time, O(1) space.\n\n**Recursive**: reverse the rest, then set `head.next.next = head` and `head.next = null`. O(n) time, O(n) stack.\n\nBe careful to null-terminate the new tail.",
+      "hints": [
+        "Track three pointers to avoid losing the rest of the list.",
+        "What's the new tail's next pointer?"
+      ],
+      "followUps": [
+        "Reverse only nodes between positions m and n.",
+        "Reverse in groups of k."
+      ],
+      "resources": []
+    },
+    {
+      "id": "microsoft-system-design-url-shortener",
+      "category": "SYSTEM_DESIGN",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "MID",
+      "tags": ["hashing", "storage", "scalability"],
+      "question": "Design a URL shortener like bit.ly.",
+      "expectedAnswer": "Clarify scale (reads >> writes), custom aliases, analytics, and expiry.\n\n- **Key generation**: base62 of an auto-increment id, or a random 7-char key with collision check.\n- **Storage**: key -> long URL in a KV store; cache hot keys.\n- **Redirects**: 301/302 with heavy CDN + cache; keep the write path simple.\n- **Analytics**: async click events to a stream.\n\nDiscuss the read-heavy nature and how caching dominates the design.",
+      "hints": [
+        "How do you generate a short, unique key without collisions?",
+        "Reads vastly outnumber writes — what does that imply?"
+      ],
+      "followUps": [
+        "301 vs 302 redirect — which and why?",
+        "How do you support custom vanity URLs?"
+      ],
+      "resources": [
+        { "label": "Base62 encoding", "url": "https://en.wikipedia.org/wiki/Base62" }
+      ]
+    },
+    {
+      "id": "microsoft-behavioral-growth-mindset",
+      "category": "BEHAVIORAL",
+      "difficulty": "EASY",
+      "experienceLevel": "MID",
+      "tags": ["growth-mindset", "feedback"],
+      "question": "Tell me about a time you received difficult feedback. How did you respond?",
+      "expectedAnswer": "Microsoft values **growth mindset**.\n\n- Show you listened without defensiveness.\n- Describe a concrete behavior change and how you tracked improvement.\n- Reflect on what the feedback taught you.\n\nAvoid stories where you dismissed the feedback or where it required no change from you.",
+      "hints": [
+        "Focus on your response, not the messenger.",
+        "Show a measurable change afterward."
+      ],
+      "followUps": [
+        "How do you actively solicit feedback now?",
+        "How did the relationship change afterward?"
+      ],
+      "resources": []
+    },
+    {
+      "id": "microsoft-domain-processes-threads",
+      "category": "DOMAIN",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "ENTRY",
+      "tags": ["operating-systems", "concurrency"],
+      "question": "What is the difference between a process and a thread?",
+      "expectedAnswer": "A **process** has its own address space and resources; a **thread** is a unit of execution within a process sharing its address space.\n\n- Threads are cheaper to create and communicate (shared memory) but risk data races.\n- Processes are isolated (a crash doesn't take down siblings) but IPC is heavier.\n\nMention context-switch cost and when you'd choose multiprocessing vs multithreading (CPU-bound vs I/O-bound, isolation needs).",
+      "hints": [
+        "Think about what memory is shared vs isolated.",
+        "Which is safer under a crash? Which is cheaper to switch?"
+      ],
+      "followUps": [
+        "What is a race condition and how do you prevent one?",
+        "When would you pick multiple processes over threads?"
+      ],
+      "resources": [
+        { "label": "Thread (computing)", "url": "https://en.wikipedia.org/wiki/Thread_(computing)" }
+      ]
+    }
+  ]
+}

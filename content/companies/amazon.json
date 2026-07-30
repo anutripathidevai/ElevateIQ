@@ -1,0 +1,104 @@
+{
+  "company": "Amazon",
+  "slug": "amazon",
+  "glyph": "a",
+  "blurb": "Leadership Principles drive every loop. Expect behavioral depth backed by data, plus practical coding and scalable design.",
+  "questions": [
+    {
+      "id": "amazon-behavioral-customer-obsession",
+      "category": "BEHAVIORAL",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "MID",
+      "tags": ["customer-obsession", "ownership"],
+      "question": "Describe a time you went above and beyond for a customer (internal or external).",
+      "expectedAnswer": "Map directly to **Customer Obsession** and **Ownership**.\n\n- Start from the customer's problem and its impact.\n- Show initiative beyond your assigned scope.\n- Quantify the result (latency, revenue, satisfaction).\n\nAmazon interviewers take notes against specific LPs, so name the trade-offs you made and back claims with metrics.",
+      "hints": [
+        "Anchor on the customer's pain, not the technology.",
+        "Have concrete numbers ready."
+      ],
+      "followUps": [
+        "How did you measure that it actually helped the customer?",
+        "What did you deprioritize to do this?"
+      ],
+      "resources": [
+        { "label": "Amazon Leadership Principles", "url": "https://www.amazon.jobs/content/en/our-workplace/leadership-principles" }
+      ]
+    },
+    {
+      "id": "amazon-coding-merge-intervals",
+      "category": "CODING",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "ENTRY",
+      "tags": ["arrays", "sorting", "intervals"],
+      "question": "Given a list of intervals, merge all overlapping intervals.",
+      "expectedAnswer": "**Sort by start**, then sweep:\n\n- Keep the last merged interval; if the current start <= last end, extend the end to `max(end, current.end)`.\n- Otherwise push the current interval.\n\nTime O(n log n) for the sort, space O(n) for output. Clarify whether touching intervals (`[1,2],[2,3]`) should merge.",
+      "hints": [
+        "What ordering makes overlaps adjacent?",
+        "Track the running 'current' interval as you scan."
+      ],
+      "followUps": [
+        "How would you insert a new interval into an already-merged list?",
+        "What if intervals stream in and can't all be held in memory?"
+      ],
+      "resources": []
+    },
+    {
+      "id": "amazon-system-design-rate-limiter",
+      "category": "SYSTEM_DESIGN",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "SENIOR",
+      "tags": ["rate-limiting", "distributed-systems", "redis"],
+      "question": "Design a distributed API rate limiter (e.g. 1000 requests/user/minute).",
+      "expectedAnswer": "Clarify per-user vs per-IP, hard vs soft limits, and global vs per-region.\n\n- **Algorithm**: token bucket or sliding-window counter.\n- **State**: centralized store (Redis) with atomic increments + TTL; or local counters with async sync for lower latency.\n- **Distribution**: consistent hashing of keys; handle clock skew and hot keys.\n- Return `429` with `Retry-After`; make the limiter fail-open on store outage.",
+      "hints": [
+        "Token bucket vs fixed window vs sliding window — know the trade-offs.",
+        "Where does the counter state live in a multi-node fleet?"
+      ],
+      "followUps": [
+        "How do you avoid a single hot key overwhelming one Redis shard?",
+        "Fail-open or fail-closed when the store is down?"
+      ],
+      "resources": [
+        { "label": "Token bucket algorithm", "url": "https://en.wikipedia.org/wiki/Token_bucket" }
+      ]
+    },
+    {
+      "id": "amazon-behavioral-failure",
+      "category": "BEHAVIORAL",
+      "difficulty": "MEDIUM",
+      "experienceLevel": "SENIOR",
+      "tags": ["dive-deep", "ownership", "learn-and-be-curious"],
+      "question": "Tell me about a time you failed. What did you learn?",
+      "expectedAnswer": "Interviewers assess **Ownership** and **Earn Trust**.\n\n- Pick a real, meaningful failure you owned (not 'I work too hard').\n- Explain root cause honestly (Dive Deep) — avoid blaming others.\n- Show the concrete change you made so it wouldn't recur.\n\nA good answer demonstrates growth and a bias for mechanisms, not just intentions.",
+      "hints": [
+        "Own it — avoid deflecting to teammates.",
+        "End with a durable mechanism, not just 'I'll be more careful'."
+      ],
+      "followUps": [
+        "What mechanism did you put in place to prevent a repeat?",
+        "How did you communicate the failure to stakeholders?"
+      ],
+      "resources": []
+    },
+    {
+      "id": "amazon-domain-acid",
+      "category": "DOMAIN",
+      "difficulty": "EASY",
+      "experienceLevel": "ENTRY",
+      "tags": ["databases", "transactions"],
+      "question": "What are ACID properties and why do they matter?",
+      "expectedAnswer": "**Atomicity** (all-or-nothing), **Consistency** (valid state transitions / invariants), **Isolation** (concurrent txns don't interfere), **Durability** (committed data survives crashes).\n\nThey matter for correctness under concurrency and failure — e.g. money transfers. Contrast with BASE (eventual consistency) used by many NoSQL stores for availability and scale.",
+      "hints": [
+        "Spell out each letter with a one-line example.",
+        "How does isolation relate to concurrency anomalies?"
+      ],
+      "followUps": [
+        "What isolation levels exist and what anomalies does each prevent?",
+        "When would you accept BASE over ACID?"
+      ],
+      "resources": [
+        { "label": "ACID", "url": "https://en.wikipedia.org/wiki/ACID" }
+      ]
+    }
+  ]
+}

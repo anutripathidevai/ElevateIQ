@@ -1,5 +1,5 @@
 {
-  "name": "interviewprep",
+  "name": "elevateiq",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -11,6 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
@@ -26,6 +28,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.446.0",
+    "mermaid": "^11.16.0",
     "next": "^14.2.15",
     "next-auth": "5.0.0-beta.22",
     "next-themes": "^0.3.0",
@@ -48,6 +51,7 @@
     "prisma": "^5.20.0",
     "tailwindcss": "^3.4.13",
     "tsx": "^4.19.1",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.0"
   }
 }

@@ -1,7 +1,10 @@
-# InterviewPrep — End-to-End Design (Phase 0)
+# ElevateIQ — End-to-End Design
+
+**Phase 0** covered the interview-practice core (this document). **Phase 2** layers on a
+feature-modular career platform; see [§10](#10-phase-2-feature-modules) below.
 
 Full-stack **Next.js (App Router) + TypeScript**. One deployable serves both UI and API.
-This document is the blueprint for the backend and UI before scaffolding.
+This document is the blueprint for the backend and UI.
 
 ---
 
@@ -324,3 +327,99 @@ sequenceDiagram
 3. Auth.js sign-in (GitHub/Google) works; routes protected.
 4. **Vertical slice**: open a DSA problem → paste code → Azure OpenAI review streams in → Submission saved → Progress updates.
 5. Dockerfile builds a standalone image; documented deploy to Azure (see DEPLOYMENT.md).
+
+---
+
+## 10. Phase 2: Feature Modules
+
+Phase 2 turns ElevateIQ from an interview-practice app into a **modular career platform**.
+The Phase 0 layer-based code is untouched; new work lands as self-contained vertical slices
+under `features/` so modules can be added without restructuring.
+
+### 10.1 Module anatomy
+
+```
+features/<module>/
+  types.ts        Domain types + shared constants (single source of truth)
+  services/       Persistence (dual backend) + business logic — no React
+  ai/             Prompt templates + Zod schemas + AI calls (isolated, testable)
+  components/     Presentational + client components (loading/empty/error states)
+  utils.ts        Pure helpers — the unit-test target
+  actions.ts      "use server" entry points the UI calls
+  __tests__/      Vitest specs (utils / prompts / personas)
+  index.ts        Public module API (barrel)
+```
+
+Boundaries: UI never imports another module's `services/` directly; modules communicate
+through their public barrel. Business logic stays out of components; components only render
+state and call `actions.ts`.
+
+### 10.2 Registry-driven navigation
+
+`lib/features.ts` is the single source of truth for career modules and grouped nav. Each
+`FeatureModule` has a `status` of `live` or `soon`; the landing page, sidebar, and career hub
+are generated from it. Shipping a module = flipping one entry — no wiring changes.
+
+```mermaid
+flowchart TD
+    REG[lib/features.ts<br/>CAREER_MODULES + NAV_SECTIONS] --> LP[Landing page cards]
+    REG --> SB[Sidebar sections]
+    REG --> HUB[Career hub]
+    subgraph features/
+      CB[company-bank]
+      SS[star-stories]
+      PI[panel-interview]
+    end
+    LP -.route.-> CB & SS & PI
+```
+
+### 10.3 Dual-backend persistence
+
+Every service checks `isDbConfigured`. With `DATABASE_URL` set it uses Prisma/Postgres;
+otherwise it uses `createMemoryStore<T>()` from `features/shared/`. `getUserId()` returns the
+signed-in id, a `LOCAL_GUEST_ID` in DB-less mode, or `null` (anonymous in DB mode → the page
+renders a `SignInPrompt`). Services return DTOs with ISO-string dates for safe RSC
+serialization.
+
+### 10.4 Graceful AI degradation
+
+AI-dependent modules stay fully usable without Azure OpenAI:
+
+- **STAR generator** surfaces a clear "not configured" notice.
+- **Panel interview** falls back to each persona's seed question bank for questioning and a
+  deterministic `heuristicScorecard()` (flagged `aiGenerated: false`) for scoring, so the
+  end-to-end flow still works in local/demo mode.
+
+### 10.5 Modules delivered
+
+| Module | Exercises | Persistence | AI |
+| ------ | --------- | ----------- | -- |
+| **Company Question Bank** | read-heavy reference + filter/search/bookmark/progress | bookmarks + progress rows | none (content JSON) |
+| **AI STAR Story Generator** | AI generation + full user CRUD | StarStory rows | JSON generation (Zod-validated) |
+| **Mock Panel Interview** | 3 personas + streaming + scoring + persistence | PanelInterview rows | streaming turns + JSON scorecard |
+
+**Coming soon** (registry entries only): Interview History, Calendar Study Planner,
+Resume Builder — each will follow the same slice anatomy.
+
+### 10.6 Panel interview flow
+
+```mermaid
+sequenceDiagram
+    participant U as Candidate
+    participant A as Server Action
+    participant R as /api/panel/[id]/message
+    participant S as interviews service
+    participant O as Azure OpenAI
+    U->>A: createInterviewAction(role, focus)
+    A->>O: opening question (Hiring Manager)
+    A->>S: persist interview (status=active)
+    U->>R: answer
+    R->>S: append candidate turn
+    R->>O: stream next persona (round-robin)
+    O-->>U: streamed question (teed branch persists)
+    U->>A: finishInterviewAction()
+    A->>O: scorecard JSON (or heuristic fallback)
+    A->>S: complete interview (status=completed, result)
+    U-->>U: PanelScorecard renders
+```
+

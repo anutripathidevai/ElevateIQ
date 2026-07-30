@@ -33,3 +33,7 @@ next-env.d.ts
 
 # prisma
 /prisma/*.db
+
+# deployable build artifacts
+elevateiq-standalone-*.zip
+elevateiq-source-*.zip

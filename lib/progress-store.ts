@@ -77,3 +77,24 @@ export function useSolved(slug: string): boolean {
     () => false,
   );
 }
+
+// Cached snapshot so `useSolvedSet` returns a stable reference between changes
+// (required by useSyncExternalStore to avoid render loops).
+const EMPTY_SET: ReadonlySet<string> = new Set();
+let cachedRaw: string | null = null;
+let cachedSet: ReadonlySet<string> = EMPTY_SET;
+
+function getSetSnapshot(): ReadonlySet<string> {
+  if (typeof window === "undefined") return EMPTY_SET;
+  const raw = window.localStorage.getItem(KEY) ?? "";
+  if (raw !== cachedRaw) {
+    cachedRaw = raw;
+    cachedSet = read();
+  }
+  return cachedSet;
+}
+
+/** Reactive set of all solved slugs. Use for aggregate progress (counts, %). */
+export function useSolvedSet(): ReadonlySet<string> {
+  return useSyncExternalStore(subscribe, getSetSnapshot, () => EMPTY_SET);
+}
