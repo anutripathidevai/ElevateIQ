@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { GraduationCap } from "lucide-react";
+import { Logo } from "@/components/marketing/brand";
 
 /**
  * Minimal, centered shell for authentication flows (login, signup, forgot
@@ -17,13 +16,7 @@ export default function AuthLayout({
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,hsl(var(--primary)/0.14),transparent_70%)]"
       />
-      <Link
-        href="/"
-        className="relative z-10 mb-8 flex items-center gap-2 text-lg font-semibold"
-      >
-        <GraduationCap className="h-6 w-6 text-primary" />
-        ElevateIQ
-      </Link>
+      <Logo className="relative z-10 mb-8" />
       <main className="relative z-10 w-full max-w-2xl">{children}</main>
       <p className="relative z-10 mt-8 max-w-md text-center text-xs text-muted-foreground">
         AI-powered career platform for software engineers.

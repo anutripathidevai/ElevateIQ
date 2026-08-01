@@ -54,6 +54,78 @@
   }
 }
 
+/* --- Marketing / landing micro-animations ------------------------------- *
+ * Lightweight, GPU-friendly effects used by the Compile Ready homepage.
+ * All are disabled under `prefers-reduced-motion: reduce`.                   */
+@keyframes cr-caret {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes cr-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+@keyframes cr-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 6px hsl(var(--primary) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+  }
+}
+
+.animate-cr-caret {
+  animation: cr-caret 1.05s step-end infinite;
+}
+.animate-cr-dot {
+  animation: cr-dot 1.4s ease-in-out infinite;
+}
+.animate-cr-pulse-ring {
+  animation: cr-pulse-ring 2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-cr-caret,
+  .animate-cr-dot,
+  .animate-cr-pulse-ring {
+    animation: none !important;
+  }
+}
+
+/* Subtle developer grid used behind the hero (decorative). */
+.cr-grid {
+  background-image:
+    linear-gradient(to right, hsl(var(--border) / 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--border) / 0.5) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 70% 55% at 50% 0%,
+    #000 40%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 70% 55% at 50% 0%,
+    #000 40%,
+    transparent 100%
+  );
+}
+
 /* Minimal markdown styling (no typography plugin dependency). */
 .md {
   @apply text-sm leading-relaxed text-foreground/90;

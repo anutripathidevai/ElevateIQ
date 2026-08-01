@@ -48,7 +48,7 @@ function nameFromEmail(email: string) {
       .split(/[._-]+/)
       .filter(Boolean)
       .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-      .join(" ") || "ElevateIQ User"
+      .join(" ") || "Compile Ready User"
   );
 }
 

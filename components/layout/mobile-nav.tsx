@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Menu, X, GraduationCap } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { NavContent } from "./nav-content";
+import { Logo } from "@/components/marketing/brand";
 
 /** Mobile hamburger that opens a slide-over drawer with the full navigation. */
 export function MobileNav() {
@@ -29,14 +29,7 @@ export function MobileNav() {
           />
           <div className="absolute left-0 top-0 h-full w-72 overflow-y-auto border-r border-border bg-background shadow-xl">
             <div className="flex h-14 items-center justify-between border-b border-border px-4">
-              <Link
-                href="/"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2 font-semibold"
-              >
-                <GraduationCap className="h-5 w-5 text-primary" />
-                ElevateIQ
-              </Link>
+              <Logo onClick={() => setOpen(false)} />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
