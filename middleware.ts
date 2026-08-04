@@ -54,20 +54,38 @@ function isAuthAvailable(): boolean {
 const AUTH_SECRET =
   process.env.AUTH_SECRET?.trim() || "dev-only-insecure-secret-change-me";
 
+// Base name of the Auth.js session cookie. On HTTPS deployments Auth.js prefixes
+// it with `__Secure-`; large sessions are additionally split into numbered
+// chunks (`…session-token.0`, `.1`, …). `getToken` derives its decryption salt
+// from the cookie name, so we must tell it whether the *secure* variant is in
+// use — including when the cookie is chunked (where the un-suffixed name is
+// absent). Getting this wrong makes decryption fail and bounces a logged-in user
+// back to /login in a redirect loop.
+const SESSION_COOKIE = "authjs.session-token";
+const SECURE_SESSION_COOKIE = `__Secure-${SESSION_COOKIE}`;
+
+function hasCookieFamily(req: NextRequest, base: string): boolean {
+  return req.cookies.has(base) || req.cookies.has(`${base}.0`);
+}
+
 async function hasValidSession(req: NextRequest): Promise<boolean> {
-  // Auth.js prefixes the cookie with `__Secure-` on HTTPS deployments. Detect
-  // which one the browser actually holds so getToken uses the matching salt.
-  const secureCookie = req.cookies.has("__Secure-authjs.session-token");
-  try {
-    const token = await getToken({
-      req,
-      secret: AUTH_SECRET,
-      secureCookie,
-    });
-    return Boolean(token);
-  } catch {
-    return false;
+  // Prefer whichever cookie family the browser actually holds, but fall back to
+  // trying both so a mis-detected secure flag (e.g. chunked cookies behind a
+  // proxy) can never strand a valid session.
+  const attempts: boolean[] = [];
+  if (hasCookieFamily(req, SECURE_SESSION_COOKIE)) attempts.push(true);
+  if (hasCookieFamily(req, SESSION_COOKIE)) attempts.push(false);
+  if (attempts.length === 0) attempts.push(true, false);
+
+  for (const secureCookie of attempts) {
+    try {
+      const token = await getToken({ req, secret: AUTH_SECRET, secureCookie });
+      if (token) return true;
+    } catch {
+      // Try the next candidate rather than failing the whole check.
+    }
   }
+  return false;
 }
 
 export async function middleware(req: NextRequest) {
