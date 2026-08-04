@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getProviders, signIn } from "next-auth/react";
 import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "./auth-provider";
 
 /** Simple brand marks for providers lucide-react doesn't ship. */
 function GoogleMark() {
@@ -17,50 +17,67 @@ function GoogleMark() {
   );
 }
 
-function MicrosoftMark() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
-      <path fill="#F25022" d="M3 3h8.5v8.5H3z" />
-      <path fill="#7FBA00" d="M12.5 3H21v8.5h-8.5z" />
-      <path fill="#00A4EF" d="M3 12.5h8.5V21H3z" />
-      <path fill="#FFB900" d="M12.5 12.5H21V21h-8.5z" />
-    </svg>
-  );
-}
-
-const PROVIDERS = [
-  { id: "google", label: "Continue with Google", icon: <GoogleMark /> },
-  { id: "github", label: "Continue with GitHub", icon: <Github className="h-4 w-4" /> },
-  { id: "microsoft", label: "Continue with Microsoft", icon: <MicrosoftMark /> },
-];
+const PROVIDER_META: Record<
+  string,
+  { label: string; icon: React.ReactNode }
+> = {
+  google: { label: "Continue with Google", icon: <GoogleMark /> },
+  github: { label: "Continue with GitHub", icon: <Github className="h-4 w-4" /> },
+};
 
 /**
- * Mock social sign-in buttons. Each performs a local mock login and routes to
- * the dashboard — no real OAuth is performed yet.
+ * Real OAuth sign-in buttons. Discovers the configured providers at RUNTIME via
+ * Auth.js `getProviders()` (hitting `/api/auth/providers`), so a provider added
+ * to the deployment shows up without a rebuild, and one that isn't configured is
+ * never rendered. Renders nothing (including its own divider) when no OAuth
+ * provider is available. Clicking starts the real Auth.js OAuth redirect flow.
  */
 export function SocialAuthButtons() {
-  const { login } = useAuth();
-  const router = useRouter();
+  const [ids, setIds] = useState<string[] | null>(null);
 
-  function handle(provider: string) {
-    login(`demo@${provider}.elevateiq.dev`, "mock");
-    router.push("/dashboard");
-  }
+  useEffect(() => {
+    let active = true;
+    getProviders()
+      .then((providers) => {
+        if (!active) return;
+        const all = providers ? Object.keys(providers) : [];
+        setIds(all.filter((id) => id in PROVIDER_META));
+      })
+      .catch(() => {
+        if (active) setIds([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!ids || ids.length === 0) return null;
 
   return (
-    <div className="grid gap-2">
-      {PROVIDERS.map((p) => (
-        <Button
-          key={p.id}
-          type="button"
-          variant="outline"
-          className="w-full justify-center"
-          onClick={() => handle(p.id)}
-        >
-          {p.icon}
-          {p.label}
-        </Button>
-      ))}
-    </div>
+    <>
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs text-muted-foreground">or</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <div className="grid gap-2">
+        {ids.map((id) => {
+          const meta = PROVIDER_META[id];
+          return (
+            <Button
+              key={id}
+              type="button"
+              variant="outline"
+              className="w-full justify-center"
+              onClick={() => signIn(id, { callbackUrl: "/dashboard" })}
+            >
+              {meta.icon}
+              {meta.label}
+            </Button>
+          );
+        })}
+      </div>
+    </>
   );
 }

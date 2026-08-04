@@ -8,9 +8,21 @@ import {
   useMemo,
   useState,
 } from "react";
+import {
+  SessionProvider,
+  signIn,
+  signOut,
+  getSession,
+  useSession,
+} from "next-auth/react";
 import type { AuthUser, ExperienceLevel } from "@/lib/types";
 
-const STORAGE_KEY = "elevateiq_auth_user";
+/**
+ * The rich career profile lives client-side, keyed by the real account id,
+ * while identity (id/name/email/image) always comes from the server session.
+ * Persisting the profile to the database is a later phase.
+ */
+const PROFILE_PREFIX = "cr_profile:";
 
 /** Payload collected by the signup form. */
 export interface SignupInput {
@@ -23,24 +35,27 @@ export interface SignupInput {
   dailyStudyHours: number;
 }
 
+/** Result of an async auth action — never throws to the caller. */
+export type AuthActionResult = { ok: true } | { ok: false; error: string };
+
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  /** True until localStorage has been read on the client (avoids hydration flashes). */
+  /** True while the session is still resolving on the client. */
   isLoading: boolean;
-  login: (email: string, password: string) => AuthUser;
-  signup: (input: SignupInput) => AuthUser;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<AuthActionResult>;
+  signup: (input: SignupInput) => Promise<AuthActionResult>;
+  logout: () => Promise<void>;
   updateProfile: (patch: Partial<AuthUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function makeId() {
-  return `u_${Math.random().toString(36).slice(2, 10)}`;
-}
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-/** Turn "ada.lovelace@x.com" into "Ada Lovelace" for returning mock logins. */
+/** Turn "ada.lovelace@x.com" into "Ada Lovelace" for a friendly fallback name. */
 function nameFromEmail(email: string) {
   const local = email.split("@")[0] ?? "";
   return (
@@ -52,9 +67,13 @@ function nameFromEmail(email: string) {
   );
 }
 
-function baseProfile(): Omit<AuthUser, "id" | "fullName" | "email" | "createdAt"> {
+/** The mutable career-profile fields (everything on AuthUser except identity). */
+type StoredProfile = Omit<AuthUser, "id" | "fullName" | "email">;
+
+function baseProfile(): StoredProfile {
   return {
     avatarUrl: null,
+    createdAt: new Date().toISOString(),
     targetRole: "Senior Software Engineer",
     targetCompany: "Microsoft",
     experienceLevel: "Senior Engineer",
@@ -70,116 +89,207 @@ function baseProfile(): Omit<AuthUser, "id" | "fullName" | "email" | "createdAt"
   };
 }
 
-/**
- * Mock authentication provider backed by localStorage.
- *
- * This intentionally mimics the *shape* of a real auth system (a persisted
- * user, loading state, login/signup/logout/updateProfile actions) so that
- * swapping in a real backend later is a matter of changing the implementation
- * of these callbacks — consumers keep using {@link useAuth} unchanged.
- */
-export function MockAuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+function readProfile(userId: string): Partial<StoredProfile> {
+  try {
+    const raw = window.localStorage.getItem(PROFILE_PREFIX + userId);
+    return raw ? (JSON.parse(raw) as Partial<StoredProfile>) : {};
+  } catch {
+    return {};
+  }
+}
 
-  // Hydrate from localStorage once on mount.
+function writeProfile(userId: string, profile: Partial<StoredProfile>) {
+  try {
+    window.localStorage.setItem(
+      PROFILE_PREFIX + userId,
+      JSON.stringify(profile),
+    );
+  } catch {
+    // Storage unavailable — profile edits simply won't persist locally.
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Session-backed provider
+// ---------------------------------------------------------------------------
+
+function InnerAuthProvider({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
+  const [profile, setProfile] = useState<Partial<StoredProfile> | null>(null);
+
+  const userId = session?.user?.id ?? null;
+
+  // Load (or reset) the local profile whenever the signed-in identity changes.
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw) as AuthUser);
-    } catch {
-      // Corrupt/unavailable storage — treat as logged out.
+    if (status === "authenticated" && userId) {
+      setProfile(readProfile(userId));
+    } else if (status === "unauthenticated") {
+      setProfile(null);
     }
-    setIsLoading(false);
-  }, []);
+  }, [status, userId]);
 
-  const persist = useCallback((next: AuthUser | null) => {
-    setUser(next);
-    try {
-      if (next) {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } else {
-        window.localStorage.removeItem(STORAGE_KEY);
-      }
-    } catch {
-      // Ignore storage write failures in mock mode.
-    }
-  }, []);
+  const user = useMemo<AuthUser | null>(() => {
+    if (status !== "authenticated" || !session?.user?.id) return null;
+    const su = session.user;
+    const stored = profile ?? {};
+    return {
+      ...baseProfile(),
+      ...stored,
+      // Identity always comes from the server session — never overridable by
+      // the locally-stored profile blob.
+      id: su.id,
+      fullName: su.name ?? nameFromEmail(su.email ?? ""),
+      email: su.email ?? "",
+      avatarUrl: stored.avatarUrl ?? su.image ?? null,
+    };
+  }, [status, session, profile]);
 
   const login = useCallback(
-    (email: string, _password: string) => {
-      const next: AuthUser = {
-        id: makeId(),
-        fullName: nameFromEmail(email),
-        email,
-        createdAt: new Date().toISOString(),
-        ...baseProfile(),
-        // A returning user has already onboarded.
-        onboarded: true,
-        streakDays: 6,
-      };
-      persist(next);
-      return next;
+    async (email: string, password: string): Promise<AuthActionResult> => {
+      try {
+        const res = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+        if (!res || res.error) {
+          return { ok: false, error: "Invalid email or password." };
+        }
+        return { ok: true };
+      } catch {
+        return {
+          ok: false,
+          error: "Something went wrong. Please try again shortly.",
+        };
+      }
     },
-    [persist],
+    [],
   );
 
   const signup = useCallback(
-    (input: SignupInput) => {
-      const next: AuthUser = {
-        id: makeId(),
-        fullName: input.fullName,
-        email: input.email,
-        createdAt: new Date().toISOString(),
-        ...baseProfile(),
-        targetRole: input.targetRole,
-        targetCompany: input.targetCompany,
-        experienceLevel: input.experienceLevel,
-        dailyStudyHours: input.dailyStudyHours,
-        onboarded: false,
-      };
-      persist(next);
-      return next;
+    async (input: SignupInput): Promise<AuthActionResult> => {
+      try {
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName: input.fullName,
+            email: input.email,
+            password: input.password,
+          }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          ok?: boolean;
+          error?: string;
+        };
+        if (!res.ok || !data.ok) {
+          return {
+            ok: false,
+            error: data.error ?? "We couldn't create your account.",
+          };
+        }
+
+        const signInRes = await signIn("credentials", {
+          email: input.email,
+          password: input.password,
+          redirect: false,
+        });
+        if (!signInRes || signInRes.error) {
+          // Account exists but auto sign-in failed — send them to login.
+          return {
+            ok: false,
+            error: "Account created. Please sign in to continue.",
+          };
+        }
+
+        // Persist the rich profile captured at signup, keyed by the real id.
+        const fresh = await getSession();
+        const uid = fresh?.user?.id;
+        if (uid) {
+          writeProfile(uid, {
+            ...baseProfile(),
+            targetRole: input.targetRole,
+            targetCompany: input.targetCompany,
+            experienceLevel: input.experienceLevel,
+            dailyStudyHours: input.dailyStudyHours,
+            onboarded: false,
+          });
+          setProfile(readProfile(uid));
+        }
+        return { ok: true };
+      } catch {
+        return {
+          ok: false,
+          error: "Something went wrong. Please try again shortly.",
+        };
+      }
     },
-    [persist],
+    [],
   );
 
-  const logout = useCallback(() => persist(null), [persist]);
-
-  const updateProfile = useCallback((patch: Partial<AuthUser>) => {
-    setUser((current) => {
-      if (!current) return current;
-      const next = { ...current, ...patch };
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Ignore.
-      }
-      return next;
-    });
+  const logout = useCallback(async () => {
+    await signOut({ redirect: false });
   }, []);
+
+  const updateProfile = useCallback(
+    (patch: Partial<AuthUser>) => {
+      if (!userId) return;
+      setProfile((current) => {
+        const next: Partial<StoredProfile> = {
+          ...baseProfile(),
+          ...(current ?? {}),
+          ...patch,
+        };
+        // Identity fields never live in the profile blob.
+        delete (next as Partial<AuthUser>).id;
+        delete (next as Partial<AuthUser>).fullName;
+        delete (next as Partial<AuthUser>).email;
+        writeProfile(userId, next);
+        return next;
+      });
+    },
+    [userId],
+  );
 
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
-      isAuthenticated: Boolean(user),
-      isLoading,
+      isAuthenticated: status === "authenticated",
+      isLoading: status === "loading",
       login,
       signup,
       logout,
       updateProfile,
     }),
-    [user, isLoading, login, signup, logout, updateProfile],
+    [user, status, login, signup, logout, updateProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-/** Access the mock auth state + actions. Must be used within {@link MockAuthProvider}. */
+/**
+ * Auth provider for the whole app. Uses server-issued Auth.js sessions (JWT
+ * strategy) so identity is real and validated server-side. Session discovery is
+ * done at runtime by {@link SessionProvider} (via `/api/auth/session`), so the
+ * app reflects the deployed auth configuration without needing a rebuild.
+ *
+ * When no backend is configured there is simply no session: public content
+ * stays readable (see AuthGuard) and sign-in surfaces an honest error rather
+ * than a fake login.
+ */
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <SessionProvider>
+      <InnerAuthProvider>{children}</InnerAuthProvider>
+    </SessionProvider>
+  );
+}
+
+/** Access the auth state + actions. Must be used within {@link AuthProvider}. */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    throw new Error("useAuth must be used within a MockAuthProvider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return ctx;
 }

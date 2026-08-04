@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { useAuth } from "@/components/auth/auth-provider";
 import { GuestGuard } from "@/components/auth/guards";
+import { passwordSchema } from "@/lib/auth-validation";
 import {
   EXPERIENCE_LEVELS,
   TARGET_ROLES,
@@ -42,6 +43,8 @@ function SignupForm() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -51,7 +54,14 @@ function SignupForm() {
     const next: Partial<Record<keyof FormState, string>> = {};
     if (!form.fullName.trim()) next.fullName = "Full name is required.";
     if (!form.email.trim()) next.email = "Email is required.";
-    if (!form.password) next.password = "Password is required.";
+    if (!form.password) {
+      next.password = "Password is required.";
+    } else {
+      const pw = passwordSchema.safeParse(form.password);
+      if (!pw.success) {
+        next.password = pw.error.issues[0]?.message ?? "Password is too weak.";
+      }
+    }
     if (!form.confirmPassword) {
       next.confirmPassword = "Please confirm your password.";
     } else if (form.password !== form.confirmPassword) {
@@ -61,13 +71,15 @@ function SignupForm() {
     return next;
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setFormError(null);
     const next = validate();
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    signup({
+    setSubmitting(true);
+    const result = await signup({
       fullName: form.fullName.trim(),
       email: form.email.trim(),
       password: form.password,
@@ -76,6 +88,11 @@ function SignupForm() {
       experienceLevel: form.experienceLevel,
       dailyStudyHours: Number(form.dailyStudyHours) || 1,
     });
+    if (!result.ok) {
+      setFormError(result.error);
+      setSubmitting(false);
+      return;
+    }
     router.push("/onboarding");
   }
 
@@ -89,6 +106,14 @@ function SignupForm() {
       </div>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        {formError && (
+          <div
+            role="alert"
+            className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
+          >
+            {formError}
+          </div>
+        )}
         <Field label="Full name" htmlFor="fullName" error={errors.fullName}>
           <Input
             id="fullName"
@@ -195,8 +220,8 @@ function SignupForm() {
           </Field>
         </div>
 
-        <Button type="submit" className="w-full">
-          Create account
+        <Button type="submit" className="w-full" disabled={submitting}>
+          {submitting ? "Creating account…" : "Create account"}
         </Button>
       </form>
 

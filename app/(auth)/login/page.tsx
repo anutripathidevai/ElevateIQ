@@ -18,17 +18,32 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setFormError(null);
     const next: typeof errors = {};
     if (!email.trim()) next.email = "Email is required.";
     if (!password) next.password = "Password is required.";
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    login(email.trim(), password);
-    router.push("/dashboard");
+    setSubmitting(true);
+    const result = await login(email.trim(), password);
+    if (!result.ok) {
+      setFormError(result.error);
+      setSubmitting(false);
+      return;
+    }
+    const callbackUrl = new URLSearchParams(window.location.search).get(
+      "callbackUrl",
+    );
+    // Only allow same-origin relative paths as a redirect target.
+    const dest =
+      callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/dashboard";
+    router.push(dest);
   }
 
   return (
@@ -41,6 +56,14 @@ function LoginForm() {
       </div>
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
+        {formError && (
+          <div
+            role="alert"
+            className="rounded-md border border-danger/40 bg-danger/10 px-3 py-2 text-sm text-danger"
+          >
+            {formError}
+          </div>
+        )}
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <div className="relative">
@@ -95,16 +118,10 @@ function LoginForm() {
           )}
         </div>
 
-        <Button type="submit" className="w-full">
-          Sign in
+        <Button type="submit" className="w-full" disabled={submitting}>
+          {submitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>
-
-      <div className="my-5 flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-xs text-muted-foreground">or</span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
 
       <SocialAuthButtons />
 

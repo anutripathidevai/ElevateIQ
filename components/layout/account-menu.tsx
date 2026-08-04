@@ -59,8 +59,8 @@ export function AccountMenu() {
     );
   }
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     setOpen(false);
     router.replace("/login");
   }

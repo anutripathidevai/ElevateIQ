@@ -10,16 +10,38 @@ import { Label } from "@/components/ui/label";
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<"email" | "unavailable" | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) {
       setError("Email is required.");
       return;
     }
     setError("");
-    setSubmitted(true);
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        delivery?: "email" | "unavailable";
+        error?: string;
+      };
+      if (!res.ok || !data.ok) {
+        setError(data.error ?? "Something went wrong. Please try again.");
+        setSubmitting(false);
+        return;
+      }
+      setResult(data.delivery ?? "unavailable");
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -27,16 +49,31 @@ export default function ForgotPasswordPage() {
       <div className="mb-6 space-y-1 text-center">
         <h1 className="text-2xl font-semibold">Reset your password</h1>
         <p className="text-sm text-muted-foreground">
-          Enter your email and we&apos;ll send reset instructions.
+          Enter your email to start resetting your password.
         </p>
       </div>
 
-      {submitted ? (
+      {result === "email" ? (
         <div className="flex flex-col items-center gap-3 rounded-lg border border-success/30 bg-success/10 p-4 text-center">
           <CheckCircle2 className="h-6 w-6 text-success" />
           <p className="text-sm text-foreground">
             If an account exists for this email, password reset instructions
             will be sent.
+          </p>
+        </div>
+      ) : result === "unavailable" ? (
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-warning/30 bg-warning/10 p-4 text-center">
+          <Mail className="h-6 w-6 text-warning" />
+          <p className="text-sm text-foreground">
+            Self-service password reset by email isn&apos;t available yet. Please
+            email{" "}
+            <a
+              href="mailto:support@compileready.com"
+              className="font-medium text-primary hover:underline"
+            >
+              support@compileready.com
+            </a>{" "}
+            and we&apos;ll help you regain access.
           </p>
         </div>
       ) : (
@@ -58,8 +95,8 @@ export default function ForgotPasswordPage() {
             {error && <p className="text-xs text-danger">{error}</p>}
           </div>
 
-          <Button type="submit" className="w-full">
-            Send reset instructions
+          <Button type="submit" className="w-full" disabled={submitting}>
+            {submitting ? "Please wait…" : "Continue"}
           </Button>
         </form>
       )}

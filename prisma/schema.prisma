@@ -36,6 +36,9 @@ model User {
   name              String?
   email             String             @unique
   image             String?
+  // bcrypt hash for email/password accounts. Null for OAuth-only users
+  // (e.g. Google), which is how account-linking-by-email stays possible.
+  passwordHash      String?
   createdAt         DateTime           @default(now())
   submissions       Submission[]
   progress          Progress[]

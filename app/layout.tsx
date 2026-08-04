@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
-import { MockAuthProvider } from "@/components/auth/auth-provider";
+import { AuthProvider } from "@/components/auth/auth-provider";
 import { cn } from "@/lib/utils";
 
 const inter = Inter({
@@ -73,7 +73,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen font-sans antialiased">
         <ThemeProvider>
-          <MockAuthProvider>{children}</MockAuthProvider>
+          <AuthProvider>{children}</AuthProvider>
         </ThemeProvider>
       </body>
     </html>

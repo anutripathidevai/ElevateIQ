@@ -43,6 +43,12 @@ export const env = {
   azureDeployment: process.env.AZURE_OPENAI_DEPLOYMENT ?? "gpt-4o-mini",
   azureApiVersion: process.env.AZURE_OPENAI_API_VERSION ?? "2024-08-01-preview",
 
+  // Transactional email (for password reset, etc.). Unset → the app never
+  // pretends to have sent an email it cannot actually deliver.
+  emailFrom: process.env.AUTH_EMAIL_FROM,
+  resendApiKey: process.env.RESEND_API_KEY,
+  smtpUrl: process.env.SMTP_URL,
+
   dailyAiLimit: Number(process.env.DAILY_AI_LIMIT ?? "50"),
 } as const;
 
@@ -51,6 +57,10 @@ export const isDbConfigured = Boolean(env.databaseUrl);
 export const isGithubConfigured = Boolean(env.githubId && env.githubSecret);
 export const isGoogleConfigured = Boolean(env.googleId && env.googleSecret);
 export const isAuthConfigured = isGithubConfigured || isGoogleConfigured;
+/** Whether an email delivery channel is configured (for password resets, etc.). */
+export const isEmailConfigured = Boolean(
+  env.emailFrom && (env.resendApiKey || env.smtpUrl),
+);
 
 // Guard against accidentally shipping to production without a database — the
 // app would silently run in guest mode with no persistence. Skipped during

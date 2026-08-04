@@ -15,8 +15,8 @@ export function LogoutButton() {
       type="button"
       variant="outline"
       className="gap-2 text-danger hover:text-danger"
-      onClick={() => {
-        logout();
+      onClick={async () => {
+        await logout();
         router.replace("/login");
       }}
     >
