@@ -48,8 +48,11 @@ function isAuthAvailable(): boolean {
   return db || google || github;
 }
 
+// Treat an empty/whitespace value the same as unset so a blank `AUTH_SECRET=`
+// still falls back to the dev secret (kept in sync with lib/auth.ts). In demo
+// mode this code path isn't reached (gating is skipped below).
 const AUTH_SECRET =
-  process.env.AUTH_SECRET ?? "dev-only-insecure-secret-change-me";
+  process.env.AUTH_SECRET?.trim() || "dev-only-insecure-secret-change-me";
 
 async function hasValidSession(req: NextRequest): Promise<boolean> {
   // Auth.js prefixes the cookie with `__Secure-` on HTTPS deployments. Detect

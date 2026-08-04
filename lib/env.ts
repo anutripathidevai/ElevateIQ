@@ -29,27 +29,41 @@ for (const key of ["AUTH_URL", "NEXTAUTH_URL"] as const) {
   }
 }
 
+/**
+ * Read an environment variable, treating empty or whitespace-only values as
+ * unset. Deploy platforms (and blank .env templates) often define a key with an
+ * empty value (e.g. `AUTH_SECRET=`); without this, `env.authSecret` would be
+ * `""`, which is not caught by `?? fallback` and silently disables the dev
+ * secret fallback / half-configures optional integrations.
+ */
+function readEnv(key: string): string | undefined {
+  const raw = process.env[key];
+  if (raw == null) return undefined;
+  const trimmed = raw.trim();
+  return trimmed === "" ? undefined : trimmed;
+}
+
 export const env = {
-  databaseUrl: process.env.DATABASE_URL,
+  databaseUrl: readEnv("DATABASE_URL"),
 
-  authSecret: process.env.AUTH_SECRET,
-  githubId: process.env.AUTH_GITHUB_ID,
-  githubSecret: process.env.AUTH_GITHUB_SECRET,
-  googleId: process.env.AUTH_GOOGLE_ID,
-  googleSecret: process.env.AUTH_GOOGLE_SECRET,
+  authSecret: readEnv("AUTH_SECRET"),
+  githubId: readEnv("AUTH_GITHUB_ID"),
+  githubSecret: readEnv("AUTH_GITHUB_SECRET"),
+  googleId: readEnv("AUTH_GOOGLE_ID"),
+  googleSecret: readEnv("AUTH_GOOGLE_SECRET"),
 
-  azureEndpoint: process.env.AZURE_OPENAI_ENDPOINT,
-  azureApiKey: process.env.AZURE_OPENAI_API_KEY,
-  azureDeployment: process.env.AZURE_OPENAI_DEPLOYMENT ?? "gpt-4o-mini",
-  azureApiVersion: process.env.AZURE_OPENAI_API_VERSION ?? "2024-08-01-preview",
+  azureEndpoint: readEnv("AZURE_OPENAI_ENDPOINT"),
+  azureApiKey: readEnv("AZURE_OPENAI_API_KEY"),
+  azureDeployment: readEnv("AZURE_OPENAI_DEPLOYMENT") ?? "gpt-4o-mini",
+  azureApiVersion: readEnv("AZURE_OPENAI_API_VERSION") ?? "2024-08-01-preview",
 
   // Transactional email (for password reset, etc.). Unset → the app never
   // pretends to have sent an email it cannot actually deliver.
-  emailFrom: process.env.AUTH_EMAIL_FROM,
-  resendApiKey: process.env.RESEND_API_KEY,
-  smtpUrl: process.env.SMTP_URL,
+  emailFrom: readEnv("AUTH_EMAIL_FROM"),
+  resendApiKey: readEnv("RESEND_API_KEY"),
+  smtpUrl: readEnv("SMTP_URL"),
 
-  dailyAiLimit: Number(process.env.DAILY_AI_LIMIT ?? "50"),
+  dailyAiLimit: Number(readEnv("DAILY_AI_LIMIT") ?? "50"),
 } as const;
 
 export const isAzureConfigured = Boolean(env.azureEndpoint && env.azureApiKey);
