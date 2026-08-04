@@ -24,11 +24,14 @@ import {
 } from "@/features/dsa";
 import { HubView } from "@/features/dsa/components";
 import { DSA_ICONS, formatHours } from "@/features/dsa/components";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, courseJsonLd } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "DSA — Data Structures & Algorithms",
   description:
     "A structured, interview-focused DSA curriculum — from arrays and hashing to dynamic programming and advanced graphs. Intuition first, then algorithms, then clean Java 17.",
+  alternates: { canonical: "/learning/dsa" },
 };
 
 /**
@@ -50,6 +53,21 @@ export default function DsaHubPage() {
 
   return (
     <div className="space-y-8">
+      <JsonLd
+        data={[
+          courseJsonLd({
+            name: "Data Structures & Algorithms",
+            description:
+              "A structured, interview-focused DSA curriculum — from arrays and hashing to dynamic programming and advanced graphs.",
+            path: "/learning/dsa",
+          }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learning", path: "/learning" },
+            { name: "DSA", path: "/learning/dsa" },
+          ]),
+        ]}
+      />
       {/* Overview / hero */}
       <section className="overflow-hidden rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-500/15 to-blue-500/0 p-6 sm:p-8">
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-blue-400">

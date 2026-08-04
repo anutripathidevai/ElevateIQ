@@ -8,11 +8,14 @@ import {
   courseStats,
 } from "@/features/languages";
 import { LanguageCard } from "@/features/languages/components";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, courseJsonLd } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "Programming Languages",
   description:
     "Premium, interview-focused programming language courses — starting with a deep JavaScript track built for Senior and Staff engineer interviews.",
+  alternates: { canonical: "/learning/languages" },
 };
 
 /** Per-language stats for available courses (only JavaScript today). */
@@ -31,6 +34,21 @@ export default function LanguagesHubPage() {
 
   return (
     <div className="space-y-10">
+      <JsonLd
+        data={[
+          courseJsonLd({
+            name: "Programming Languages",
+            description:
+              "Premium, interview-focused programming language courses — starting with a deep JavaScript track built for Senior and Staff engineer interviews.",
+            path: "/learning/languages",
+          }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learning", path: "/learning" },
+            { name: "Programming Languages", path: "/learning/languages" },
+          ]),
+        ]}
+      />
       <PageHeader
         eyebrow="Learning · Programming Languages"
         title="Master a language the way it's interviewed"

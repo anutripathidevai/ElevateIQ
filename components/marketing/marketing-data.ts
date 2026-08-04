@@ -485,8 +485,9 @@ export const FOOTER_GROUPS: FooterGroup[] = [
     links: [
       { label: "About", href: "/contact" },
       { label: "Contact", href: "/contact" },
-      { label: "Privacy", href: "/contact#privacy" },
-      { label: "Terms", href: "/contact#terms" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Disclaimer", href: "/disclaimer" },
     ],
   },
 ];

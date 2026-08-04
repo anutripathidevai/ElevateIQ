@@ -10,11 +10,14 @@ import {
   getTotals,
 } from "@/features/generative-ai";
 import { DashboardView } from "@/features/generative-ai/components";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, courseJsonLd } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "Generative AI",
   description:
     "The complete Generative AI curriculum for software engineers — a ten-level roadmap from AI foundations and working with LLMs, through RAG, vector databases, and AI agents, into AI system design, production AI, and advanced topics, finishing with interview preparation and hands-on projects. Each lesson is a full deep dive with theory, interactive diagrams, request flows, an interview perspective, and hands-on examples.",
+  alternates: { canonical: "/learning/generative-ai" },
 };
 
 /**
@@ -29,6 +32,21 @@ export default function GenerativeAiHubPage() {
 
   return (
     <div className="space-y-8">
+      <JsonLd
+        data={[
+          courseJsonLd({
+            name: "Generative AI",
+            description:
+              "The complete Generative AI curriculum for software engineers — a ten-level roadmap from AI foundations and LLMs through RAG, vector databases, and agents, into AI system design, production AI, and interview prep.",
+            path: "/learning/generative-ai",
+          }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learning", path: "/learning" },
+            { name: "Generative AI", path: "/learning/generative-ai" },
+          ]),
+        ]}
+      />
       {/* Hero */}
       <section className="overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/15 to-cyan-500/0 p-6 sm:p-8">
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-cyan-400">

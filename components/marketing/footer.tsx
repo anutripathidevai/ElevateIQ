@@ -56,6 +56,18 @@ export function MarketingFooter() {
             © {new Date().getFullYear()} Compile Ready. All rights reserved.
           </p>
         </div>
+
+        <p className="mt-6 text-xs leading-relaxed text-muted-foreground">
+          Company names, logos, and trademarks are the property of their
+          respective owners and are used for identification and educational
+          purposes only. Compile Ready is not affiliated with or endorsed by
+          these companies unless explicitly stated. Some content is AI-generated
+          and may contain inaccuracies — please verify independently. See our{" "}
+          <Link href="/disclaimer" className="underline hover:text-foreground">
+            Disclaimer
+          </Link>
+          .
+        </p>
       </div>
     </footer>
   );

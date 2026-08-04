@@ -15,31 +15,25 @@ import {
   ReadinessSection,
   SectionHeading,
 } from "@/components/marketing";
+import { JsonLd } from "@/components/seo/json-ld";
+import {
+  faqJsonLd,
+  organizationJsonLd,
+  websiteJsonLd,
+} from "@/lib/structured-data";
 
 export const metadata: Metadata = {
-  title: "Compile Ready | Software Engineering Interview Prep",
+  title: "Compile Ready | AI-Powered Interview Prep for Software Engineers",
   description:
-    "Learn, practice, and get interview-ready with DSA, System Design, LLD, coding practice, AI mock interviews, and structured learning paths.",
+    "AI-powered interview preparation for software engineers. Learn and practice DSA, System Design, LLD, and Generative AI, then get interview-ready with AI mock interviews.",
   alternates: { canonical: "/" },
-};
-
-/** FAQPage structured data — only the questions/answers actually shown below. */
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQS.map((f) => ({
-    "@type": "Question",
-    name: f.question,
-    acceptedAnswer: { "@type": "Answer", text: f.answer },
-  })),
 };
 
 export default function LandingPage() {
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      <JsonLd
+        data={[websiteJsonLd(), organizationJsonLd(), faqJsonLd(FAQS)]}
       />
 
       <Hero />

@@ -11,11 +11,14 @@ import {
   getTotals,
 } from "@/features/lld";
 import { DashboardView } from "@/features/lld/components";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, courseJsonLd } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "Low Level Design — Object-Oriented Design Interviews",
   description:
     "A structured, interview-focused Low Level Design (LLD) curriculum — from OOP and SOLID foundations through machine-coding classics like Parking Lot, Vending Machine, and LRU Cache to expert systems. Every problem is a full design walkthrough: requirements, UML, patterns, complete Java, dry run, and follow-ups.",
+  alternates: { canonical: "/learning/lld" },
 };
 
 /**
@@ -30,6 +33,21 @@ export default function LldHubPage() {
 
   return (
     <div className="space-y-8">
+      <JsonLd
+        data={[
+          courseJsonLd({
+            name: "Low Level Design — Object-Oriented Design Interviews",
+            description:
+              "A structured, interview-focused Low Level Design (LLD) curriculum — from OOP and SOLID foundations through machine-coding classics to expert systems.",
+            path: "/learning/lld",
+          }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learning", path: "/learning" },
+            { name: "Low Level Design", path: "/learning/lld" },
+          ]),
+        ]}
+      />
       {/* Hero */}
       <section className="overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/15 to-emerald-500/0 p-6 sm:p-8">
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-emerald-400">

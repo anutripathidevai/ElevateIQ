@@ -10,11 +10,14 @@ import {
   getTotals,
 } from "@/features/system-design";
 import { DashboardView } from "@/features/system-design/components";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, courseJsonLd } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   title: "System Design — High Level Design",
   description:
     "A structured, interview-focused High Level Design (HLD) curriculum — from foundational systems like URL shorteners and rate limiters to distributed systems, staff-level platforms, and AI system design. Each question is a full 25-section deep dive.",
+  alternates: { canonical: "/learning/system-design" },
 };
 
 /**
@@ -28,6 +31,21 @@ export default function SystemDesignHubPage() {
 
   return (
     <div className="space-y-8">
+      <JsonLd
+        data={[
+          courseJsonLd({
+            name: "System Design — High Level Design",
+            description:
+              "A structured, interview-focused High Level Design (HLD) curriculum — from foundational systems to distributed systems, staff-level platforms, and AI system design.",
+            path: "/learning/system-design",
+          }),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Learning", path: "/learning" },
+            { name: "System Design", path: "/learning/system-design" },
+          ]),
+        ]}
+      />
       {/* Hero */}
       <section className="overflow-hidden rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/15 to-violet-500/0 p-6 sm:p-8">
         <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-violet-400">

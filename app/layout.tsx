@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
@@ -20,11 +20,11 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://compileready.com"),
   title: {
-    default: "Compile Ready | Software Engineering Interview Prep",
+    default: "Compile Ready | AI-Powered Interview Prep for Software Engineers",
     template: "%s · Compile Ready",
   },
   description:
-    "Learn, practice, and get interview-ready with DSA, System Design, LLD, coding practice, AI mock interviews, and structured learning paths.",
+    "AI-powered interview preparation for software engineers. Learn and practice DSA, System Design, LLD, and Generative AI, then get interview-ready with AI mock interviews.",
   applicationName: "Compile Ready",
   keywords: [
     "software engineering interview preparation",
@@ -38,17 +38,26 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Compile Ready",
-    title: "Compile Ready | Software Engineering Interview Prep",
+    title: "Compile Ready | AI-Powered Interview Prep for Software Engineers",
     description:
-      "Learn, practice, and get interview-ready with DSA, System Design, LLD, coding practice, AI mock interviews, and structured learning paths.",
+      "AI-powered interview preparation for software engineers. Learn and practice DSA, System Design, LLD, and Generative AI, then get interview-ready with AI mock interviews.",
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Compile Ready | Software Engineering Interview Prep",
+    title: "Compile Ready | AI-Powered Interview Prep for Software Engineers",
     description:
-      "Build. Test. Deploy Your Career. Learn, practice, and get interview-ready.",
+      "Build. Test. Deploy Your Career. AI-powered interview preparation for software engineers.",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0e1a" },
+  ],
 };
 
 export default function RootLayout({
