@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "standalone",
   // Don't advertise the framework/version.
   poweredByHeader: false,
   // Lint is run separately via `npm run lint`; don't fail production builds on style.
