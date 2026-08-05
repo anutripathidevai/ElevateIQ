@@ -1,12 +1,9 @@
 import { Reveal } from "./reveal";
 import { AuthCtas } from "./cta-buttons";
-import { DashboardPreview } from "./dashboard-preview";
-
-const CODE_STEPS = ["learn()", "practice()", "test()", "interview()", "deploy()"];
 
 /**
- * Hero — the single most important section. The brand + tagline dominate; a
- * live product preview sits directly below. Contains the page's only <h1>.
+ * Hero — the single most important section. States plainly what CompileReady is,
+ * who it is for, and the single primary action. Contains the page's only <h1>.
  */
 export function Hero() {
   return (
@@ -31,48 +28,30 @@ export function Hero() {
 
           <Reveal delay={60}>
             <h1 className="mt-6 text-balance text-4xl font-bold tracking-tight sm:text-6xl">
-              Build. Test.{" "}
+              AI-powered interview prep for{" "}
               <span className="bg-gradient-to-r from-primary to-sky-400 bg-clip-text text-transparent">
-                Deploy Your Career.
+                software engineers.
               </span>
             </h1>
           </Reveal>
 
           <Reveal delay={120}>
-            <p className="mt-5 text-lg font-medium text-foreground/90 sm:text-xl">
-              Learn. Practice. Get interview-ready.
+            <p className="mx-auto mt-5 max-w-xl text-pretty text-lg leading-relaxed text-muted-foreground sm:text-xl">
+              Practice DSA, Low-Level Design, System Design, and Generative AI —
+              then get interview-ready with realistic AI mock interviews.
             </p>
           </Reveal>
 
-          <Reveal delay={160}>
-            <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground">
-              A modern platform for software engineers to build the skills,
-              practice the problems, and prepare for technical interviews.
-            </p>
-          </Reveal>
-
-          <Reveal delay={220}>
+          <Reveal delay={200}>
             <AuthCtas className="mt-8 justify-center" />
           </Reveal>
 
-          <Reveal delay={280}>
-            <div
-              aria-hidden
-              className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground/70"
-            >
-              {CODE_STEPS.map((step) => (
-                <span key={step} className="inline-flex items-center gap-1.5">
-                  <span className="text-primary/70">&gt;</span>
-                  {step}
-                </span>
-              ))}
-            </div>
+          <Reveal delay={260}>
+            <p className="mt-4 text-sm text-muted-foreground/80">
+              Free to explore — no account needed to start learning.
+            </p>
           </Reveal>
         </div>
-
-        <Reveal delay={120} className="mx-auto mt-14 max-w-3xl">
-          <DashboardPreview />
-        </Reveal>
       </div>
     </section>
   );

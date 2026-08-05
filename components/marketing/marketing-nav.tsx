@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Coffee } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./brand";
 import { NavDropdown } from "./nav-dropdown";
@@ -53,13 +52,6 @@ export function MarketingNav() {
         </nav>
 
         <div className="ml-auto flex items-center gap-1.5 lg:gap-2">
-          <Link
-            href="/contact#support"
-            className="hidden items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground xl:inline-flex"
-          >
-            <Coffee className="h-4 w-4" />
-            <span>Support the Builder</span>
-          </Link>
           <ThemeToggle />
           <div className="hidden lg:block">
             <NavGetStarted />

@@ -14,7 +14,6 @@ import {
   ScanSearch,
   Sparkles,
   Target,
-  TerminalSquare,
   TreePine,
   type LucideIcon,
 } from "lucide-react";
@@ -130,79 +129,37 @@ export const NAV_MENUS: MarketingNavMenu[] = [
     ],
   },
   {
-    id: "interviews",
-    label: "Interviews",
+    id: "interview-prep",
+    label: "AI Interview Prep",
     href: "/mock",
     items: [
       {
-        label: "Mock Interview",
+        label: "AI Mock Interview",
         href: "/mock",
         description: "Realistic AI-driven mock rounds",
         icon: GraduationCap,
         accent: "blue",
       },
       {
-        label: "Company Preparation",
-        href: "/companies",
-        description: "Focus on the companies that matter",
-        icon: Target,
-        accent: "violet",
-      },
-      {
-        label: "Interview Questions",
-        href: "/companies",
-        description: "Real questions with expected answers",
-        icon: ScanSearch,
-        accent: "emerald",
-      },
-      {
-        label: "Behavioral Interview",
-        href: "/practice/behavioral",
-        description: "STAR stories & leadership signals",
-        icon: MessagesSquare,
-        accent: "orange",
-      },
-      {
-        label: "Interview Readiness",
-        href: "/dashboard",
-        description: "Know exactly when you're ready",
-        icon: LineChart,
-        accent: "rose",
-      },
-    ],
-  },
-  {
-    id: "ai",
-    label: "AI",
-    href: "/panel",
-    items: [
-      {
-        label: "AI Mock Interview",
+        label: "AI Panel Interview",
         href: "/panel",
         description: "Face a three-persona AI panel",
         icon: MessagesSquare,
         accent: "violet",
       },
       {
-        label: "AI Coding Coach",
-        href: "/practice/dsa",
-        description: "Feedback on correctness & complexity",
-        icon: TerminalSquare,
-        accent: "blue",
-      },
-      {
-        label: "AI System Design",
-        href: "/practice/system-design",
-        description: "Review your architecture & trade-offs",
-        icon: Network,
-        accent: "emerald",
-      },
-      {
-        label: "AI Learning Assistant",
-        href: "/learning",
-        description: "Guided help across every topic",
+        label: "Behavioral Interview",
+        href: "/practice/behavioral",
+        description: "STAR stories & leadership signals",
         icon: Sparkles,
-        accent: "rose",
+        accent: "orange",
+      },
+      {
+        label: "Company Preparation",
+        href: "/companies",
+        description: "Real questions from the companies that matter",
+        icon: Target,
+        accent: "emerald",
       },
     ],
   },
@@ -211,7 +168,6 @@ export const NAV_MENUS: MarketingNavMenu[] = [
 /** Simple top-level links shown after the dropdown menus. */
 export const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Pricing", href: "/pricing" },
-  { label: "Contact", href: "/contact" },
 ];
 
 // --- Build / Test / Deploy ------------------------------------------------

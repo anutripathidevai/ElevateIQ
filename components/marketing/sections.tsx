@@ -1,5 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, Check, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Check,
+  LineChart,
+  MessagesSquare,
+  Sparkles,
+} from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { ProgressBar, ScoreRing } from "@/components/blocks/primitives";
 import { ACCENT_STYLES } from "@/lib/navigation";
@@ -211,8 +218,8 @@ export function LearningSection() {
       <Reveal>
         <SectionHeading
           eyebrow="Learn"
-          title="Build the Skills That Get You Hired."
-          subtitle="Structured, in-depth learning across the fundamentals that matter — introduced here, explored in full inside each track."
+          title="What You Can Prepare"
+          subtitle="Structured, interview-focused tracks across the areas technical interviews test — free to explore, no account required."
         />
       </Reveal>
 
@@ -483,6 +490,78 @@ export function FounderSection() {
           you always know what to do next and when you&apos;re truly ready.
         </p>
       </Reveal>
+    </Section>
+  );
+}
+
+// --- Why CompileReady ------------------------------------------------------
+
+const WHY_POINTS = [
+  {
+    title: "AI-powered practice",
+    description:
+      "Get instant, specific feedback on your code, designs and answers — not just pass or fail.",
+    icon: Sparkles,
+    accent: "blue",
+  },
+  {
+    title: "Structured & interview-focused",
+    description:
+      "Curricula built around what interviews actually test, from fundamentals to staff-level design.",
+    icon: BookOpen,
+    accent: "emerald",
+  },
+  {
+    title: "Realistic AI mock interviews",
+    description:
+      "Face a multi-persona AI panel, then get a scorecard, per-interviewer feedback and a plan.",
+    icon: MessagesSquare,
+    accent: "violet",
+  },
+  {
+    title: "Know when you're ready",
+    description:
+      "Track your progress across every competency so you always know your next move.",
+    icon: LineChart,
+    accent: "orange",
+  },
+] as const;
+
+export function WhySection() {
+  return (
+    <Section className="border-t border-border">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Why CompileReady"
+          title="Prepare Smarter, Not Just Harder."
+          subtitle="One focused system that connects learning, practice and realistic interviews — so preparation stops being scattered across dozens of tabs."
+        />
+      </Reveal>
+
+      <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {WHY_POINTS.map((point, i) => {
+          const Icon = point.icon;
+          const a = ACCENT_STYLES[point.accent];
+          return (
+            <Reveal key={point.title} delay={i * 80}>
+              <div className="flex h-full flex-col rounded-2xl border border-border bg-card p-6">
+                <span
+                  className={cn(
+                    "flex h-11 w-11 items-center justify-center rounded-xl",
+                    a.bg,
+                  )}
+                >
+                  <Icon className={cn("h-5 w-5", a.text)} />
+                </span>
+                <h3 className="mt-4 text-base font-semibold">{point.title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">
+                  {point.description}
+                </p>
+              </div>
+            </Reveal>
+          );
+        })}
+      </div>
     </Section>
   );
 }

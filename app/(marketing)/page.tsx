@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
 import {
-  AiMockSection,
-  CareerLevelsSection,
-  CommandCenterSection,
-  CompanySection,
   Faq,
   FAQS,
   FinalCta,
   FounderSection,
   Hero,
-  JourneySection,
   LearningSection,
-  PracticeSection,
-  ReadinessSection,
   SectionHeading,
+  WhySection,
 } from "@/components/marketing";
 import { JsonLd } from "@/components/seo/json-ld";
 import {
@@ -37,14 +31,8 @@ export default function LandingPage() {
       />
 
       <Hero />
-      <JourneySection />
-      <CommandCenterSection />
-      <AiMockSection />
       <LearningSection />
-      <PracticeSection />
-      <CompanySection />
-      <CareerLevelsSection />
-      <ReadinessSection />
+      <WhySection />
       <FounderSection />
 
       <section id="faq" className="border-t border-border py-20 sm:py-24">

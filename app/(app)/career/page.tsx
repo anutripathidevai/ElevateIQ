@@ -1,4 +1,4 @@
-import { Briefcase, ClipboardCheck, Table2 } from "lucide-react";
+import { Briefcase, ClipboardCheck, Info, Table2 } from "lucide-react";
 import {
   CAREER_TOOLS,
   ATS_METRICS,
@@ -35,6 +35,15 @@ export default function CareerPage() {
         icon={Briefcase}
         aiActions={["Improve my resume", "Find matching jobs", "Write a cover letter"]}
       />
+
+      <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-muted-foreground">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
+        <p>
+          <span className="font-medium text-foreground">Preview.</span> The
+          Career Tools below show sample data to illustrate the experience —
+          live resume building, ATS scoring, and job tracking are coming soon.
+        </p>
+      </div>
 
       <section className="space-y-4">
         <SectionHeader

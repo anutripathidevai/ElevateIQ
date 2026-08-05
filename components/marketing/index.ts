@@ -15,5 +15,6 @@ export {
   CareerLevelsSection,
   ReadinessSection,
   FounderSection,
+  WhySection,
 } from "./sections";
 export { FAQS } from "./marketing-data";

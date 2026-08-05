@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  * Auth-aware primary/secondary calls to action. Labels and destinations adapt
  * to the mock auth state (see {@link useAuth}) exactly as the spec requires:
  *
- *  - Logged out → "Start Preparing" (/signup) · "Take a Mock Interview" (/mock)
+ *  - Logged out → "Start Preparing" (/signup) · "Explore Learning" (/learning)
  *  - Logged in  → "Continue Learning" (/dashboard) · "Start Mock Interview" (/mock)
  */
 export function AuthCtas({
@@ -27,7 +27,7 @@ export function AuthCtas({
     : { label: "Start Preparing", href: "/signup" };
   const secondary = isAuthenticated
     ? { label: "Start Mock Interview", href: "/mock" }
-    : { label: "Take a Mock Interview", href: "/mock" };
+    : { label: "Explore Learning", href: "/learning" };
 
   return (
     <div className={cn("flex flex-col gap-3 sm:flex-row", className)}>
