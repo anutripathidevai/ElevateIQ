@@ -191,6 +191,11 @@ export interface Achievement {
 
 export type SearchCategory =
   | "Courses"
+  | "DSA"
+  | "System Design"
+  | "Low Level Design"
+  | "Generative AI"
+  | "Programming Languages"
   | "Interview Questions"
   | "Blogs"
   | "Resume"

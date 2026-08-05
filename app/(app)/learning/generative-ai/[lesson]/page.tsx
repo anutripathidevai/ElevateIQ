@@ -8,6 +8,7 @@ import {
   getLessonMeta,
 } from "@/features/generative-ai";
 import { ComingSoon, LessonView } from "@/features/generative-ai/components";
+import { Breadcrumbs } from "@/features/shared/components/breadcrumbs";
 
 /** Prerender every published lesson. */
 export function generateStaticParams() {
@@ -67,12 +68,22 @@ export default function GenerativeAiLessonPage({
   });
 
   return (
-    <LessonView
-      meta={lesson.meta}
-      content={lesson.content}
-      readingMinutes={estimateReadingMinutes(lesson.content)}
-      related={related}
-      tierLabel={label}
-    />
+    <>
+      <Breadcrumbs
+        className="mb-5"
+        items={[
+          { label: "Learning", href: "/learning" },
+          { label: "Generative AI", href: "/learning/generative-ai" },
+          { label: lesson.meta.title },
+        ]}
+      />
+      <LessonView
+        meta={lesson.meta}
+        content={lesson.content}
+        readingMinutes={estimateReadingMinutes(lesson.content)}
+        related={related}
+        tierLabel={label}
+      />
+    </>
   );
 }

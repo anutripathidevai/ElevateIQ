@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DSA_TOPICS, getCourse, getLesson, getTopic } from "@/features/dsa";
 import { LessonView } from "@/features/dsa/components";
+import { Breadcrumbs } from "@/features/shared/components/breadcrumbs";
 
 /** Prerender every authored lesson of every published course. */
 export function generateStaticParams() {
@@ -52,11 +53,22 @@ export default function DsaLessonPage({
   if (!lesson) notFound();
 
   return (
-    <LessonView
-      course={course}
-      slug={lesson.slug}
-      basePath={`/learning/dsa/${topic.slug}`}
-      problemTotal={topic.problemCount}
-    />
+    <>
+      <Breadcrumbs
+        className="mb-5"
+        items={[
+          { label: "Learning", href: "/learning" },
+          { label: "DSA", href: "/learning/dsa" },
+          { label: topic.name, href: `/learning/dsa/${topic.slug}` },
+          { label: lesson.title },
+        ]}
+      />
+      <LessonView
+        course={course}
+        slug={lesson.slug}
+        basePath={`/learning/dsa/${topic.slug}`}
+        problemTotal={topic.problemCount}
+      />
+    </>
   );
 }

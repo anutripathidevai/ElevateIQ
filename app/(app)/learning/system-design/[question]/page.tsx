@@ -8,6 +8,7 @@ import {
   getQuestionMeta,
 } from "@/features/system-design";
 import { ComingSoon, QuestionView } from "@/features/system-design/components";
+import { Breadcrumbs } from "@/features/shared/components/breadcrumbs";
 
 /** Prerender every published question. */
 export function generateStaticParams() {
@@ -67,12 +68,22 @@ export default function SystemDesignQuestionPage({
   });
 
   return (
-    <QuestionView
-      meta={question.meta}
-      content={question.content}
-      readingMinutes={estimateReadingMinutes(question.content)}
-      related={related}
-      tierLabel={label}
-    />
+    <>
+      <Breadcrumbs
+        className="mb-5"
+        items={[
+          { label: "Learning", href: "/learning" },
+          { label: "System Design", href: "/learning/system-design" },
+          { label: question.meta.title },
+        ]}
+      />
+      <QuestionView
+        meta={question.meta}
+        content={question.content}
+        readingMinutes={estimateReadingMinutes(question.content)}
+        related={related}
+        tierLabel={label}
+      />
+    </>
   );
 }

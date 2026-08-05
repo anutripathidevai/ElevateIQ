@@ -14,6 +14,20 @@ import {
   ConceptView,
   ProblemView,
 } from "@/features/lld/components";
+import { Breadcrumbs } from "@/features/shared/components/breadcrumbs";
+
+function LldBreadcrumbs({ title }: { title: string }) {
+  return (
+    <Breadcrumbs
+      className="mb-5"
+      items={[
+        { label: "Learning", href: "/learning" },
+        { label: "Low Level Design", href: "/learning/lld" },
+        { label: title },
+      ]}
+    />
+  );
+}
 
 /** Prerender every published entry (problem or concept). */
 export function generateStaticParams() {
@@ -72,13 +86,16 @@ export default function LldProblemPage({
       return m ? [{ slug: m.slug, title: m.title, note: r.note }] : [];
     });
     return (
-      <ConceptView
-        meta={concept.meta}
-        content={concept.content}
-        readingMinutes={estimateConceptMinutes(concept.content)}
-        related={related}
-        tierLabel={label}
-      />
+      <>
+        <LldBreadcrumbs title={concept.meta.title} />
+        <ConceptView
+          meta={concept.meta}
+          content={concept.content}
+          readingMinutes={estimateConceptMinutes(concept.content)}
+          related={related}
+          tierLabel={label}
+        />
+      </>
     );
   }
 
@@ -92,12 +109,15 @@ export default function LldProblemPage({
     return m ? [{ slug: m.slug, title: m.title, note: r.note }] : [];
   });
   return (
-    <ProblemView
-      meta={problem.meta}
-      content={problem.content}
-      readingMinutes={estimateProblemMinutes(problem.content)}
-      related={related}
-      tierLabel={label}
-    />
+    <>
+      <LldBreadcrumbs title={problem.meta.title} />
+      <ProblemView
+        meta={problem.meta}
+        content={problem.content}
+        readingMinutes={estimateProblemMinutes(problem.content)}
+        related={related}
+        tierLabel={label}
+      />
+    </>
   );
 }

@@ -38,7 +38,10 @@ export function GlobalSearch() {
       const idx = SEARCH_CATEGORY_ORDER.indexOf(c);
       return idx === -1 ? SEARCH_CATEGORY_ORDER.length : idx;
     };
-    return [...matches].sort((a, b) => order(a.category) - order(b.category));
+    const ordered = [...matches].sort((a, b) => order(a.category) - order(b.category));
+    // Cap the list so the (large) learning corpus stays fast and scannable:
+    // a short suggestion set when idle, more once the user starts typing.
+    return q ? ordered.slice(0, 40) : ordered.slice(0, 8);
   }, [query]);
 
   // Group the ordered flat list back into category sections for display, while
@@ -117,7 +120,7 @@ export function GlobalSearch() {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
           onKeyDown={onInputKeyDown}
-          placeholder="Search courses, questions, resumes, blogs…"
+          placeholder="Search lessons, questions, tools…"
           aria-label="Global search"
           aria-expanded={open}
           aria-controls="global-search-results"
