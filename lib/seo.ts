@@ -15,10 +15,11 @@ export const siteConfig = {
     /\/$/,
     "",
   ),
-  title: "Compile Ready | AI-Powered Interview Prep for Software Engineers",
-  tagline: "AI-powered interview preparation for software engineers.",
+  title: "Compile Ready — Software Engineering Interview Prep",
+  tagline:
+    "The best way to prepare for your next software engineering interview.",
   description:
-    "AI-powered interview preparation for software engineers. Learn and practice DSA, System Design, Low-Level Design, and Generative AI, then get interview-ready with AI mock interviews.",
+    "The best way to prepare for your next software engineering interview. Exclusive content, company questions, guides, and AI mock interviews across DSA, System Design, LLD, and Generative AI.",
   /** Next serves the generated OG image at this path (app/opengraph-image.tsx). */
   ogImage: "/opengraph-image",
   twitter: "@compileready",

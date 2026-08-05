@@ -17,9 +17,11 @@ import {
 } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
-  title: "Compile Ready | AI-Powered Interview Prep for Software Engineers",
+  title: {
+    absolute: "Compile Ready — Software Engineering Interview Prep",
+  },
   description:
-    "AI-powered interview preparation for software engineers. Learn and practice DSA, System Design, LLD, and Generative AI, then get interview-ready with AI mock interviews.",
+    "The best way to prepare for your next software engineering interview. Exclusive content, company questions, guides, and AI mock interviews.",
   alternates: { canonical: "/" },
 };
 
