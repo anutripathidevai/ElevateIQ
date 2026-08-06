@@ -15,7 +15,7 @@ export const siteConfig = {
     /\/$/,
     "",
   ),
-  title: "Compile Ready — Software Engineering Interview Prep",
+  title: "Compile Ready — AI-Powered Interview Preparation",
   tagline:
     "The best way to prepare for your next software engineering interview.",
   description:

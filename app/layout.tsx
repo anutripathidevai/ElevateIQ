@@ -20,7 +20,7 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://compileready.com"),
   title: {
-    default: "Compile Ready — Software Engineering Interview Prep",
+    default: "Compile Ready — AI-Powered Interview Preparation",
     template: "%s · Compile Ready",
   },
   description:
@@ -40,14 +40,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Compile Ready",
-    title: "Compile Ready — Software Engineering Interview Prep",
+    title: "Compile Ready — AI-Powered Interview Preparation",
     description:
       "The best way to prepare for your next software engineering interview. Exclusive content, company questions, guides, and AI mock interviews.",
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Compile Ready — Software Engineering Interview Prep",
+    title: "Compile Ready — AI-Powered Interview Preparation",
     description:
       "The best way to prepare for your next software engineering interview. Exclusive content, company questions, guides, and AI mock interviews.",
   },

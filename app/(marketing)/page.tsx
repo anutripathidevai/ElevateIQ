@@ -18,7 +18,7 @@ import {
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Compile Ready — Software Engineering Interview Prep",
+    absolute: "Compile Ready — AI-Powered Interview Preparation",
   },
   description:
     "The best way to prepare for your next software engineering interview. Exclusive content, company questions, guides, and AI mock interviews.",
