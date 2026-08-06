@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
+import LinkedIn from "next-auth/providers/linkedin";
 import Credentials from "next-auth/providers/credentials";
 import type { Provider } from "next-auth/providers";
 import { db } from "@/lib/db";
@@ -9,6 +10,7 @@ import {
   isDbConfigured,
   isGithubConfigured,
   isGoogleConfigured,
+  isLinkedinConfigured,
 } from "@/lib/env";
 import { loginSchema } from "@/lib/auth-validation";
 import { verifyPassword } from "@/lib/password";
@@ -24,6 +26,14 @@ if (isGithubConfigured) {
 if (isGoogleConfigured) {
   providers.push(
     Google({ clientId: env.googleId!, clientSecret: env.googleSecret! }),
+  );
+}
+if (isLinkedinConfigured) {
+  providers.push(
+    LinkedIn({
+      clientId: env.linkedinId!,
+      clientSecret: env.linkedinSecret!,
+    }),
   );
 }
 

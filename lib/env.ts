@@ -51,6 +51,8 @@ export const env = {
   githubSecret: readEnv("AUTH_GITHUB_SECRET"),
   googleId: readEnv("AUTH_GOOGLE_ID"),
   googleSecret: readEnv("AUTH_GOOGLE_SECRET"),
+  linkedinId: readEnv("AUTH_LINKEDIN_ID"),
+  linkedinSecret: readEnv("AUTH_LINKEDIN_SECRET"),
 
   azureEndpoint: readEnv("AZURE_OPENAI_ENDPOINT"),
   azureApiKey: readEnv("AZURE_OPENAI_API_KEY"),
@@ -70,7 +72,11 @@ export const isAzureConfigured = Boolean(env.azureEndpoint && env.azureApiKey);
 export const isDbConfigured = Boolean(env.databaseUrl);
 export const isGithubConfigured = Boolean(env.githubId && env.githubSecret);
 export const isGoogleConfigured = Boolean(env.googleId && env.googleSecret);
-export const isAuthConfigured = isGithubConfigured || isGoogleConfigured;
+export const isLinkedinConfigured = Boolean(
+  env.linkedinId && env.linkedinSecret,
+);
+export const isAuthConfigured =
+  isGithubConfigured || isGoogleConfigured || isLinkedinConfigured;
 /** Whether an email delivery channel is configured (for password resets, etc.). */
 export const isEmailConfigured = Boolean(
   env.emailFrom && (env.resendApiKey || env.smtpUrl),
