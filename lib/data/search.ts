@@ -45,6 +45,7 @@ export const SEARCH_CATEGORY_ORDER = [
   "Low Level Design",
   "Generative AI",
   "Programming Languages",
+  "Cloud & DevOps",
   "Interview Questions",
   "Blogs",
   "Resume",

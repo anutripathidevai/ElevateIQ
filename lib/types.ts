@@ -196,6 +196,7 @@ export type SearchCategory =
   | "Low Level Design"
   | "Generative AI"
   | "Programming Languages"
+  | "Cloud & DevOps"
   | "Interview Questions"
   | "Blogs"
   | "Resume"

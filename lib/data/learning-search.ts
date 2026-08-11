@@ -1,6 +1,7 @@
 import {
   BrainCircuit,
   Boxes,
+  Cloud,
   Code2,
   Layers,
   Network,
@@ -12,10 +13,12 @@ import { SD_CATALOG } from "@/features/system-design/registry";
 import { LLD_CATALOG } from "@/features/lld/registry";
 import { GENAI_CATALOG } from "@/features/generative-ai/registry";
 import { availableLanguages } from "@/features/languages/registry";
+import { CD_MODULES } from "@/features/cloud-devops/registry";
 
 /**
  * Aggregates every published learning item across all tracks (DSA, System
- * Design, LLD, Generative AI, Programming Languages) into flat search results.
+ * Design, LLD, Generative AI, Programming Languages, Cloud & DevOps) into flat
+ * search results.
  *
  * This is the single source that makes the learning corpus discoverable from the
  * global search. It is derived directly from each track's registry, so new
@@ -30,6 +33,7 @@ const TRACK_ICON: Record<string, LucideIcon> = {
   "Low Level Design": Boxes,
   "Generative AI": BrainCircuit,
   "Programming Languages": Code2,
+  "Cloud & DevOps": Cloud,
 };
 
 export function buildLearningSearchIndex(): SearchResult[] {
@@ -79,7 +83,24 @@ export function buildLearningSearchIndex(): SearchResult[] {
     icon: TRACK_ICON["Programming Languages"],
   }));
 
-  return [...dsa, ...systemDesign, ...lld, ...genai, ...languages];
+  const cloudDevops: SearchResult[] = CD_MODULES.filter(
+    (m) => m.status === "published",
+  ).map((m) => ({
+    id: `cloud-devops:${m.slug}`,
+    label: m.title,
+    category: "Cloud & DevOps",
+    href: `/learning/cloud-devops/${m.slug}`,
+    icon: TRACK_ICON["Cloud & DevOps"],
+  }));
+
+  return [
+    ...dsa,
+    ...systemDesign,
+    ...lld,
+    ...genai,
+    ...languages,
+    ...cloudDevops,
+  ];
 }
 
 /** Prebuilt learning index (module-level, computed once). */

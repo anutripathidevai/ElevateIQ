@@ -207,6 +207,12 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Code2,
         badge: "New",
       },
+      {
+        href: "/learning/cloud-devops",
+        label: "Cloud & DevOps",
+        icon: Cloud,
+        badge: "New",
+      },
       { href: "/learning#azure", label: "Azure", icon: Cloud },
       { href: "/learning#aws", label: "AWS", icon: Cloud },
       { href: "/learning#ml", label: "Machine Learning", icon: Brain },
