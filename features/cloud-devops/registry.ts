@@ -60,7 +60,7 @@ export const CD_MODULES: CDModuleMeta[] = [
     topics: ["Jenkins", "Pipelines", "Blue-Green", "Canary", "Rollback"],
     estimatedMinutes: 45,
     accent: "rose",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "docker-kubernetes",
@@ -82,7 +82,7 @@ export const CD_MODULES: CDModuleMeta[] = [
     topics: ["Azure", "RBAC", "Key Vault", "AKS", "IaC / Bicep"],
     estimatedMinutes: 50,
     accent: "rose",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "apis-webjobs-kafka",
@@ -93,7 +93,7 @@ export const CD_MODULES: CDModuleMeta[] = [
     topics: ["APIs", "Idempotency", "WebJobs", "Kafka", "Consumer Lag"],
     estimatedMinutes: 55,
     accent: "rose",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "observability-newrelic-splunk",
@@ -104,18 +104,18 @@ export const CD_MODULES: CDModuleMeta[] = [
     topics: ["Metrics", "Logs", "Traces", "New Relic", "Splunk"],
     estimatedMinutes: 40,
     accent: "rose",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "production-troubleshooting",
     order: 7,
     title: "Production Troubleshooting",
     summary:
-      "A repeatable incident framework — Detect → Scope → Measure → Trace → Root Cause → Mitigate → Fix → Prevent — across eight real scenarios.",
+      "A repeatable incident framework — Stabilise → Assess → Diagnose → Resolve → Prevent — applied to the classic production failure scenarios.",
     topics: ["Incidents", "Debugging", "Latency", "503s", "Root Cause"],
     estimatedMinutes: 45,
     accent: "rose",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "senior-staff-architecture",
@@ -126,7 +126,7 @@ export const CD_MODULES: CDModuleMeta[] = [
     topics: ["Reliability", "Scalability", "Zero-Downtime", "Security", "Cost"],
     estimatedMinutes: 45,
     accent: "rose",
-    status: "coming-soon",
+    status: "published",
   },
 ];
 
