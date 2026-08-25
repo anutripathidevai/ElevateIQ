@@ -1,0 +1,10 @@
+export { AILabPage } from "./ai-lab-page";
+export { ArchitectureDiagram } from "./architecture-diagram";
+export { ComingSoon } from "./coming-soon";
+export { ExecutionTrace } from "./execution-trace";
+export { InterviewQuestions } from "./interview-questions";
+export { LabCard } from "./lab-card";
+export { LabChallengeView } from "./lab-challenge";
+export { LabsRoadmap } from "./labs-roadmap";
+export { resolveLabIcon } from "./lab-icons";
+export type { LabDemoProps, LiveTrace, RunMetrics, TraceStepView } from "./demo-types";

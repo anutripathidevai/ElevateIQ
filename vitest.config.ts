@@ -9,7 +9,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
-    include: ["features/**/*.test.ts", "lib/**/*.test.ts"],
+    include: ["features/**/*.test.ts", "lib/**/*.test.ts", "services/**/*.test.ts"],
     globals: false,
   },
   resolve: {
