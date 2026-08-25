@@ -15,6 +15,17 @@ import { InterviewQuestions } from "./interview-questions";
 import { LabChallengeView } from "./lab-challenge";
 import type { LabDemoProps, LiveTrace } from "./demo-types";
 import { LlmPlayground } from "../labs/llm-playground";
+import { StructuredOutput } from "../labs/structured-output";
+import { SemanticSearch } from "../labs/semantic-search";
+import { RagPipeline } from "../labs/rag-pipeline";
+import { SkillBuilder } from "../labs/skill-builder";
+import { ToolCalling } from "../labs/tool-calling";
+import { AiAgent } from "../labs/ai-agent";
+import { AiMemory } from "../labs/ai-memory";
+import { MultiAgent } from "../labs/multi-agent";
+import { AiEvaluation } from "../labs/ai-evaluation";
+import { AiGuardrails } from "../labs/ai-guardrails";
+import { ProductionAi } from "../labs/production-ai";
 
 /**
  * The interactive shell every published lab renders. Server components pass the
@@ -26,6 +37,17 @@ import { LlmPlayground } from "../labs/llm-playground";
 /** Map a serialisable demo key to its interactive component. */
 const DEMOS: Partial<Record<LabDemoKey, React.ComponentType<LabDemoProps>>> = {
   "llm-playground": LlmPlayground,
+  "structured-output": StructuredOutput,
+  "semantic-search": SemanticSearch,
+  "rag-pipeline": RagPipeline,
+  "skill-builder": SkillBuilder,
+  "tool-calling": ToolCalling,
+  "ai-agent": AiAgent,
+  "ai-memory": AiMemory,
+  "multi-agent": MultiAgent,
+  "ai-evaluation": AiEvaluation,
+  "ai-guardrails": AiGuardrails,
+  "production-ai": ProductionAi,
 };
 
 const TAB_OPTIONS: TabOption<LabTab>[] = [

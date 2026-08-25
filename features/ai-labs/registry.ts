@@ -70,7 +70,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "free",
     icon: "Braces",
     accent: "blue",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "semantic-search",
@@ -84,7 +84,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "free",
     icon: "Search",
     accent: "cyan",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "rag-pipeline",
@@ -98,7 +98,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "Layers",
     accent: "emerald",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "skill-builder",
@@ -112,7 +112,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "Wrench",
     accent: "orange",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "tool-calling",
@@ -126,7 +126,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "Plug",
     accent: "rose",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "ai-agent",
@@ -140,7 +140,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "Bot",
     accent: "violet",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "ai-memory",
@@ -154,7 +154,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "Brain",
     accent: "blue",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "multi-agent",
@@ -168,7 +168,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "Network",
     accent: "cyan",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "ai-evaluation",
@@ -182,7 +182,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "ClipboardCheck",
     accent: "emerald",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "ai-guardrails",
@@ -196,7 +196,7 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "ShieldCheck",
     accent: "orange",
-    status: "coming-soon",
+    status: "published",
   },
   {
     slug: "production-ai",
@@ -210,6 +210,6 @@ export const AI_LABS_CATALOG: LabMeta[] = [
     tier: "premium",
     icon: "Rocket",
     accent: "rose",
-    status: "coming-soon",
+    status: "published",
   },
 ];
