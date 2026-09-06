@@ -1,6 +1,7 @@
 import type OpenAI from "openai";
 import type { TrackKey } from "@prisma/client";
-import { getAzureClient, MODEL, tuneParams } from "./client";
+import { runChatCompletion, runChatCompletionStream } from "./completion";
+import { PROMPT_VERSIONS } from "./prompt-versions";
 import { buildMockSystemPrompt, type MockProblemContext } from "./prompts";
 
 export interface ChatMessage {
@@ -19,14 +20,17 @@ export async function generateOpening(
   track: TrackKey,
   ctx?: MockContext,
 ): Promise<string> {
-  const client = getAzureClient();
   const kickoff =
     ctx?.mode === "tutor"
       ? "Greet the candidate in 1-2 sentences, say you can explain this problem or run a mock interview on it, and invite their first question."
       : "Please begin the interview with your first question.";
-  const completion = await client.chat.completions.create({
-    model: MODEL,
-    ...tuneParams({ temperature: 0.7, maxTokens: 300 }),
+  const { content } = await runChatCompletion({
+    temperature: 0.7,
+    maxTokens: 300,
+    meta: {
+      operation: "mock.opening",
+      promptVersion: PROMPT_VERSIONS.mockOpening,
+    },
     messages: [
       {
         role: "system",
@@ -39,8 +43,7 @@ export async function generateOpening(
     ],
   });
   return (
-    completion.choices[0]?.message?.content ??
-    "Let's begin. Walk me through a problem you'd like to tackle."
+    content || "Let's begin. Walk me through a problem you'd like to tackle."
   );
 }
 
@@ -50,8 +53,6 @@ export async function streamMockReply(
   history: ChatMessage[],
   ctx?: MockContext,
 ): Promise<ReadableStream<Uint8Array>> {
-  const client = getAzureClient();
-
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
     {
       role: "system",
@@ -63,26 +64,10 @@ export async function streamMockReply(
     ...history.map((m) => ({ role: m.role, content: m.content })),
   ];
 
-  const stream = await client.chat.completions.create({
-    model: MODEL,
-    ...tuneParams({ temperature: 0.7, maxTokens: 500 }),
-    stream: true,
+  return runChatCompletionStream({
+    temperature: 0.7,
+    maxTokens: 500,
+    meta: { operation: "mock.reply", promptVersion: PROMPT_VERSIONS.mockReply },
     messages,
-  });
-
-  const encoder = new TextEncoder();
-  return new ReadableStream<Uint8Array>({
-    async start(controller) {
-      try {
-        for await (const chunk of stream) {
-          const delta = chunk.choices[0]?.delta?.content;
-          if (delta) controller.enqueue(encoder.encode(delta));
-        }
-      } catch (err) {
-        controller.error(err);
-      } finally {
-        controller.close();
-      }
-    },
   });
 }

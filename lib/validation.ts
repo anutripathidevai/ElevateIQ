@@ -23,6 +23,14 @@ export const trackKeySchema = z.enum([
   "BEHAVIORAL",
 ]);
 
+/** Candidate seniority for an adaptive mock interview. */
+export const senioritySchema = z.enum(["junior", "mid", "senior", "staff"]);
+
+/** Body of an adaptive-interview answer submission. */
+export const adaptiveAnswerSchema = z.object({
+  message: z.string().trim().min(1).max(4000),
+});
+
 /** Body of POST /api/ai-labs/llm — the LLM Playground (Lab 1) run request. */
 export const aiLabsLlmSchema = z.object({
   systemPrompt: z.string().max(4000).optional(),

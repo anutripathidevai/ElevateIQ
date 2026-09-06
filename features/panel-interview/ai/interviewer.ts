@@ -1,5 +1,9 @@
 import type OpenAI from "openai";
-import { getAzureClient, MODEL, tuneParams } from "@/services/ai/client";
+import {
+  runChatCompletion,
+  runChatCompletionStream,
+} from "@/services/ai/completion";
+import { PROMPT_VERSIONS } from "@/services/ai/prompt-versions";
 import { PANEL_PERSONAS } from "../personas";
 import type { PanelPersona, PanelTurn } from "../types";
 import {
@@ -33,18 +37,19 @@ export async function generatePersonaOpening(
   persona: PanelPersona,
   ctx: InterviewContext,
 ): Promise<string> {
-  const client = getAzureClient();
-  const completion = await client.chat.completions.create({
-    model: MODEL,
-    ...tuneParams({ temperature: 0.7, maxTokens: 220 }),
+  const { content } = await runChatCompletion({
+    temperature: 0.7,
+    maxTokens: 220,
+    meta: {
+      operation: "panel.opening",
+      promptVersion: PROMPT_VERSIONS.panelOpening,
+    },
     messages: [
       { role: "system", content: buildPersonaSystemPrompt(persona, ctx) },
       { role: "user", content: OPENING_INSTRUCTION },
     ],
   });
-  return (
-    completion.choices[0]?.message?.content ?? persona.seedQuestions[0]
-  );
+  return content || persona.seedQuestions[0];
 }
 
 /** Stream a persona's next question as a plain-text ReadableStream. */
@@ -53,28 +58,14 @@ export async function streamPersonaReply(
   ctx: InterviewContext,
   transcript: readonly PanelTurn[],
 ): Promise<ReadableStream<Uint8Array>> {
-  const client = getAzureClient();
-  const stream = await client.chat.completions.create({
-    model: MODEL,
-    ...tuneParams({ temperature: 0.75, maxTokens: 320 }),
-    stream: true,
-    messages: toChatMessages(persona, ctx, transcript),
-  });
-
-  const encoder = new TextEncoder();
-  return new ReadableStream<Uint8Array>({
-    async start(controller) {
-      try {
-        for await (const chunk of stream) {
-          const delta = chunk.choices[0]?.delta?.content;
-          if (delta) controller.enqueue(encoder.encode(delta));
-        }
-      } catch (err) {
-        controller.error(err);
-      } finally {
-        controller.close();
-      }
+  return runChatCompletionStream({
+    temperature: 0.75,
+    maxTokens: 320,
+    meta: {
+      operation: "panel.reply",
+      promptVersion: PROMPT_VERSIONS.panelReply,
     },
+    messages: toChatMessages(persona, ctx, transcript),
   });
 }
 

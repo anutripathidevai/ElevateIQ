@@ -1,4 +1,15 @@
 import { getAzureClient, MODEL, tuneParams } from "@/services/ai/client";
+import {
+  clampOutputTokens,
+  errorLabel,
+  getFallbackModel,
+  getRetryConfig,
+  newStats,
+  runResilient,
+} from "@/services/ai/reliability";
+import { newCorrelationId, recordAiCall } from "@/services/ai/telemetry";
+import { PROMPT_VERSIONS } from "@/services/ai/prompt-versions";
+import { estimateCost } from "@/services/ai-labs/usage";
 import type {
   ILLMProvider,
   LLMMessage,
@@ -13,6 +24,10 @@ import type {
  * streams tokens. Requests `stream_options.include_usage` so the final chunk
  * carries exact token counts; if the model omits usage we estimate from text
  * length (~4 chars/token) so the metrics readout always has a value.
+ *
+ * Reliability + observability: stream establishment goes through
+ * {@link runResilient} (per-attempt timeout, bounded retry on transient errors,
+ * optional model fallback) and every run emits a PII-free telemetry event.
  */
 export class AzureLLMProvider implements ILLMProvider {
   readonly id = "azure-openai";
@@ -23,35 +38,86 @@ export class AzureLLMProvider implements ILLMProvider {
     messages: LLMMessage[],
     params: LLMParams,
   ): AsyncGenerator<LLMStreamChunk, LLMResult, void> {
-    const client = getAzureClient();
     const tuned = tuneParams({
       temperature: params.temperature,
-      maxTokens: params.maxTokens,
+      maxTokens: clampOutputTokens(params.maxTokens),
     });
+    const stats = newStats();
+    const correlationId = newCorrelationId();
+    const startedAt = Date.now();
 
-    const completion = await client.chat.completions.create({
-      model: MODEL,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
-      stream: true,
-      stream_options: { include_usage: true },
-      ...tuned,
-    });
+    let completion: AsyncIterable<{
+      choices?: { delta?: { content?: string | null } }[];
+      usage?: { prompt_tokens?: number; completion_tokens?: number } | null;
+    }>;
+    try {
+      completion = await runResilient(
+        (model, signal) =>
+          getAzureClient().chat.completions.create(
+            {
+              model,
+              messages: messages.map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
+              stream: true,
+              stream_options: { include_usage: true },
+              ...tuned,
+            },
+            { signal, maxRetries: 0 },
+          ),
+        { primaryModel: MODEL, fallbackModel: getFallbackModel() },
+        getRetryConfig(),
+        stats,
+      );
+    } catch (err) {
+      recordAiCall({
+        operation: "ai-labs.llm",
+        model: stats.modelUsed ?? MODEL,
+        promptVersion: PROMPT_VERSIONS.aiLabsLlm,
+        correlationId,
+        latencyMs: Date.now() - startedAt,
+        success: false,
+        retryCount: stats.retryCount,
+        fallbackUsed: stats.fallbackUsed,
+        streamed: true,
+        errorType: errorLabel(err),
+      });
+      throw err;
+    }
 
+    const modelUsed = stats.modelUsed ?? MODEL;
     let text = "";
     let inputTokens = 0;
     let outputTokens = 0;
 
-    for await (const chunk of completion) {
-      const delta = chunk.choices?.[0]?.delta?.content ?? "";
-      if (delta) {
-        text += delta;
-        yield { delta };
+    try {
+      for await (const chunk of completion) {
+        const delta = chunk.choices?.[0]?.delta?.content ?? "";
+        if (delta) {
+          text += delta;
+          yield { delta };
+        }
+        const usage = chunk.usage;
+        if (usage) {
+          inputTokens = usage.prompt_tokens ?? inputTokens;
+          outputTokens = usage.completion_tokens ?? outputTokens;
+        }
       }
-      const usage = chunk.usage;
-      if (usage) {
-        inputTokens = usage.prompt_tokens ?? inputTokens;
-        outputTokens = usage.completion_tokens ?? outputTokens;
-      }
+    } catch (err) {
+      recordAiCall({
+        operation: "ai-labs.llm",
+        model: modelUsed,
+        promptVersion: PROMPT_VERSIONS.aiLabsLlm,
+        correlationId,
+        latencyMs: Date.now() - startedAt,
+        success: false,
+        retryCount: stats.retryCount,
+        fallbackUsed: stats.fallbackUsed,
+        streamed: true,
+        errorType: errorLabel(err),
+      });
+      throw err;
     }
 
     if (inputTokens === 0) {
@@ -61,7 +127,27 @@ export class AzureLLMProvider implements ILLMProvider {
       outputTokens = estimateTokens(text);
     }
 
-    return { text, usage: { inputTokens, outputTokens }, model: MODEL, demo: false };
+    recordAiCall({
+      operation: "ai-labs.llm",
+      model: modelUsed,
+      promptVersion: PROMPT_VERSIONS.aiLabsLlm,
+      correlationId,
+      latencyMs: Date.now() - startedAt,
+      success: true,
+      retryCount: stats.retryCount,
+      fallbackUsed: stats.fallbackUsed,
+      streamed: true,
+      inputTokens,
+      outputTokens,
+      estimatedCostUsd: estimateCost({ inputTokens, outputTokens }, modelUsed),
+    });
+
+    return {
+      text,
+      usage: { inputTokens, outputTokens },
+      model: modelUsed,
+      demo: false,
+    };
   }
 }
 

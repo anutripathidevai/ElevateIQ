@@ -1,4 +1,5 @@
-import { getAzureClient, MODEL, tuneParams } from "@/services/ai/client";
+import { runChatCompletion } from "@/services/ai/completion";
+import { PROMPT_VERSIONS } from "@/services/ai/prompt-versions";
 import type { PanelInterview, PanelResult } from "../types";
 import { formatTranscript, heuristicScorecard } from "../utils";
 import { buildScorecardPrompt } from "./prompts";
@@ -18,23 +19,26 @@ function extractJson(raw: string): string {
 export async function generateScorecard(
   interview: Pick<PanelInterview, "role" | "focus" | "transcript">,
 ): Promise<PanelResult> {
-  const client = getAzureClient();
   const { system, user } = buildScorecardPrompt(
     { role: interview.role, focus: interview.focus },
     formatTranscript(interview.transcript),
   );
 
-  const completion = await client.chat.completions.create({
-    model: MODEL,
-    ...tuneParams({ temperature: 0.3, maxTokens: 1800 }),
-    response_format: { type: "json_object" },
+  const { content } = await runChatCompletion({
+    temperature: 0.3,
+    maxTokens: 1800,
+    responseFormat: { type: "json_object" },
+    meta: {
+      operation: "panel.scorecard",
+      promptVersion: PROMPT_VERSIONS.panelScorecard,
+    },
     messages: [
       { role: "system", content: system },
       { role: "user", content: user },
     ],
   });
 
-  const raw = completion.choices[0]?.message?.content ?? "{}";
+  const raw = content || "{}";
   const parsed = panelResultSchema.safeParse(JSON.parse(extractJson(raw)));
   if (!parsed.success) {
     throw new Error("The AI returned an unexpected format. Please try again.");

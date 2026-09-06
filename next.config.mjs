@@ -2,6 +2,12 @@
 const nextConfig = {
   // Don't advertise the framework/version.
   poweredByHeader: false,
+  // The Application Insights SDK uses dynamic requires and native-ish deps that
+  // must not be bundled by the Next.js server compiler — keep it external so it
+  // loads at runtime only when configured (see services/ai/telemetry.ts).
+  experimental: {
+    serverComponentsExternalPackages: ["applicationinsights"],
+  },
   // Lint is run separately via `npm run lint`; don't fail production builds on style.
   eslint: { ignoreDuringBuilds: true },
   async headers() {

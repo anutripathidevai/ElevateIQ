@@ -30,6 +30,12 @@ export async function POST(
   if (!mock || mock.userId !== userId) {
     return json({ error: "Interview not found." }, 404);
   }
+  if (mock.mode === "adaptive") {
+    return json(
+      { error: "Adaptive interviews use a different endpoint." },
+      400,
+    );
+  }
 
   const history = mock.transcript ?? [];
   const withUser: ChatMessage[] = [

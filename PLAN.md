@@ -117,3 +117,40 @@ Ultra-cheap alternative: Static Web Apps + Cosmos DB serverless (free tiers) —
 3. Wire one end-to-end vertical slice: **DSA problem → paste solution → Azure OpenAI review → save submission**.
 4. Seed ~5 problems per track.
 5. Add `azd`/Bicep infra and deploy to Azure Container Apps.
+
+---
+
+## 9. Auth — real email/password + sessions (DONE, commit 5a752a5)
+
+Replaced the client-side mock login with real Auth.js v5 auth, unified onto
+real server sessions; learning content stays public and the app degrades
+gracefully with no backend.
+
+- **Credentials provider** (email/password, bcrypt cost 12) in `lib/auth.ts`,
+  gated on `isDbConfigured`; jwt sign-in upsert hardened with try/catch.
+  Google/GitHub OAuth wired but **dormant** until their env vars are set —
+  surfaced at runtime via `getProviders()` (no rebuild needed).
+- **APIs**: `POST /api/auth/register` (zod-validated, 503 w/o DB, 409 on
+  duplicate, links password to OAuth-only rows, never returns the hash);
+  `POST /api/auth/forgot-password` + `lib/password-reset.ts` (honest
+  "unavailable" until email delivery is configured — no fake "email sent").
+- **Client provider** (`components/auth/auth-provider.tsx`) now ALWAYS uses the
+  real `SessionProvider` (identity from session; rich profile in localStorage
+  keyed by user id). Fixes a build-time freeze of env-derived auth flags on
+  statically prerendered pages. `social-buttons.tsx` self-discovers OAuth
+  providers at runtime. Login/signup async with loading/error/success +
+  shared password policy; login honors same-origin `callbackUrl`.
+- **Route protection**: edge-safe `middleware.ts` validates the Auth.js JWT
+  (no Prisma import), gates protected prefixes → `/login?callbackUrl=...`;
+  skips gating in demo mode.
+- **Data**: `User.passwordHash` (schema + migration
+  `20260804_add_user_password`); `lib/auth-validation.ts`, `lib/password.ts`;
+  added `bcryptjs`; `isEmailConfigured` flag; `.env.example` docs.
+- **Verified** end-to-end vs a local Postgres: register (200, no hash) →
+  duplicate (409) → credentials sign-in (302 → /dashboard, real DB id, no hash
+  in session) → protected route with cookie (200) → without cookie (307) →
+  wrong password rejected (no session); plus demo/no-DB path (register 503,
+  dashboard reachable). tsc clean, build green.
+- **Deploy note**: run `npm run db:deploy` to add the `passwordHash` column
+  before real signup works in production; Google stays dormant until
+  `AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` are set.
