@@ -1,0 +1,12 @@
+{
+  "assessment_root": null,
+  "output_directory": "outputs",
+  "expected_tasks": null,
+  "timeout_seconds": 120,
+  "hash_seed": 0,
+  "run_baseline": true,
+  "probes": [],
+  "criterion_awards": null,
+  "scoring_rules": null,
+  "user_report": null
+}

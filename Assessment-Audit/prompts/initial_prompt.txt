@@ -1,0 +1,19 @@
+Act as a Lead engineer. Design and build Assessment-Audit: a lightweight, modular Python toolkit with one PowerShell entry point.
+
+First read ExpertGuidelines.pdf, README_TakeHomeAssessment.pdf and the dataset structure. Briefly explain the requirements and proposed design before implementation.
+
+KEY AREAS
+1. Reproducibility: Discover tasks automatically; inventory and hash inputs; run reference/A/B/C tests separately with timeouts, captured logs and implementation identity checks.
+2. Consistency: Compare reproduced results with EvalTasks.xlsx; validate rubric JSON and supported scoring arithmetic. Never invent subjective criterion awards.
+3. Generic review: Detect example-only tests, example-specific lookup tables, ordering/oracle risks, parser-validation gaps and contract/rubric contradictions. Safely replay supported explicit prompt examples as separate experiments.
+4. Clear outputs: Produce outputs\latest\findings.csv, summary.md and results.json. Include task IDs, specific problems, engineering impact, evidence and review steps. Distinguish reproduced failures, source-only concerns, blocked checks and unsupported analysis.
+5. Honest triage: Ordinary model failures are not dataset defects; blocked evaluations are not zero scores. Never claim exhaustive semantic verification.
+
+CONSTRAINTS
+- No hardcoded task IDs, predefined findings or required review notes.
+- Preserve original data and previous runs; never silently repair supplied tests or helpers.
+- Require consent for native execution; explain that it is not sandboxed. Support static-only inspection and report-only regeneration.
+- Keep dependencies and files minimal; no external LLM dependency or unnecessary framework.
+
+DELIVER
+Working code, synthetic regression tests, a short reproduction guide and a clean ZIP without environments, caches or temporary files. Verify behavior using new synthetic task IDs. Keep this initial version simple and extensible for later enhancements.
